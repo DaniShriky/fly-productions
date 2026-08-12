@@ -1,0 +1,53 @@
+.detail {
+  display: grid;
+  grid-template-columns: 30% 70%;
+  gap: 40px;
+  align-items: start;
+  padding: 60px 5% 20px;
+}
+
+.videoCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.video {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 16px;
+  overflow: hidden;
+  background: linear-gradient(160deg, #3a1030, #0c0c10 70%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.playBtn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.description p {
+  text-align: center;
+  padding: 20px 4%;
+  color: #cfcdc6;
+  font-size: 15px;
+}
+.description p:not(:last-child) {
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.18);
+}
+
+@media (max-width: 850px) {
+  .detail {
+    grid-template-columns: 1fr;
+  }
+}

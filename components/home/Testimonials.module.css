@@ -1,0 +1,68 @@
+.head {
+  text-align: center;
+  margin-bottom: 34px;
+  padding: 60px 5% 0;
+}
+.head h2 {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.wrapper {
+  position: relative;
+  padding: 0 5%;
+}
+
+.viewport {
+  overflow-x: auto;
+  overflow-y: hidden;
+  direction: ltr;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.track {
+  display: flex;
+  direction: ltr;
+}
+
+.card {
+  flex: 0 0 260px;
+  padding: 4px 30px;
+  direction: rtl;
+}
+.card:not(:first-child) {
+  border-inline-start: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.stars {
+  color: #e0b84a;
+  font-size: 13px;
+  margin-bottom: 12px;
+  letter-spacing: 2px;
+}
+.quote {
+  color: #cfcdc6;
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+.who {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Sits outside the scrolling box (see Testimonials.tsx) so it stays
+   pinned to the edge instead of scrolling away with the content. */
+.fadeRight {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 5%;
+  width: 140px;
+  background: linear-gradient(to left, #050505, transparent);
+  pointer-events: none;
+}

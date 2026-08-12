@@ -1,0 +1,53 @@
+.promo {
+  margin: 70px 5% 0;
+  border-radius: 20px;
+  padding: 46px 6%;
+  text-align: center;
+  background: linear-gradient(120deg, #1a1030, #0c2a3a);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.promo h3 {
+  font-size: clamp(22px, 3.5vw, 32px);
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.promo p {
+  color: #cfcdc6;
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.grid {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+  margin-bottom: 26px;
+}
+
+.item {
+  font-size: 13px;
+  color: #cfcdc6;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #e0b84a;
+}
+
+.btn {
+  display: inline-block;
+  background: #e0b84a;
+  color: #0c0c10;
+  padding: 13px 30px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 15px;
+}

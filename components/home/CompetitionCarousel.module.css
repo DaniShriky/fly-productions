@@ -1,0 +1,128 @@
+.section {
+  padding: 60px 5% 20px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+/* Pinned with `order` (not `direction`) so the heading stays on the
+   right and the "see all" button stays on the left regardless of page
+   direction, without disturbing bidi/text-align of the Hebrew button
+   label. */
+.head h2 {
+  order: 1;
+}
+
+.seeAll {
+  order: 2;
+}
+
+.head h2 {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.seeAll {
+  font-size: 14px;
+  color: #f3f1ec;
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
+  padding: 9px 20px;
+}
+
+/* direction: ltr here is deliberate — see lib/useAutoScroll.ts comment.
+   It keeps scrollLeft math predictable regardless of page direction;
+   each .card below sets direction: rtl again for correct Hebrew text. */
+.viewport {
+  overflow-x: auto;
+  overflow-y: hidden;
+  direction: ltr;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.viewport::-webkit-scrollbar {
+  display: none;
+}
+.viewport.expanded {
+  overflow: visible;
+}
+
+.track {
+  display: flex;
+  gap: 18px;
+  direction: ltr;
+}
+.viewport.expanded .track {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  direction: rtl;
+}
+
+.card {
+  flex: 0 0 350px;
+  direction: rtl;
+  display: flex;
+  flex-direction: column;
+}
+
+.thumb {
+  height: 300px;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 14px;
+}
+.thumb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+.info h3 {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+/* Hebrew sector suffix (e.g. "(מגזר דתי)") on religious-sector
+   competitions — Hubot Sans (the .en class) is Latin-only, so this
+   reverts to Assistant (the site's Hebrew font) instead of falling
+   back to the browser default. */
+.religiousSuffix {
+  font-family: "Assistant", sans-serif;
+  letter-spacing: normal;
+}
+.info .date {
+  font-size: 13px;
+  color: #b6b4ac;
+  margin-bottom: 1px;
+}
+.info .loc {
+  font-size: 13px;
+  color: #b6b4ac;
+  margin-bottom: 14px;
+}
+
+.btn {
+  display: inline-block;
+  width: 100%;
+  text-align: center;
+  padding: 9px 0;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  font-size: 13px;
+}
+
+@media (max-width: 900px) {
+  .viewport.expanded .track {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

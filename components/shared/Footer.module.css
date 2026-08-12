@@ -1,0 +1,77 @@
+.footer {
+  padding: 34px 5%;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  margin-top: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+/* Pinned with `order` (not `direction`) so contact info stays on the
+   left, the logo stays centered, and the follow/social block stays on
+   the right, regardless of page direction — see the same trick in
+   Nav.module.css. */
+.contact {
+  text-align: right;
+  order: 3;
+}
+
+.logo {
+  order: 2;
+}
+
+.label {
+  font-size: 13px;
+  color: #cfcdc6;
+  margin-bottom: 4px;
+}
+
+.phone {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.logo img {
+  opacity: 0.9;
+}
+
+.follow {
+  text-align: left;
+  order: 1;
+}
+
+.follow .label {
+  margin-bottom: 10px;
+}
+
+.socialIcons {
+  display: flex;
+  gap: 10px;
+  /* Pinned to ltr so icon order stays stable regardless of page
+     direction — each icon is a single symbol, not text, so there's no
+     bidi/text-align concern here. */
+  direction: ltr;
+}
+
+.socialIcons a {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+
+@media (max-width: 700px) {
+  .footer {
+    flex-direction: column;
+    text-align: center;
+  }
+  .contact,
+  .follow {
+    text-align: center;
+  }
+}
