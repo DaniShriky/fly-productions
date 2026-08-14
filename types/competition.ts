@@ -10,8 +10,7 @@ export interface Competition {
   date: string;
   location: string;
   isReligious: boolean;
-  heroGradient: string; // TODO: replace with a real photo URL once available
-  thumbnailGradient: string; // TODO: replace with a real photo URL once available
+  image: string; // used for both the homepage carousel thumbnail and this competition's own hero
   descriptionParagraphs: string[]; // each string can include <span class="hl">…</span> for highlighted brand terms
   galleryGradients: string[]; // TODO: replace with real photo URLs
   videoUrl?: string;

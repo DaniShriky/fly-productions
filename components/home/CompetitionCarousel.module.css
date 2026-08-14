@@ -101,12 +101,15 @@
   letter-spacing: normal;
 }
 .info .date {
-  font-size: 13px;
+  font-size: 1rem;
   color: #b6b4ac;
   margin-bottom: 1px;
+  text-align: right; /* the date's own dir="ltr" (fixes digit order) would
+    otherwise resolve its inherited text-align:start to left instead of
+    right, since it no longer shares the card's rtl direction */
 }
 .info .loc {
-  font-size: 13px;
+  font-size: 1rem;
   color: #b6b4ac;
   margin-bottom: 14px;
 }

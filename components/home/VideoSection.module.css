@@ -1,24 +1,86 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: 4%;
+  margin: 0 5%;
+}
+
 .videoSection {
   position: relative;
-  margin: 0 5%;
+  flex: 1 1 60%;
+  min-width: 0;
   border-radius: 20px;
   overflow: hidden;
-  min-height: 380px;
+  height: 600px; /* a definite height, not just a floor — needed so the aspect-ratio child below can size itself off it via height:100% */
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(160deg, #3a1030, #0c0c10 70%);
+  border: none;
+  cursor: pointer;
+  padding: 0;
 }
 
-.videoSection h2 {
-  font-size: clamp(48px, 8vw, 90px);
-  font-weight: 900;
-  letter-spacing: 2px;
-  opacity: 0.95;
+.quote {
+  flex: 1 1 40%;
+  min-width: 320px;
+  text-align: right;
 }
 
-.playBtn {
+.quote p {
+  color: #cfcdc6;
+  font-size: 1.5rem;
+  line-height: 1.6;
+  font-style: italic;
+}
+
+@media (max-width: 900px) {
+  .row {
+    flex-direction: column;
+  }
+
+  .videoSection {
+    /* in column mode flex's main axis is height, so the inherited
+       "flex: 1 1 60%" would size height as 60% of an undefined column
+       height (collapsing to 0) instead of using height:600px below */
+    flex: none;
+    width: 100%;
+    height: 320px;
+  }
+
+  .quote {
+    flex: none;
+    width: 100%;
+    min-width: 0;
+    padding: 0 5%;
+  }
+
+  .quote p {
+    font-size: 1.1rem;
+  }
+}
+
+.ambientWrap {
+  /* fits a 16:9 box inside the card without cropping. Bound by height first
+     (the card is much wider than 16:9, so height is always the tight
+     constraint) with max-width as a safety net if that ever flips. */
+  position: relative;
+  height: 100%;
+  aspect-ratio: 16 / 9;
+  max-width: 100%;
+}
+
+.ambientPlayer {
   position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  pointer-events: none; /* clicks fall through to the card's button so the mute toggle still fires */
+}
+
+.muteBtn {
+  position: absolute;
+  z-index: 1;
   bottom: 24px;
   left: 24px;
   width: 52px;
@@ -29,5 +91,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 20px;
+  color: #fff;
 }

@@ -2,42 +2,47 @@
   position: relative;
   min-height: 72vh;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   overflow: hidden;
 }
 
-.image {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: radial-gradient(circle at 30% 25%, rgba(120, 150, 255, 0.55) 0%, transparent 55%),
-    radial-gradient(circle at 55% 70%, rgba(90, 60, 180, 0.5) 0%, transparent 50%),
-    linear-gradient(160deg, #1a1030 0%, #05050a 80%);
+.imageBox {
+  position: relative; /* was absolute — now a normal box in the flex row */
+  order: 1; /* it's first in the markup, but order:1 pushes it past .content (order:0), which in RTL means it lands on the LEFT instead of jumping right */
+  flex: 1 1 60%;
+  min-width: 0;
 }
 
-.fade {
+.imageFade {
   position: absolute;
   inset: 0;
-  z-index: 2;
-  /* NOTE: this fade direction assumes the image's visual "weight" sits on
-     the left, matching the design mockup. Adjust the percentages if your
-     real photo is composed differently. */
-  background: linear-gradient(90deg, transparent 35%, #050505 88%);
+  background: linear-gradient(90deg, transparent 60%, #050505 100%);
+  pointer-events: none;
 }
 
 .content {
   position: relative;
   z-index: 3;
-  width: 64%;
-  padding: 5% 6%;
-     text-align: right;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+  flex: 1 1 40%;
+  min-width: 480px; /* keeps the title from wrapping to a second line as the window narrows; only the mobile layout below changes the size */
+  padding-right: 13%;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.fade {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(90deg, transparent 0%, rgba(5, 5, 5, 0.85) 40%, #050505 60%);
+  pointer-events: none;
 }
 
 .content h1 {
-  font-size: 4rem;
+  font-size: 4.5rem;
   font-weight: 800;
   line-height: 0.95;
   letter-spacing: -1px;
@@ -46,26 +51,36 @@
 
 .wordmark {
   display: inline-block;
-  height: 12rem;
+  height: 15rem;
   width: auto;
 }
 
 .content p {
   color: #b6b4ac;
-  font-size: 19px;
+  font-size: 1.5rem;
   max-width: 420px;
   margin-top: 22px;
-      text-align: right;
+  text-align: right;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 900px) {
   .hero {
     min-height: 88vh;
   }
 
+  .imageBox {
+    flex-basis: 100%;
+  }
+
   .content {
-    width: 100%;
+    flex-basis: 100%;
+    min-width: 0;
+    align-self: flex-end;
     padding: 0 6% 8%;
+  }
+
+  .fade {
+    background: linear-gradient(180deg, transparent 0%, rgba(5, 5, 5, 0.85) 55%, #050505 75%);
   }
 
   .content h1 {

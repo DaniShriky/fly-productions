@@ -72,7 +72,9 @@ export default function Nav() {
                 }}
               >
                 <span className="en">{c.name}</span>
-                <span className={styles.sub}>{c.date} · {c.location}</span>
+                <span className={styles.sub}>
+                  <span dir="ltr">{c.date}</span> · {c.location}
+                </span>
               </Link>
             ))}
           </div>

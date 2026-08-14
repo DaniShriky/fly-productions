@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Competition } from "@/types/competition";
 import { splitReligiousSuffix } from "@/lib/splitReligiousSuffix";
 import styles from "./CompetitionHero.module.css";
@@ -9,8 +10,15 @@ export default function CompetitionHero({ competition }: { competition: Competit
 
   return (
     <section className={styles.hero}>
-      {/* TODO: replace with a real photo (see components/home/Hero.tsx note) */}
-      <div className={styles.bg} style={{ background: competition.heroGradient }} />
+      <div className={styles.bg}>
+        <Image
+          src={competition.image}
+          alt={competition.name}
+          fill
+          style={{ objectFit: "cover" }}
+          priority
+        />
+      </div>
       <div className={styles.fade} />
       <div className={styles.content}>
         <div className={styles.badge}>{competition.name}</div>
@@ -18,7 +26,7 @@ export default function CompetitionHero({ competition }: { competition: Competit
           <span className="en">{main}</span>
           {suffix && <span className={styles.religiousSuffix}> {suffix}</span>}
         </h1>
-        <div className={styles.metaDate}>{competition.date}</div>
+        <div className={styles.metaDate} dir="ltr">{competition.date}</div>
         <div className={styles.metaLoc}>{competition.location}</div>
         <a href="#" className={styles.routeBtn}>
           <span className={styles.circle}>➤</span>
