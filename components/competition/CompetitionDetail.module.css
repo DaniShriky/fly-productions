@@ -18,10 +18,47 @@
   aspect-ratio: 3 / 4;
   border-radius: 16px;
   overflow: hidden;
-  background: linear-gradient(160deg, #3a1030, #0c0c10 70%);
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* only shown for competitions that don't have a real video yet — the ▶
+   placeholder needs a visible card background; the real embed doesn't. */
+.videoPlaceholder {
+  background: linear-gradient(160deg, #3a1030, #0c0c10 70%);
+}
+
+.videoFrame {
+  /* Instagram's embed always includes its own header (avatar, username,
+     "View profile") above the video — there's no official option to hide
+     it. This crops it out by rendering the iframe taller than its box and
+     shifting it up, clipped by .video's overflow:hidden. Approximate and
+     tied to Instagram's current embed layout — may need retuning if they
+     change it. */
+  position: absolute;
+  top: -78px;
+  left: 0;
+  width: 100%;
+  height: calc(100% + 78px);
+  border: none;
+}
+
+.videoMaskTop,
+.videoMaskBottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: #050505; /* matches the page background, not a decorative box */
+  pointer-events: none;
+}
+.videoMaskTop {
+  top: 0;
+  height: 10px; /* small safety margin above the crop line */
+}
+.videoMaskBottom {
+  bottom: 0;
+  height: 80px; /* covers Instagram's "View more on Instagram" + like/view-count row */
 }
 
 .playBtn {
@@ -40,7 +77,7 @@
   text-align: center;
   padding: 20px 4%;
   color: #cfcdc6;
-  font-size: 15px;
+  font-size: 1.3rem;
 }
 .description p:not(:last-child) {
   border-bottom: 1px dashed rgba(255, 255, 255, 0.18);

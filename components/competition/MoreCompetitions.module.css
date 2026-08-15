@@ -22,15 +22,23 @@
   order: 2;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 18px;
+/* direction: ltr here is deliberate — see lib/useAutoScroll.ts comment.
+   It keeps scrollLeft math predictable regardless of page direction;
+   each card sets direction: rtl again internally for correct Hebrew text. */
+.viewport {
+  overflow-x: auto;
+  overflow-y: hidden;
+  direction: ltr;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   padding: 0 5%;
 }
+.viewport::-webkit-scrollbar {
+  display: none;
+}
 
-@media (max-width: 900px) {
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.track {
+  display: flex;
+  gap: 18px;
+  direction: ltr;
 }

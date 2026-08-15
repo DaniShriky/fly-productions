@@ -22,13 +22,13 @@
 }
 
 .label {
-  font-size: 13px;
+  font-size: 1.3rem;
   color: #cfcdc6;
   margin-bottom: 4px;
 }
 
 .phone {
-  font-size: 16px;
+  font-size: 1.5rem;
   font-weight: 700;
 }
 
@@ -55,14 +55,14 @@
 }
 
 .socialIcons a {
-  width: 30px;
-  height: 30px;
+  width: 3rem;
+  height: 3rem;
   border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 1.3rem;
 }
 
 @media (max-width: 700px) {

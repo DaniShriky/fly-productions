@@ -3,7 +3,7 @@ import styles from "./PromoBanner.module.css";
 
 export default function PromoBanner() {
   return (
-    <a href="tel:0524718088" className={styles.promo}>
+    <a  className={styles.promo}>
       <Image
         src="/images/ads.jpg"
         alt="כל מה שאתם צריכים לפרודקשן - צילום, סטילס, תאורה ובמה"

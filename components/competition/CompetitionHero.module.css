@@ -66,6 +66,7 @@
   font-weight: 700;
   margin-bottom: 4px;
 }
+
 .metaLoc {
   font-size: 20px;
   font-weight: 500;
@@ -73,12 +74,20 @@
   margin-bottom: 22px;
 }
 
+.routeWrap {
+  position: relative;
+  display: inline-block;
+}
+
 .routeBtn {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
+  background: none;
+  border: none;
 }
+
 .circle {
   width: 46px;
   height: 46px;
@@ -88,8 +97,36 @@
   align-items: center;
   justify-content: center;
   font-size: 18px;
+  color: white;
 }
+
 .routeLabel {
   font-size: 12px;
   color: #d8d6cf;
+}
+
+.routeMenu {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  right: 0;
+  background: #101014;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  white-space: nowrap;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  z-index: 4;
+}
+
+.routeMenu a {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.routeMenu a:hover {
+  background: rgba(255, 255, 255, 0.08);
 }

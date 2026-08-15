@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Competition } from "@/types/competition";
 import { splitReligiousSuffix } from "@/lib/splitReligiousSuffix";
@@ -7,6 +8,23 @@ export default function CompetitionHero({ competition }: { competition: Competit
   const { main, suffix } = competition.isReligious
     ? splitReligiousSuffix(competition.name)
     : { main: competition.name, suffix: null };
+
+  const query = encodeURIComponent(competition.location);
+  const wazeUrl = `https://waze.com/ul?q=${query}&navigate=yes`;
+  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${query}`;
+
+  const [routeOpen, setRouteOpen] = useState(false);
+  const routeRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (routeRef.current && !routeRef.current.contains(e.target as Node)) {
+        setRouteOpen(false);
+      }
+    }
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  }, []);
 
   return (
     <section className={styles.hero}>
@@ -28,10 +46,31 @@ export default function CompetitionHero({ competition }: { competition: Competit
         </h1>
         <div className={styles.metaDate} dir="ltr">{competition.date}</div>
         <div className={styles.metaLoc}>{competition.location}</div>
-        <a href="#" className={styles.routeBtn}>
-          <span className={styles.circle}>➤</span>
-          <span className={styles.routeLabel}>מסלול</span>
-        </a>
+
+        <div ref={routeRef} className={styles.routeWrap}>
+          <button
+            type="button"
+            className={styles.routeBtn}
+            onClick={(e) => {
+              e.stopPropagation();
+              setRouteOpen((o) => !o);
+            }}
+          >
+            <span className={styles.circle}>➤</span>
+            <span className={styles.routeLabel}>מסלול</span>
+          </button>
+
+          {routeOpen && (
+            <div className={styles.routeMenu}>
+              <a href={wazeUrl} target="_blank" rel="noopener noreferrer">
+                🚗 Waze
+              </a>
+              <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer">
+                📍 Google Maps
+              </a>
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );

@@ -1,15 +1,36 @@
 import { Competition } from "@/types/competition";
+import { getInstagramEmbedUrl } from "@/lib/getInstagramEmbedUrl";
 import styles from "./CompetitionDetail.module.css";
 
 export default function CompetitionDetail({ competition }: { competition: Competition }) {
+  const embedUrl = competition.videoUrl ? getInstagramEmbedUrl(competition.videoUrl) : null;
+
   return (
     <section>
       <div className={styles.detail}>
         <div className={styles.videoCard}>
-          {/* TODO: replace with a real <video> or embedded player once
-              competition.videoUrl exists */}
-          <div className={styles.video}>
-            <div className={styles.playBtn}>▶</div>
+          <div className={`${styles.video} ${!embedUrl ? styles.videoPlaceholder : ""}`}>
+            {embedUrl ? (
+              <>
+                <iframe
+                  src={embedUrl}
+                  title={competition.name}
+                  className={styles.videoFrame}
+                  allow="autoplay; encrypted-media"
+                  allowFullScreen
+                  scrolling="no"
+                />
+                {/* Instagram's embed has no "hide chrome" option — this masks
+                    its own header/footer rows (account name, "View more on
+                    Instagram", like/view counts) with solid covers so only
+                    the video itself reads as visible. */}
+                <div className={styles.videoMaskTop} />
+                <div className={styles.videoMaskBottom} />
+              </>
+            ) : (
+              // TODO: swap for a real embedded reel once competition.videoUrl exists
+              <div className={styles.playBtn}>▶</div>
+            )}
           </div>
         </div>
         <div className={styles.description}>
