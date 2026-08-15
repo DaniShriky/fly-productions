@@ -22,15 +22,19 @@
 
 .quote {
   flex: 1 1 40%;
-  min-width: 320px;
+ 
   text-align: right;
 }
 
 .quote p {
   color: #cfcdc6;
-  font-size: 1.5rem;
-  line-height: 1.6;
+  font-size: 1.2rem;
+  line-height: 1.7;
+  max-width: 36rem;
   font-style: italic;
+}
+.quote p:not(:last-child) {
+  margin-bottom: 16px;
 }
 
 @media (max-width: 900px) {

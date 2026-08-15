@@ -7,10 +7,11 @@ import styles from "./VideoSection.module.css";
 const HIGHLIGHT_VIDEO_ID = "jP5DCJajIKs";
 const AMBIENT_SRC = `https://www.youtube.com/embed/${HIGHLIGHT_VIDEO_ID}?autoplay=1&mute=1&loop=1&playlist=${HIGHLIGHT_VIDEO_ID}&controls=0&modestbranding=1&rel=0&playsinline=1&enablejsapi=1`;
 
-// TODO: placeholder — swap for a real quote FLY picks (about dance/their
-// competitions). Same idea as the descriptionParagraphs TODOs in
-// data/competitions.ts.
-const QUOTE = "מחול הוא השפה שבה הגוף מספר את מה שהמילים לא מצליחות לומר.";
+const QUOTE_PARAGRAPHS = [
+  "FLY הפקות אירועים מדהימים יוצרת ומפיקה כבר למעלה מ־20 שנה תחרויות, פסטיבלים וכנסי מחול ברמה גבוהה, המארחים להקות, סטודיואים ורקדנים מכל רחבי הארץ ומחו״ל. כל אירוע נבנה מתוך הקפדה על מקצועיות, איכות וחוויה מרשימה.",
+  "בלב התחרויות עומדת רמת שיפוט מקצועית ובלתי מתפשרת. שופטים וכוריאוגרפים מובילים מישראל ומחו״ל נבחרים בקפידה, לצד שיטת השיפוט הייחודית, הגלויה והמדויקת של FLY, המעניקה למנהלי הלהקות ולרקדנים משוב מקצועי ומשמעותי וכלים להמשך ההתפתחות.",
+  "עם ניסיון של למעלה מ־20 שנה, FLY הפקות ממשיכה ליצור אירועים המשלבים במות גדולות ומושקעות, תאורה והגברה מתקדמות, הפקה מוקפדת, יחס אישי ואווירה חמה. המטרה נשארת אחת: להעניק לכל להקה ולכל רקדן חוויה מקצועית ומרגשת, ובמה ראויה לכישרון, להשקעה ולאהבה לעולם המחול.",
+];
 
 export default function VideoSection() {
   const [hasEnteredView, setHasEnteredView] = useState(false);
@@ -71,7 +72,9 @@ export default function VideoSection() {
         </button>
 
         <div className={styles.quote}>
-          <p>{QUOTE}</p>
+          {QUOTE_PARAGRAPHS.map((paragraph, i) => (
+            <p key={i}>{paragraph}</p>
+          ))}
         </div>
       </div>
     </section>

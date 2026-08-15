@@ -26,7 +26,8 @@ import { useEffect, useRef } from "react";
 export function useAutoScroll<T extends HTMLElement>(
   speed: number,
   repeatCount: number,
-  disabled: boolean = false
+  disabled: boolean = false,
+  pauseOnHover: boolean = true
 ) {
   const ref = useRef<T | null>(null);
   const disabledRef = useRef(disabled);
@@ -60,12 +61,18 @@ export function useAutoScroll<T extends HTMLElement>(
       if (!document.hidden) last = null;
     };
 
-    el.addEventListener("mouseenter", onEnter);
-    el.addEventListener("mouseleave", onLeave);
+    if (pauseOnHover) {
+      el.addEventListener("mouseenter", onEnter);
+      el.addEventListener("mouseleave", onLeave);
+    }
     el.addEventListener("touchstart", pauseNow, { passive: true });
-    el.addEventListener("touchend", resumeSoon);
     el.addEventListener("pointerdown", pauseNow);
-    el.addEventListener("pointerup", resumeSoon);
+    // "up" listeners go on window, not el: a drag that ends outside the
+    // element (very easy to do — it's a wide, edge-to-edge strip) would
+    // never fire touchend/pointerup on el itself, leaving it paused
+    // forever. That's the "carousel stops after a while" bug.
+    window.addEventListener("touchend", resumeSoon);
+    window.addEventListener("pointerup", resumeSoon);
     document.addEventListener("visibilitychange", onVisibility);
 
     const step = (ts: number) => {
@@ -76,10 +83,12 @@ export function useAutoScroll<T extends HTMLElement>(
       if (!paused && !disabledRef.current && repeatCount > 0) {
         const unitWidth = el.scrollWidth / repeatCount;
         if (unitWidth > 0) {
-          el.scrollLeft += (speed * dt) / 1000;
-          if (el.scrollLeft >= unitWidth) {
-            el.scrollLeft -= unitWidth;
-          }
+          const next = el.scrollLeft + (speed * dt) / 1000;
+          // modulo instead of "if past the edge, subtract once" — avoids a
+          // one-time large negative jump to scrollLeft at the wrap point,
+          // which is a much rougher operation for the browser than a small
+          // per-frame nudge and is the most likely spot for a stutter.
+          el.scrollLeft = ((next % unitWidth) + unitWidth) % unitWidth;
         }
       }
       frameId = requestAnimationFrame(step);
@@ -91,13 +100,13 @@ export function useAutoScroll<T extends HTMLElement>(
       el.removeEventListener("mouseenter", onEnter);
       el.removeEventListener("mouseleave", onLeave);
       el.removeEventListener("touchstart", pauseNow);
-      el.removeEventListener("touchend", resumeSoon);
       el.removeEventListener("pointerdown", pauseNow);
-      el.removeEventListener("pointerup", resumeSoon);
+      window.removeEventListener("touchend", resumeSoon);
+      window.removeEventListener("pointerup", resumeSoon);
       document.removeEventListener("visibilitychange", onVisibility);
       if (resumeTimer) clearTimeout(resumeTimer);
     };
-  }, [speed, repeatCount]);
+  }, [speed, repeatCount, pauseOnHover]);
 
   return ref;
 }

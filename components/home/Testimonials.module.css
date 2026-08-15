@@ -15,19 +15,14 @@
 }
 
 .viewport {
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: hidden;
   direction: ltr;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-.viewport::-webkit-scrollbar {
-  display: none;
 }
 
 .track {
   display: flex;
   direction: ltr;
+  width: max-content;
 }
 
 .card {
@@ -55,14 +50,74 @@
   font-weight: 600;
 }
 
-/* Sits outside the scrolling box (see Testimonials.tsx) so it stays
-   pinned to the edge instead of scrolling away with the content. */
-.fadeRight {
+/* Sit outside the scrolling box (see Testimonials.tsx) so they stay
+   pinned to the edges instead of scrolling away with the content. */
+.fadeRight,
+.fadeLeft {
   position: absolute;
   top: 0;
   bottom: 0;
-  right: 5%;
   width: 140px;
-  background: linear-gradient(to left, #050505, transparent);
   pointer-events: none;
+}
+.fadeRight {
+  right: 5%;
+  background: linear-gradient(to left, #050505, transparent);
+}
+.fadeLeft {
+  left: 5%;
+  background: linear-gradient(to right, #050505, transparent);
+}
+
+.card {
+  cursor: pointer;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5%;
+}
+
+.expanded {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  background: #101014;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 40px 30px;
+  text-align: center;
+  direction: rtl;
+}
+.expanded .stars {
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+.expanded .quote {
+  font-size: 1.4rem;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+.expanded .who {
+  font-size: 1.1rem;
+}
+
+.closeBtn {
+  position: absolute;
+  top: -44px;
+  left: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
 }

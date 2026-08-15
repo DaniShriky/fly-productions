@@ -55,6 +55,7 @@ export const competitions: Competition[] = [
     location: "תיאטרון הצפון קריית חיים",
     isReligious: false,
     image: "/images/compBtns/mega-star.jpg",
+    videoUrl: "https://www.instagram.com/reel/DUDu8ZeDbcA/",
     descriptionParagraphs: [
       'פסטיבל <span class="hl">MEGA STAR</span> מבית <span class="hl">FLY הפקות</span> מתקיים מדי שנה בתיאטרון הצפון ומארח במשך מספר ימים להקות, סטודיואים ורקדנים מכל רחבי הארץ. פסטיבל מחול תחרותי גדול, מקצועי ומרגש, המעניק לכל משתתף הזדמנות להופיע על במת תיאטרון מרשימה ולהציג את כישרונו באירוע תחרותי ברמה הגבוהה ביותר, מול שופטים מהשורה הראשונה בארץ ובעולם, בתחרות מקצועית ומאתגרת שבה הרקדנים נותנים שואו אמיתי ומתחרים ברמה הגבוהה ביותר, והכול בהפקה המופקת בסטנדרטים הגבוהים ביותר.',
       "כל הופעה נבחנת על ידי שופטים וכוריאוגרפים מהשורה הראשונה בארץ ובעולם, באמצעות שיטת שיפוט גלויה המעניקה למנהלי הלהקות ולרקדנים חוות דעת מקצועית, מעשירה ומשמעותית להמשך הדרך.",
@@ -95,7 +96,8 @@ export const competitions: Competition[] = [
     date: "15-17 / 4 / 27",
     location: "אילת",
     isReligious: false,
-    image: "/images/compBtns/super-star-eilat.jpg",
+    image: "/images/compBtns/eilat-dance-international.jpg",
+    videoUrl: "https://www.instagram.com/reel/C6WQNdsIyGO/",
     descriptionParagraphs: [
       'פסטיבל המחול <span class="hl">סופר סטאר אילת</span> מבית <span class="hl">FLY הפקות</span> הוא אירוע המחול הגדול של תקופת טרום פסח, המשלב תחרות מקצועית ויוקרתית עם חוויה מלאה של שלושה ימים באילת. להקות, סטודיואים ורקדנים מכל רחבי הארץ נפגשים לחגיגה גדולה של מחול, הכוללת במה מקצועית, שיפוט בינלאומי, סדנאות אמן, מופעים, מסיבות ואטרקציות.',
       "במרכז הפסטיבל עומדת תחרות מחול גדולה המתקיימת בתיאטראות אילת. ההופעות מתקיימות על במה גדולה ומושקעת, עם מערכות תאורה והגברה מתקדמות, מסכי לד, הנחיה מקצועית והפקה מוקפדת. התחרות פתוחה למגוון סגנונות, גילים ורמות, ומעניקה לכל להקה הזדמנות להציג את עבודתה באירוע מקצועי, מרשים וברמה גבוהה.",
@@ -137,7 +139,7 @@ export const competitions: Competition[] = [
     date: "27-29 / 5 / 27",
     location: "אילת",
     isReligious: false,
-    image: "/images/compBtns/eilat-dance-international.jpg",
+    image: "/images/compBtns/super-star-eilat.jpg",
     descriptionParagraphs: [
       'פסטיבל <span class="hl">EILAT DANCE INTERNATIONAL</span> מבית <span class="hl">FLY הפקות</span> — TODO: להוסיף תיאור אמיתי.',
     ],

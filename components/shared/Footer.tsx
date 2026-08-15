@@ -1,16 +1,18 @@
 import Image from "next/image";
+import { FaFacebookF, FaInstagram, FaSpotify, FaYoutube, FaWhatsapp, FaTiktok } from "react-icons/fa";
 import styles from "./Footer.module.css";
 
-// TODO: swap the letter/glyph placeholders below for real icons once
-// you add a package like react-icons (`npm install react-icons`),
-// e.g. import { FaFacebook } from "react-icons/fa";
+const PHONE = "052-471-8088";
+// wa.me needs the number in international format with no leading 0.
+const WHATSAPP_URL = `https://wa.me/972${PHONE.replace(/\D/g, "").replace(/^0/, "")}`;
+
 const SOCIALS = [
-  { label: "Facebook", glyph: "f" },
-  { label: "Instagram", glyph: "◎" },
-  { label: "Spotify", glyph: "♫" },
-  { label: "YouTube", glyph: "▶" },
-  { label: "WhatsApp", glyph: "☎" },
-  { label: "TikTok", glyph: "♪" },
+  { label: "Facebook", Icon: FaFacebookF, href: "https://www.facebook.com/andreyybaryshnikov" },
+  { label: "Instagram", Icon: FaInstagram, href: "https://www.instagram.com/fly_hafakot" },
+  { label: "Spotify", Icon: FaSpotify, href: "https://open.spotify.com/show/08Ffj6opLWCrCgVYQV003k" },
+  { label: "YouTube", Icon: FaYoutube, href: "https://www.youtube.com/@fly_hafakot" },
+  { label: "WhatsApp", Icon: FaWhatsapp, href: WHATSAPP_URL },
+  { label: "TikTok", Icon: FaTiktok, href: "https://www.tiktok.com/@fly_hafakot" },
 ];
 
 export default function Footer() {
@@ -18,7 +20,7 @@ export default function Footer() {
     <footer className={styles.footer}>
       <div className={styles.contact}>
         <div className={styles.label}>ליצירת קשר</div>
-        <div className={styles.phone}>052-471-8088</div>
+        <div className={styles.phone}>{PHONE}</div>
       </div>
 
       <div className={styles.logo}>
@@ -28,9 +30,9 @@ export default function Footer() {
       <div className={styles.follow}>
         <div className={styles.label}>בשביל להישאר מעודכנים תעקבו!</div>
         <div className={styles.socialIcons}>
-          {SOCIALS.map((s) => (
-            <a key={s.label} href="#" aria-label={s.label}>
-              {s.glyph}
+          {SOCIALS.map(({ label, Icon, href }) => (
+            <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}>
+              <Icon />
             </a>
           ))}
         </div>
