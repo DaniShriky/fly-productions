@@ -2,29 +2,43 @@
   position: relative;
   min-height: 62vh;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   overflow: hidden;
 }
 
-.bg {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
+.imageBox {
+  position: relative; /* not full-bleed — a normal box in the flex row, same treatment as the homepage Hero */
+  order: 1; /* first in the markup, but order:1 pushes it past .content (order:0), which in RTL means it lands on the LEFT */
+  flex: 1 1 60%;
+  min-width: 0;
 }
 
-.fade {
+.imageFade {
   position: absolute;
   inset: 0;
-  z-index: 2;
-  background: linear-gradient(90deg, transparent 35%, #050505 88%);
+  background: linear-gradient(90deg, transparent 60%, #050505 100%);
+  pointer-events: none;
 }
 
 .content {
   position: relative;
   z-index: 3;
-  width: 46%;
-  padding: 4% 6%;
+  flex: 1 1 40%;
+  min-width: 420px;
+  padding-right: 8%;
   text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.fade {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(90deg, transparent 0%, rgba(5, 5, 5, 0.85) 40%, #050505 60%);
+  pointer-events: none;
 }
 
 .badge {
@@ -42,6 +56,13 @@
   line-height: 1.15;
   word-break: break-word;
   padding: 4px;
+  margin-bottom: 18px;
+}
+
+.badgeImage {
+  position: relative;
+  width: 7rem;
+  height: 7rem;
   margin-bottom: 18px;
 }
 
@@ -129,4 +150,37 @@
 
 .routeMenu a:hover {
   background: rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 900px) {
+  .hero {
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .imageBox {
+    order: -1; /* the row-mode order:1 trick would otherwise put it second (below the text) once stacked */
+    flex-basis: auto;
+    aspect-ratio: 3 / 2;
+  }
+
+  .content {
+    flex-basis: auto;
+    min-width: 0;
+    padding: 6% 6% 8%;
+    line-height: 1.1;
+  }
+
+  .fade {
+    background: linear-gradient(180deg, transparent 0%, rgba(5, 5, 5, 0.85) 55%, #050505 75%);
+  }
+
+  .badgeImage {
+    width: 5rem;
+    height: 5rem;
+  }
+
+  .content h1 {
+    font-size: 2.1rem;
+  }
 }

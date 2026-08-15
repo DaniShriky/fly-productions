@@ -28,7 +28,7 @@ export default function CompetitionHero({ competition }: { competition: Competit
 
   return (
     <section className={styles.hero}>
-      <div className={styles.bg}>
+      <div className={styles.imageBox}>
         <Image
           src={competition.image}
           alt={competition.name}
@@ -36,10 +36,17 @@ export default function CompetitionHero({ competition }: { competition: Competit
           style={{ objectFit: "cover" }}
           priority
         />
+        <div className={styles.imageFade} />
       </div>
-      <div className={styles.fade} />
       <div className={styles.content}>
-        <div className={styles.badge}>{competition.name}</div>
+        <div className={styles.fade} />
+        {competition.logo ? (
+          <div className={styles.badgeImage}>
+            <Image src={competition.logo} alt={competition.name} fill style={{ objectFit: "contain" }} />
+          </div>
+        ) : (
+          <div className={styles.badge}>{competition.name}</div>
+        )}
         <h1>
           <span className="en">{main}</span>
           {suffix && <span className={styles.religiousSuffix}> {suffix}</span>}

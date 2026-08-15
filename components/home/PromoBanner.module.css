@@ -3,11 +3,32 @@
   margin: 70px 5% 0;
   border-radius: 20px;
   overflow: hidden;
-  line-height: 0; /* removes the small gap under the inline image */
+  line-height: 0;
 }
 
 .promo img {
   width: 100%;
   height: auto;
+}
+
+.desktop {
   display: block;
+}
+
+.mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+
+  .promo {
+    margin: 15px 0% 0;
+    }
+  .desktop {
+    display: none;
+  }
+
+  .mobile {
+    display: block;
+  }
 }

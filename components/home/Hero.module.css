@@ -42,7 +42,7 @@
 }
 
 .content h1 {
-  font-size: 4.5rem;
+  font-size: 3.5rem;
   font-weight: 800;
   line-height: 0.95;
   letter-spacing: -1px;
@@ -51,7 +51,7 @@
 
 .wordmark {
   display: inline-block;
-  height: 15rem;
+  height: 11rem;
   width: auto;
 }
 
@@ -65,18 +65,22 @@
 
 @media (max-width: 900px) {
   .hero {
-    min-height: 88vh;
+    /* flex-direction: column; */
+    min-height: 0;
+    flex-direction: row-reverse;
   }
 
   .imageBox {
-    flex-basis: 100%;
+    order: -1; /* the row-mode order:1 trick would otherwise put it second (below the text) once stacked */
+    /* flex-basis: auto; */
+    aspect-ratio: 3 / 2;
   }
 
   .content {
-    flex-basis: 100%;
+    flex-basis: auto;
     min-width: 0;
-    align-self: flex-end;
-    padding: 0 6% 8%;
+    padding: 6% 6% 8%;
+    font-size: 1.8rem;
   }
 
   .fade {
@@ -84,15 +88,18 @@
   }
 
   .content h1 {
-    font-size: 2.1rem;
+    font-size: 1.3rem;
+    
   }
 
   .wordmark {
-    height: 3.8rem;
+    height: 3.4rem;
   }
 
   .content p {
-    font-size: 14px;
+    font-size: 0.7rem;
     max-width: none;
+    margin-top: 9px;
+    line-height: 1.4;
   }
 }

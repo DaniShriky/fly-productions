@@ -131,6 +131,9 @@
 }
 
 @media (max-width: 700px) {
+  .nav {
+        padding: 3px 5%;
+  }
   .menuButton {
     display: flex;
   }

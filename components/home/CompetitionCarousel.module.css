@@ -6,6 +6,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+      flex-direction: row-reverse;
   margin-bottom: 30px;
 }
 
@@ -25,6 +26,7 @@
   font-size: 22px;
   font-weight: 800;
   letter-spacing: 1px;
+      text-align: left;
 }
 
 .seeAll {
@@ -128,4 +130,41 @@
   .viewport.expanded .track {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .seeAll {
+        font-size: 12px;
+    padding: 6px 12px;
+  }
+
+  .head h2 {
+font-size: 1rem;
+  }
+
+  .thumb {
+        height: 232px;
+  }
+
+  .card {
+        flex: 0 0 219px;
+  }
+
+  .section {
+    padding: 22px 5% 20px;
+    }
+
+    .head {
+    margin-bottom: 19px;
+      }
+
+      .info h3 {
+        font-size: 0.8rem;
+      }
+
+      .info .loc {
+        font-size: 0.9rem;
+      }
+
+      .info .date {
+        font-size: 0.9rem;
+      }
 }

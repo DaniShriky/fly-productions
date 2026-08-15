@@ -11,6 +11,7 @@ export interface Competition {
   location: string;
   isReligious: boolean;
   image: string; // used for both the homepage carousel thumbnail and this competition's own hero
+  logo?: string; // competition's own badge/logo graphic, shown on its hero — not every competition has one yet
   descriptionParagraphs: string[]; // each string can include <span class="hl">…</span> for highlighted brand terms
   galleryGradients: string[]; // TODO: replace with real photo URLs
   videoUrl?: string;

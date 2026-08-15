@@ -18,6 +18,7 @@
   border: none;
   cursor: pointer;
   padding: 0;
+      background-color: transparent;
 }
 
 .quote {
@@ -39,8 +40,8 @@
 
 @media (max-width: 900px) {
   .row {
-    flex-direction: column;
-  }
+        flex-direction: column-reverse;
+        }
 
   .videoSection {
     /* in column mode flex's main axis is height, so the inherited
@@ -55,11 +56,12 @@
     flex: none;
     width: 100%;
     min-width: 0;
-    padding: 0 5%;
+    padding: 0%;
+        text-align: center;
   }
 
   .quote p {
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
 }
 
