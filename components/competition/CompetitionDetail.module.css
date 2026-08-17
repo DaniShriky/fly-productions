@@ -6,6 +6,13 @@
   padding: 60px 5% 20px;
 }
 
+/* no videoUrl yet — the video card is left out of the markup entirely, so
+   let the description use the full width instead of leaving an empty
+   30% column where the video would have been. */
+.detail.noVideo {
+  grid-template-columns: 1fr;
+}
+
 .videoCard {
   display: flex;
   flex-direction: column;
@@ -21,12 +28,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-/* only shown for competitions that don't have a real video yet — the ▶
-   placeholder needs a visible card background; the real embed doesn't. */
-.videoPlaceholder {
-  background: linear-gradient(160deg, #3a1030, #0c0c10 70%);
 }
 
 .videoFrame {
@@ -59,18 +60,6 @@
 .videoMaskBottom {
   bottom: 0;
   height: 80px; /* covers Instagram's "View more on Instagram" + like/view-count row */
-}
-
-.playBtn {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
 }
 
 .description p {
