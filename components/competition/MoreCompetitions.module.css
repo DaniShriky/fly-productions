@@ -16,6 +16,7 @@
 .seeAll {
   font-size: 14px;
   color: #f3f1ec;
+  background: none;
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 999px;
   padding: 9px 20px;
@@ -36,9 +37,23 @@
 .viewport::-webkit-scrollbar {
   display: none;
 }
+.viewport.expanded {
+  overflow: visible;
+}
 
 .track {
   display: flex;
   gap: 18px;
   direction: ltr;
+}
+.viewport.expanded .track {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  direction: rtl;
+}
+
+@media (max-width: 900px) {
+  .viewport.expanded .track {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }

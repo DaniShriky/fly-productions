@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { testimonials } from "@/data/testimonials";
-import { Testimonial } from "@/types/testimonial";
 import styles from "./Testimonials.module.css";
 
 const REPEAT = 3;
@@ -9,7 +8,24 @@ const SPEED = 35; // px/sec
 export default function Testimonials() {
   const trackRef = useRef<HTMLDivElement>(null);
   const trackItems = Array.from({ length: REPEAT }, () => testimonials).flat();
-  const [selected, setSelected] = useState<Testimonial | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+
+  const goPrev = () =>
+    setSelectedIndex((i) => (i === null ? null : (i - 1 + testimonials.length) % testimonials.length));
+  const goNext = () =>
+    setSelectedIndex((i) => (i === null ? null : (i + 1) % testimonials.length));
+
+  // Arrow-key navigation while the modal is open.
+  useEffect(() => {
+    if (selectedIndex === null) return;
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "ArrowLeft") goPrev();
+      if (e.key === "ArrowRight") goNext();
+      if (e.key === "Escape") setSelectedIndex(null);
+    }
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [selectedIndex]);
 
   // Drives the track with a CSS transform instead of native scrollLeft.
   // This carousel doesn't need manual drag-to-scroll (cards are click-to-
@@ -41,6 +57,8 @@ export default function Testimonials() {
     return () => cancelAnimationFrame(frameId);
   }, []);
 
+  const selected = selectedIndex === null ? null : testimonials[selectedIndex];
+
   return (
     <section>
       <div className={styles.head}>
@@ -53,7 +71,7 @@ export default function Testimonials() {
               <div
                 key={`${t.id}-${i}`}
                 className={styles.card}
-                onClick={() => setSelected(t)}
+                onClick={() => setSelectedIndex(i % testimonials.length)}
               >
                 <div className={styles.stars}>★★★★★</div>
                 <p className={styles.quote}>{t.quote}</p>
@@ -71,12 +89,24 @@ export default function Testimonials() {
       </div>
 
       {selected && (
-        <div className={styles.overlay} onClick={() => setSelected(null)}>
+        <div className={styles.overlay} onClick={() => setSelectedIndex(null)}>
+          <button
+            type="button"
+            className={styles.navBtn}
+            onClick={(e) => {
+              e.stopPropagation();
+              goPrev();
+            }}
+            aria-label="ההמלצה הקודמת"
+          >
+            ‹
+          </button>
+
           <div className={styles.expanded} onClick={(e) => e.stopPropagation()}>
             <button
               type="button"
               className={styles.closeBtn}
-              onClick={() => setSelected(null)}
+              onClick={() => setSelectedIndex(null)}
               aria-label="סגירה"
             >
               ✕
@@ -89,6 +119,18 @@ export default function Testimonials() {
               {selected.city}
             </div>
           </div>
+
+          <button
+            type="button"
+            className={styles.navBtn}
+            onClick={(e) => {
+              e.stopPropagation();
+              goNext();
+            }}
+            aria-label="ההמלצה הבאה"
+          >
+            ›
+          </button>
         </div>
       )}
     </section>

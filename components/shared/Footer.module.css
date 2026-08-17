@@ -63,6 +63,17 @@
   align-items: center;
   justify-content: center;
   font-size: 1.3rem;
+  color: #f3f1ec;
+  background: transparent;
+  transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.socialIcons a:hover,
+.socialIcons a:focus-visible {
+  transform: translateY(-3px) scale(1.08);
+  background: #7bb1f3;
+  border-color: #7bb1f3;
+  color: #0c0c10;
 }
 
 @media (max-width: 700px) {
