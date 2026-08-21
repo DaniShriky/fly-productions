@@ -141,11 +141,11 @@ font-size: 1rem;
   }
 
   .thumb {
-        height: 232px;
+        height: 180px;
   }
 
   .card {
-        flex: 0 0 219px;
+        flex: 0 0 180px;
   }
 
   .section {

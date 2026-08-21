@@ -153,22 +153,26 @@
 }
 
 @media (max-width: 900px) {
+  /* Side-by-side row, same technique as the homepage Hero's mobile layout
+     (flex-direction: row-reverse + imageBox order: -1), not a stacked
+     column — image stays on the left, content column centers everything. */
   .hero {
-    flex-direction: column;
     min-height: 0;
+    flex-direction: row-reverse;
   }
 
   .imageBox {
-    order: -1; /* the row-mode order:1 trick would otherwise put it second (below the text) once stacked */
-    flex-basis: auto;
+    order: -1;
     aspect-ratio: 3 / 2;
   }
 
   .content {
     flex-basis: auto;
     min-width: 0;
-    padding: 6% 6% 8%;
+    padding: 3% 0% 3%;
     line-height: 1.1;
+    align-items: center;
+    text-align: center;
   }
 
   .fade {
@@ -176,11 +180,33 @@
   }
 
   .badgeImage {
-    width: 5rem;
-    height: 5rem;
+    width: 4rem;
+    height: 4rem;
+
+  margin-bottom: 14px;
+
   }
 
   .content h1 {
-    font-size: 2.1rem;
+    font-size: 1.4rem;
+        margin-bottom: 15px;
   }
+
+  .metaDate {
+  font-size: 16px;
+}
+
+.metaLoc {
+  font-size: 16px;
+}
+
+.circle {
+  width: 40px;
+  height: 40px;
+}
+
+.routeBtn {
+  gap: 3px;
+}
+
 }

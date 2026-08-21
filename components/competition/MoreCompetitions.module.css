@@ -56,4 +56,8 @@
   .viewport.expanded .track {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .head h2 {
+    font-size: 1rem;
+  }
 }

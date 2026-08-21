@@ -32,4 +32,8 @@
   .grid {
     grid-template-columns: 1fr 1fr;
   }
+
+  .head h2 {
+        font-size: 1rem;
+  }
 }
