@@ -77,6 +77,14 @@
     grid-template-columns: 1fr;
   }
 
+  .description {
+    order: 1;
+  }
+
+  .videoCard {
+    order: 2;
+  }
+
   .description p {
   font-size: 1rem;
 }

@@ -156,8 +156,17 @@ font-size: 1rem;
     margin-bottom: 19px;
       }
 
+      .info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
       .info h3 {
         font-size: 0.8rem;
+        min-height: 3.2em; /* reserves 2 lines (line-height 1.6 * 2) so a
+          one-line title doesn't leave the date/location/button sitting
+          higher than on cards with a two-line title */
       }
 
       .info .loc {
@@ -166,5 +175,9 @@ font-size: 1rem;
 
       .info .date {
         font-size: 0.9rem;
+      }
+
+      .btn {
+        margin-top: auto;
       }
 }

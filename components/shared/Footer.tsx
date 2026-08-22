@@ -20,7 +20,9 @@ export default function Footer() {
     <footer className={styles.footer}>
       <div className={styles.contact}>
         <div className={styles.label}>ליצירת קשר</div>
-        <div className={styles.phone}>{PHONE}</div>
+        <a className={styles.phone} href={`tel:+972${PHONE.replace(/\D/g, "").replace(/^0/, "")}`}>
+          {PHONE}
+        </a>
       </div>
 
       <div className={styles.logo}>
