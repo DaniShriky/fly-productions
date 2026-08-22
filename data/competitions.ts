@@ -21,10 +21,10 @@ export const competitions: Competition[] = [
       "הבמה הגדולה, מערכות התאורה והסאונד, ההפקה המוקפדת והאווירה המרגשת מעניקות לכל להקה את התחושה שהיא נמצאת במרכזו של אירוע יוקרתי ובלתי נשכח. לצד החוויה המקצועית, המשתתפים זוכים בגביעים יוקרתיים, מדליות ותעודות הוקרה.",
       "הפסטיבל פתוח לכל סגנונות המחול ולכל רמות הניסיון - מקבוצות שעושות את צעדיהן הראשונים ועד ללהקות המתקדמות והמובילות בארץ ובחול. זהו מקום שבו כישרון, השקעה ויצירתיות מקבלים את הבמה הראויה להם, בתוך חגיגה גדולה של מחול בלב צפון הארץ.",
     ],
-    galleryGradients: [
-      "linear-gradient(165deg,#c23a5a,#7a2050)",
-      "linear-gradient(165deg,#2a2a2e,#0c0c0e)",
-      "linear-gradient(165deg,#3a3fae,#0e1a3a)",
+    gallery: [
+      "/images/gallery/art-fantasy/1.jpg",
+      "/images/gallery/art-fantasy/2.jpg",
+      "/images/gallery/art-fantasy/3.jpg",
     ],
   },
   {
@@ -42,10 +42,10 @@ export const competitions: Competition[] = [
       "הבמה המקצועית, מערכות התאורה והסאונד, מסכי הלד, ההנחיה וההפקה המוקפדת הופכים כל רגע בפסטיבל לחוויה עוצמתית ובלתי נשכחת. כל זאת באווירה חמה, תומכת ומכבדת, המאפשרת למשתתפים להרגיש בטוחים, לתת את המיטב ולהציג את היצירה שלהם בפני קהל רחב וצוות שיפוט מהשורה הראשונה.",
       "הפסטיבל פתוח לכל סגנונות המחול, לכל הגילים ולכל רמות הניסיון. המשתתפים זוכים בגביעים יוקרתיים, במדליות ובתעודות הוקרה, כחלק מחגיגת מחול בינלאומית גדולה, באווירה תחרותית, שבה מקצועיות, מצוינות ואהבה לבמה נפגשות.",
     ],
-    galleryGradients: [
-      "linear-gradient(165deg,#8a4fc9,#2d3a8f)",
-      "linear-gradient(165deg,#2a2a2e,#0c0c0e)",
-      "linear-gradient(165deg,#3a3fae,#0e1a3a)",
+    gallery: [
+      "/images/gallery/dance-star-international/1.jpg",
+      "/images/gallery/dance-star-international/2.jpg",
+      "/images/gallery/dance-star-international/3.jpg",
     ],
   },
   {
@@ -64,10 +64,10 @@ export const competitions: Competition[] = [
       "הבמה המקצועית, מערכות התאורה וההגברה, מסכי הלד, ההנחיה וההפקה המוקפדת הופכים את הפסטיבל לחוויית מחול עוצמתית ובלתי נשכחת. לצד הרמה המקצועית הגבוהה, נשמרת לאורך כל האירוע אווירה חמה, תומכת ומכבדת, המעניקה לכל רקדן ולהקה את המקום הראוי להם.",
       "הפסטיבל פתוח לכל סגנונות המחול, לכל הגילים ולכל רמות הניסיון – מקבוצות בתחילת דרכן ועד ללהקות המתקדמות והמובילות בארץ ובחו״ל. המשתתפים זוכים בגביעים יוקרתיים, במדליות ובתעודות הוקרה, כחלק מחגיגה גדולה של כישרון, השקעה ואהבה אמיתית למחול ולתחרות הוגנת.",
     ],
-    galleryGradients: [
-      "linear-gradient(165deg,#c23a5a,#7a2050)",
-      "linear-gradient(165deg,#2a2a2e,#0c0c0e)",
-      "linear-gradient(165deg,#3a3fae,#0e1a3a)",
+    gallery: [
+      "/images/gallery/mega-star/1.jpg",
+      "/images/gallery/mega-star/2.jpg",
+      "/images/gallery/mega-star/3.jpg",
     ],
   },
   {
@@ -86,11 +86,7 @@ export const competitions: Competition[] = [
       "הפסטיבל מתקיים באווירה דתית ומכבדת, והכניסה אליו מיועדת לבנות ולנשים בלבד. צוות השיפוט, ההנחיה וההפקה במהלך האירוע מורכב מנשים, כדי לאפשר לכל המשתתפות להופיע בחופשיות, בביטחון ובתחושת נוחות מלאה.",
       'כל להקה זוכה בגביע ובתעודת הוקרה בהתאם להישגיה, וכל רקדנית מקבלת מדליה אישית. <span class="hl">MEGA STAR</span> למגזר הדתי הוא המקום שבו מקצועיות, השקעה ואהבה למחול נפגשות עם סביבה מותאמת, מכבדת ומעצימה.',
     ],
-    galleryGradients: [
-      "linear-gradient(165deg,#8a4fc9,#2d3a8f)",
-      "linear-gradient(165deg,#c23a5a,#7a2050)",
-      "linear-gradient(165deg,#3a3fae,#0e1a3a)",
-    ],
+    gallery: [],
   },
   {
     id: "5",
@@ -109,10 +105,16 @@ export const competitions: Competition[] = [
       "החוויה מתחילה ביום ההגעה עם קבלת פנים ומופע פתיחה חגיגי, שבו כל להקה המעוניינת בכך יכולה לקחת חלק. ביום השני מתקיימת התחרות הגדולה בתיאטראות אילת, ובסיומה מחכה למשתתפים מסיבת אפטר פארטי גדולה בסגנון פול מון, עם די־ג׳יי ואווירה בלתי נשכחת. ביום השלישי מתקיימות סדנאות אמן מקצועיות, לצד בילוי משותף בפארק מים.",
       "חבילת הפסטיבל כוללת לינה במלון, פנסיון מלא, השתתפות בתחרות, מופע פתיחה, סדנאות אמן, מסיבות ופארק מים. כך הופך סופר סטאר אילת להרבה יותר מתחרות מחול — אירוע מקצועי, עוצמתי ומגבש, המעניק לרקדנים חוויה גדולה על הבמה ומחוצה לה, רגע לפני חג הפסח.",
     ],
-    galleryGradients: [
-      "linear-gradient(165deg,#8a4fc9,#2d3a8f)",
-      "linear-gradient(165deg,#c23a5a,#7a2050)",
-      "linear-gradient(165deg,#2a2a2e,#0c0c0e)",
+    gallery: [
+      "/images/gallery/super-star-eilat/1.jpg",
+      "/images/gallery/super-star-eilat/2.jpg",
+      "/images/gallery/super-star-eilat/3.jpg",
+      "/images/gallery/super-star-eilat/4.jpg",
+      "/images/gallery/super-star-eilat/5.jpg",
+      "/images/gallery/super-star-eilat/6.jpg",
+      "/images/gallery/super-star-eilat/7.jpg",
+      "/images/gallery/super-star-eilat/8.jpg",
+      "/images/gallery/super-star-eilat/9.jpg",
     ],
   },
   {
@@ -131,10 +133,10 @@ export const competitions: Competition[] = [
       "הבמה הגדולה, מערכות התאורה וההגברה המתקדמות, מסכי הלד, ההנחיה המקצועית וההפקה המוקפדת יוצרים חוויה עוצמתית ובלתי נשכחת. כל פרט באירוע מתוכנן מתוך מחשבה על העבודה, ההשקעה והיצירה שכל להקה מביאה איתה לבמה.",
       "המשתתפים זוכים בגביעים יוקרתיים, בתעודות הוקרה ובמדליות אישיות בהתאם להישגיהם. Star of the Dance הוא הרבה יותר מתחרות - זהו אירוע הדגל שממשיך כבר למעלה משני עשורים לחבר בין מצוינות, חדשנות ואהבה אמיתית למחול.",
     ],
-    galleryGradients: [
-      "linear-gradient(165deg,#ae8a4f,#5c3a1a)",
-      "linear-gradient(165deg,#c23a5a,#7a2050)",
-      "linear-gradient(165deg,#2a2a2e,#0c0c0e)",
+    gallery: [
+      "/images/gallery/star-of-the-dance/1.jpg",
+      "/images/gallery/star-of-the-dance/2.jpg",
+      "/images/gallery/star-of-the-dance/3.jpg",
     ],
   },
   {
@@ -152,10 +154,14 @@ export const competitions: Competition[] = [
       "החוויה נמשכת גם מחוץ לבמה וכוללת לינה במלון, פנסיון מלא, מופע פתיחה חגיגי, סדנאות מקצועיות ומסיבה משותפת כל מה שהופך את סוף עונת המחול לחוויה מגבשת, מרגשת ובלתי נשכחת.",
       "Eilat Dance International הוא הרבה יותר מתחרות זהו מפגש גדול של רקדנים, מורים ולהקות, שמסכם עונה שלמה של עבודה והשקעה בחגיגה מקצועית של מחול, קיץ ואילת.",
     ],
-    galleryGradients: [
-      "linear-gradient(165deg,#6a4fae,#2a1a5c)",
-      "linear-gradient(165deg,#c23a5a,#7a2050)",
-      "linear-gradient(165deg,#2a2a2e,#0c0c0e)",
+    gallery: [
+      "/images/gallery/eilat-dance-international/1.jpg",
+      "/images/gallery/eilat-dance-international/2.jpg",
+      "/images/gallery/eilat-dance-international/3.jpg",
+      "/images/gallery/eilat-dance-international/4.jpg",
+      "/images/gallery/eilat-dance-international/5.jpg",
+      "/images/gallery/eilat-dance-international/6.jpg",
+      "/images/gallery/eilat-dance-international/7.jpg",
     ],
   },
 ];

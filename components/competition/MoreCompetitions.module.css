@@ -3,6 +3,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 60px 5% 30px;
+  flex-direction: row-reverse;
 }
 /* Pinned with `order` (not `direction`) so the heading stays on the
    right and the button stays on the left regardless of page direction —
@@ -12,6 +13,7 @@
   font-weight: 800;
   letter-spacing: 1px;
   order: 1;
+  text-align: left;
 }
 .seeAll {
   font-size: 14px;

@@ -5,6 +5,8 @@
   font-size: 22px;
   font-weight: 800;
   letter-spacing: 1px;
+  text-align: left;
+
 }
 
 .grid {
@@ -14,9 +16,72 @@
   padding: 0 5%;
 }
 .item {
+  position: relative;
   height: 260px;
   border-radius: 12px;
   overflow: hidden;
+  cursor: pointer;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 5%;
+}
+
+.expanded {
+  position: relative;
+  width: 90vw;
+  height: 80vh;
+}
+
+.closeBtn {
+  position: absolute;
+  top: -44px;
+  left: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.navBtn {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 1;
+}
+.navBtn:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+@media (max-width: 640px) {
+  .overlay {
+    gap: 10px;
+  }
+  .navBtn {
+    width: 38px;
+    height: 38px;
+    font-size: 18px;
+  }
 }
 
 .credit {
