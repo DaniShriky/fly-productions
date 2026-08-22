@@ -75,7 +75,10 @@
   max-width: 100%;
 }
 
-.ambientPlayer {
+.ambientPlayer,
+/* Fallback for the iframe the YouTube Player API drops in to replace the
+   placeholder div — it isn't guaranteed to keep the placeholder's class. */
+.ambientWrap iframe {
   position: absolute;
   inset: 0;
   width: 100%;

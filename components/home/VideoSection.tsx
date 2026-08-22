@@ -5,7 +5,40 @@ import styles from "./VideoSection.module.css";
 // specific competition — each competition page gets its own video later
 // via competition.videoUrl).
 const HIGHLIGHT_VIDEO_ID = "jP5DCJajIKs";
-const AMBIENT_SRC = `https://www.youtube.com/embed/${HIGHLIGHT_VIDEO_ID}?autoplay=1&mute=1&loop=1&playlist=${HIGHLIGHT_VIDEO_ID}&controls=0&modestbranding=1&rel=0&playsinline=1&enablejsapi=1`;
+
+// iOS Safari doesn't reliably honor `?autoplay=1` on a plain embedded
+// iframe src — it only starts playback consistently when playVideo() is
+// called explicitly through the YouTube IFrame Player API once the player
+// reports ready. That's why this loads the API script and drives the
+// player via JS instead of just setting an iframe src.
+declare global {
+  interface Window {
+    YT: any;
+    onYouTubeIframeAPIReady?: () => void;
+  }
+}
+
+let apiLoading: Promise<void> | null = null;
+function loadYouTubeIframeApi(): Promise<void> {
+  if (typeof window === "undefined") return Promise.resolve();
+  if (window.YT?.Player) return Promise.resolve();
+  if (apiLoading) return apiLoading;
+
+  apiLoading = new Promise((resolve) => {
+    const previousCallback = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => {
+      previousCallback?.();
+      resolve();
+    };
+    if (!document.getElementById("youtube-iframe-api")) {
+      const script = document.createElement("script");
+      script.id = "youtube-iframe-api";
+      script.src = "https://www.youtube.com/iframe_api";
+      document.body.appendChild(script);
+    }
+  });
+  return apiLoading;
+}
 
 const QUOTE_PARAGRAPHS = [
   "FLY הפקות אירועים מדהימים יוצרת ומפיקה כבר למעלה מ־20 שנה תחרויות, פסטיבלים וכנסי מחול ברמה גבוהה, המארחים להקות, סטודיואים ורקדנים מכל רחבי הארץ ומחו״ל. כל אירוע נבנה מתוך הקפדה על מקצועיות, איכות וחוויה מרשימה.",
@@ -17,7 +50,8 @@ export default function VideoSection() {
   const [hasEnteredView, setHasEnteredView] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const sectionRef = useRef<HTMLButtonElement>(null);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const playerHostRef = useRef<HTMLDivElement>(null);
+  const playerRef = useRef<any>(null);
 
   useEffect(() => {
     const el = sectionRef.current;
@@ -36,13 +70,48 @@ export default function VideoSection() {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    if (!hasEnteredView) return;
+    let cancelled = false;
+
+    loadYouTubeIframeApi().then(() => {
+      if (cancelled || !playerHostRef.current) return;
+      playerRef.current = new window.YT.Player(playerHostRef.current, {
+        videoId: HIGHLIGHT_VIDEO_ID,
+        playerVars: {
+          autoplay: 1,
+          mute: 1,
+          loop: 1,
+          playlist: HIGHLIGHT_VIDEO_ID,
+          controls: 0,
+          modestbranding: 1,
+          rel: 0,
+          playsinline: 1,
+        },
+        events: {
+          onReady: (e: any) => {
+            e.target.mute();
+            e.target.playVideo();
+            const iframe = e.target.getIframe();
+            iframe.className = styles.ambientPlayer;
+            iframe.title = "FLY Productions";
+            iframe.tabIndex = -1;
+          },
+        },
+      });
+    });
+
+    return () => {
+      cancelled = true;
+      playerRef.current?.destroy?.();
+    };
+  }, [hasEnteredView]);
+
   const toggleMute = () => {
-    const iframe = iframeRef.current;
-    if (!iframe?.contentWindow) return;
-    iframe.contentWindow.postMessage(
-      JSON.stringify({ event: "command", func: isMuted ? "unMute" : "mute", args: [] }),
-      "https://www.youtube.com"
-    );
+    const player = playerRef.current;
+    if (!player) return;
+    if (isMuted) player.unMute();
+    else player.mute();
     setIsMuted(!isMuted);
   };
 
@@ -58,14 +127,7 @@ export default function VideoSection() {
         >
           {hasEnteredView && (
             <div className={styles.ambientWrap}>
-              <iframe
-                ref={iframeRef}
-                className={styles.ambientPlayer}
-                src={AMBIENT_SRC}
-                title="FLY Productions"
-                allow="autoplay; encrypted-media"
-                tabIndex={-1}
-              />
+              <div ref={playerHostRef} className={styles.ambientPlayer} />
             </div>
           )}
           <div className={styles.muteBtn}>{isMuted ? "🔇" : "🔊"}</div>

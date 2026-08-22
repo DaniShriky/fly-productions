@@ -133,7 +133,7 @@
   border-radius: 2px;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 900px) {
   .nav {
         padding: 3px 5%;
   }
