@@ -19,7 +19,7 @@ export default function MoreCompetitions({ current }: { current: Competition }) 
     <section>
       <div className={styles.head}>
         <button type="button" className={styles.seeAll} onClick={() => setExpanded((e) => !e)}>
-          {expanded ? "הצגה מצומצמת" : `צפייה בכל ${others.length} התחרויות`}
+          {expanded ? "הצגה מצומצמת" : `צפייה בשאר התחרויות`}
         </button>
         <h2 className="en">CHECK MORE COMPETITIONS</h2>
       </div>

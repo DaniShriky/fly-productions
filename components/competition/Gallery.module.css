@@ -90,6 +90,11 @@
   .head h2 {
         font-size: 1rem;
   }
+
+  .item {
+    height: 8.3rem;
+    border-radius: 0.9rem;
+  }
 }
 
 .credit {
