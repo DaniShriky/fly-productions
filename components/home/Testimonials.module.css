@@ -194,10 +194,34 @@
   }
 
   .quote {
-  font-size: 1rem;
+  font-size: 0.9rem;
 }
 
   .overlay {
     gap: 10px;
   }
+
+  .head h2 {
+    font-size: 1rem;
+  }
+
+  .fadeRight,
+.fadeLeft {
+  width: 100px;
+}
+.fadeRight {
+  right: 0%;
+}
+.fadeLeft {
+  left: 0%;
+}
+
+.who {
+  font-size: 0.9rem;
+}
+
+.card {
+  flex: 0 0 230px;
+}
+
 }
