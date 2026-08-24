@@ -27,7 +27,7 @@ export default function Gallery({ competition }: { competition: Competition }) {
   return (
     <section>
       <div className={styles.head}>
-        <h2 className="en">GALLERY</h2>
+        {/* <h2 className="en">GALLERY</h2> */}
       </div>
       <div className={styles.grid}>
         {competition.gallery.map((src, i) => (
