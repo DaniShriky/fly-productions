@@ -1,6 +1,6 @@
 .hero {
   position: relative;
-  min-height: 64vh;
+  min-height: 55vh;
   display: flex;
   align-items: stretch;
   overflow: hidden;
@@ -51,7 +51,7 @@
 
 .wordmark {
   display: inline-block;
-  height: 11rem;
+  height: 10rem;
   width: auto;
 }
 

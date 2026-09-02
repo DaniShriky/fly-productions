@@ -73,25 +73,56 @@
   flex-direction: column;
 }
 
+/* The image fades to the page background color toward its bottom, and
+   the title/date/day sit in that faded zone — overlapping the image via
+   a negative margin on .info — so the text reads as half on the photo,
+   half spilling onto the page below it, with no hard seam between them. */
 .thumb {
-  height: 300px;
-  border-radius: 10px;
-  overflow: hidden;
   position: relative;
-  margin-bottom: 14px;
+  height: 250px;
+  border-radius: 10px 10px 0 0;
+  overflow: hidden;
 }
 .thumb::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+  background: linear-gradient(180deg, transparent 35%, #050505 100%);
+  pointer-events: none;
+}
+
+/* Competition logo, top-left of the image regardless of page direction —
+   matches the template. No backdrop: the logo graphics are already
+   self-contained badge/emblem art, so a background circle just clips them. */
+.logoBadge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  width: 90px;
+  height: 90px;
+  z-index: 2;
+}
+
+.info {
+  position: relative;
+  margin-top: -65px;
+  padding-left: 6px;
+  text-align: left;
+}
+/* Two-line titles push everything below them down by a line's worth of
+   height, so the "לכל הפרטים" link would land lower than on single-line
+   cards — pulling .info up by one extra line here keeps the title's
+   bottom (and everything after it) at the same position on every card. */
+.infoTwoLines {
+  margin-top: -91px;
 }
 
 .info h3 {
-  font-size: 17px;
+  font-size: 23px;
   font-weight: 800;
   letter-spacing: 0.5px;
-  margin-bottom: 4px;
+  line-height: 1.15;
+  margin-bottom: 8px;
 }
 
 /* Hebrew sector suffix (e.g. "(מגזר דתי)") on religious-sector
@@ -102,28 +133,22 @@
   font-family: "Assistant", sans-serif;
   letter-spacing: normal;
 }
-.info .date {
+.info .date,
+.info .day {
   font-size: 1rem;
   color: #b6b4ac;
   margin-bottom: 1px;
-  text-align: right; /* the date's own dir="ltr" (fixes digit order) would
-    otherwise resolve its inherited text-align:start to left instead of
-    right, since it no longer shares the card's rtl direction */
 }
 .info .loc {
   font-size: 1rem;
   color: #b6b4ac;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .btn {
   display: inline-block;
-  width: 100%;
-  text-align: center;
-  padding: 9px 0;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
   font-size: 13px;
+  color: #f3f1ec;
 }
 
 @media (max-width: 900px) {
@@ -140,12 +165,12 @@
 font-size: 1rem;
   }
 
-  .thumb {
-        height: 180px;
-  }
-
   .card {
         flex: 0 0 180px;
+  }
+
+  .thumb {
+        height: 160px;
   }
 
   .section {
@@ -156,28 +181,38 @@ font-size: 1rem;
     margin-bottom: 19px;
       }
 
+      .logoBadge {
+        width: 56px;
+        height: 56px;
+        top: 8px;
+        left: 8px;
+      }
+
       .info {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
+        margin-top: -40px;
+        padding-left: 4px;
+      }
+      .infoTwoLines {
+        margin-top: -59px;
       }
 
       .info h3 {
-        font-size: 0.8rem;
-        min-height: 3.2em; /* reserves 2 lines (line-height 1.6 * 2) so a
-          one-line title doesn't leave the date/location/button sitting
-          higher than on cards with a two-line title */
+        font-size: 1.05rem;
+        line-height: 1.15;
+        margin-bottom: 4px;
       }
 
       .info .loc {
-        font-size: 0.9rem;
+        font-size: 0.75rem;
+        margin-bottom: 6px;
       }
 
-      .info .date {
-        font-size: 0.9rem;
+      .info .date,
+      .info .day {
+        font-size: 0.75rem;
       }
 
       .btn {
-        margin-top: auto;
+        font-size: 11px;
       }
 }
