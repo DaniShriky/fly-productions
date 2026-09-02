@@ -150,6 +150,12 @@
   font-size: 13px;
   color: #f3f1ec;
 }
+.arrowIcon {
+  display: inline-block;
+  width: 0.85em;
+  height: 0.85em;
+  vertical-align: -0.08em;
+}
 
 @media (max-width: 900px) {
   .viewport.expanded .track {

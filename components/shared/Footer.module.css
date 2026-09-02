@@ -38,6 +38,7 @@
   font-size: 1.3rem;
   color: #cfcdc6;
   margin-bottom: 4px;
+  text-align: right;
 }
 
 .phone {
@@ -117,5 +118,6 @@
 
   .label {
     font-size: 1rem;
+    text-align: center;
   }
 }

@@ -49,7 +49,21 @@ export default function CompetitionCard({ competition }: { competition: Competit
         <div className={styles.date} dir="ltr" lang="en">{competition.date}</div>
         <div className={styles.day}>{getCompetitionDays(competition.date)}</div>
         <div className={styles.loc}>{competition.location}</div>
-        <span className={styles.btn}>לכל הפרטים על התחרות ↗</span>
+        <span className={styles.btn}>
+          לכל הפרטים על התחרות{" "}
+          {/* An SVG, not the "↗" character — some phones render that glyph
+              as a colorful emoji instead of plain text. */}
+          <svg className={styles.arrowIcon} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path
+              d="M7 17L17 7M17 7H8M17 7V16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </span>
       </div>
     </Link>
   );
