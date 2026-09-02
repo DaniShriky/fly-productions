@@ -12,6 +12,9 @@ export default function Testimonials() {
   const trackRef = useRef<HTMLDivElement>(null);
   const measureCardRef = useRef<HTMLDivElement>(null);
   const measureQuoteRef = useRef<HTMLParagraphElement>(null);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
+  const wasOpenRef = useRef(false);
   const trackItems = Array.from({ length: REPEAT }, () => testimonials).flat();
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [clampedQuotes, setClampedQuotes] = useState<Record<string, ClampResult>>({});
@@ -81,6 +84,21 @@ export default function Testimonials() {
     return () => document.removeEventListener("keydown", handleKey);
   }, [selectedIndex]);
 
+  // Move focus into the modal when it opens, and back to whatever
+  // triggered it when it closes — guarded by wasOpenRef so navigating
+  // between testimonials (selectedIndex changing while already open)
+  // doesn't keep yanking focus back to the close button.
+  useEffect(() => {
+    const isOpen = selectedIndex !== null;
+    if (isOpen && !wasOpenRef.current) {
+      previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
+      closeBtnRef.current?.focus();
+    } else if (!isOpen && wasOpenRef.current) {
+      previouslyFocusedRef.current?.focus();
+    }
+    wasOpenRef.current = isOpen;
+  }, [selectedIndex]);
+
   // Drives the track with a CSS transform instead of native scrollLeft.
   // This carousel doesn't need manual drag-to-scroll (cards are click-to-
   // expand, not swiped), so a transform loop sidesteps every native-scroll
@@ -116,7 +134,7 @@ export default function Testimonials() {
   return (
     <section>
       <div className={styles.head}>
-        <h2 className="en">WHAT OUR CLIENTS ARE SAYING</h2>
+        <h2 className="en" lang="en">WHAT OUR CLIENTS ARE SAYING</h2>
       </div>
       {/* Off-screen clone used only to measure how much of each quote fits
           in MAX_LINES at the card's real width/font — see the effect above.
@@ -139,10 +157,12 @@ export default function Testimonials() {
             {trackItems.map((t, i) => {
               const clamp = clampedQuotes[t.id];
               return (
-                <div
+                <button
                   key={`${t.id}-${i}`}
+                  type="button"
                   className={styles.card}
                   onClick={() => setSelectedIndex(i % testimonials.length)}
+                  aria-label={`המלצה מלאה מאת ${t.studioName}, ${t.city}`}
                 >
                   <div className={styles.stars}>★★★★★</div>
                   <p className={styles.quote}>
@@ -154,7 +174,7 @@ export default function Testimonials() {
                     <br />
                     {t.city}
                   </div>
-                </div>
+                </button>
               );
             })}
           </div>
@@ -164,7 +184,13 @@ export default function Testimonials() {
       </div>
 
       {selected && (
-        <div className={styles.overlay} onClick={() => setSelectedIndex(null)}>
+        <div
+          className={styles.overlay}
+          onClick={() => setSelectedIndex(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`המלצה מאת ${selected.studioName}`}
+        >
           <button
             type="button"
             className={styles.navBtn}
@@ -179,6 +205,7 @@ export default function Testimonials() {
 
           <div className={styles.expanded} onClick={(e) => e.stopPropagation()}>
             <button
+              ref={closeBtnRef}
               type="button"
               className={styles.closeBtn}
               onClick={() => setSelectedIndex(null)}

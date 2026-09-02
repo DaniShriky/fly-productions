@@ -114,7 +114,6 @@ export const competitions: Competition[] = [
       "/images/gallery/super-star-eilat/6.jpg",
       "/images/gallery/super-star-eilat/7.jpg",
       "/images/gallery/super-star-eilat/8.jpg",
-      "/images/gallery/super-star-eilat/9.jpg",
     ],
   },
   {

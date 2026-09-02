@@ -24,7 +24,7 @@ export const testimonials: Testimonial[] = [
     quote:
       "כל האירועים של אירגון FLY הפקות מאורגנים עם אהבה גדולה ויחס מדהים!! נותנים גם הרגשה טובה גם מלא שמחה לילדים. תמיד תקבלו מענה לכל דבר באיכפתיות וכוונה לעזור.",
     studioName: "Irina Chaikin - TZVH",
-    city: "חיפה", // TODO: placeholder city — replace with the real one, see chat note
+    city: "קריית ים", // TODO: placeholder city — replace with the real one, see chat note
   },
   {
     id: "5",

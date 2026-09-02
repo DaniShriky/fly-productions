@@ -134,6 +134,9 @@ export default function VideoSection() {
         </button>
 
         <div className={styles.quote}>
+          {/* No visible section title by design — kept for screen readers
+              so heading-based navigation still has a landmark to land on. */}
+          <h2 className="sr-only">אודות FLY הפקות</h2>
           {QUOTE_PARAGRAPHS.map((paragraph, i) => (
             <p key={i}>{paragraph}</p>
           ))}

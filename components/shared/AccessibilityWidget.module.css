@@ -1,0 +1,137 @@
+.toggleBtn {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  border: none;
+  background: #7bb1f3;
+  color: #0c0c10;
+  font-size: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  z-index: 9999;
+  transition: transform 0.2s ease;
+}
+.toggleBtn:hover,
+.toggleBtn:focus-visible {
+  transform: scale(1.08);
+}
+
+.panel {
+  position: fixed;
+  bottom: 84px;
+  left: 20px;
+  width: 280px;
+  max-height: calc(100vh - 110px);
+  overflow-y: auto;
+  background: #111114;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  direction: rtl;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.panelHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 15px;
+  padding: 4px;
+  display: flex;
+}
+
+.fontRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #cfcdc6;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+.fontBtns {
+  display: flex;
+  gap: 8px;
+}
+.fontBtns button {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  color: #f3f1ec;
+  width: 30px;
+  height: 30px;
+  font-size: 13px;
+}
+
+.optionBtn {
+  text-align: right;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: #f3f1ec;
+  padding: 9px 12px;
+  font-size: 13px;
+}
+.optionBtn:hover,
+.optionBtn:focus-visible {
+  border-color: rgba(255, 255, 255, 0.35);
+}
+.optionActive {
+  background: #7bb1f3;
+  border-color: #7bb1f3;
+  color: #0c0c10;
+  font-weight: 700;
+}
+
+.resetBtn {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  color: #f3f1ec;
+  padding: 8px 0;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.statementLink {
+  text-align: center;
+  font-size: 12px;
+  color: #9c9a93;
+  text-decoration: underline;
+  padding-top: 4px;
+}
+
+@media (max-width: 900px) {
+  .toggleBtn {
+    bottom: 14px;
+    left: 14px;
+    width: 46px;
+    height: 46px;
+    font-size: 22px;
+  }
+  .panel {
+    bottom: 68px;
+    left: 14px;
+    width: calc(100vw - 28px);
+    max-width: 300px;
+  }
+}

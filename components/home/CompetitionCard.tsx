@@ -30,7 +30,7 @@ export default function CompetitionCard({ competition }: { competition: Competit
       </div>
       <div className={`${styles.info} ${isTwoLines ? styles.infoTwoLines : ""}`}>
         <h3>
-          <span className="en">
+          <span className="en" lang="en">
             {titleLine1}
             {titleLine2 && (
               <>
@@ -46,7 +46,7 @@ export default function CompetitionCard({ competition }: { competition: Competit
             </>
           )}
         </h3>
-        <div className={styles.date} dir="ltr">{competition.date}</div>
+        <div className={styles.date} dir="ltr" lang="en">{competition.date}</div>
         <div className={styles.day}>{getCompetitionDays(competition.date)}</div>
         <div className={styles.loc}>{competition.location}</div>
         <span className={styles.btn}>לכל הפרטים על התחרות ↗</span>

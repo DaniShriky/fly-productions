@@ -7,6 +7,9 @@ export default function CompetitionDetail({ competition }: { competition: Compet
 
   return (
     <section>
+      {/* No visible section title by design — kept for screen readers so
+          heading-based navigation still has a landmark to land on. */}
+      <h2 className="sr-only">אודות התחרות</h2>
       <div className={`${styles.detail} ${!embedUrl ? styles.noVideo : ""}`}>
         {embedUrl && (
           <div className={styles.videoCard}>

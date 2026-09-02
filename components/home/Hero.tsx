@@ -16,7 +16,7 @@ export default function Hero() {
       </div>
       <div className={styles.content}>
         <div className={styles.fade} />
-        <h1 className="en">
+        <h1 className="en" lang="en">
           <Image
             src="/images/fly-wordmark.png"
             alt="FLY"

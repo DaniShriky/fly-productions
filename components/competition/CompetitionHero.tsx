@@ -48,10 +48,10 @@ export default function CompetitionHero({ competition }: { competition: Competit
           <div className={styles.badge}>{competition.name}</div>
         )}
         <h1>
-          <span className="en">{main}</span>
+          <span className="en" lang="en">{main}</span>
           {suffix && <span className={styles.religiousSuffix}> {suffix}</span>}
         </h1>
-        <div className={styles.metaDate} dir="ltr">{competition.date}</div>
+        <div className={styles.metaDate} dir="ltr" lang="en">{competition.date}</div>
         <div className={styles.metaLoc}>{competition.location}</div>
 
         <div ref={routeRef} className={styles.routeWrap}>

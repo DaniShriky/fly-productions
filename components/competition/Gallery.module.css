@@ -11,15 +11,46 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
+  align-items: start;
   gap: 18px;
   padding: 0 5%;
 }
 .item {
-  position: relative;
-  height: 260px;
+  display: block;
+  width: 100%;
+  border: none;
+  background: none;
+  padding: 0;
   border-radius: 12px;
   overflow: hidden;
+  cursor: pointer;
+}
+.item img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+/* The one photo whose aspect ratio doesn't match the rest of the gallery
+   (see Gallery.tsx's commonRatio) — cropped to fill the ratio-matched box
+   set on .item instead of rendering at its own natural size. */
+.item .itemImgCrop {
+  height: 100%;
+  object-fit: cover;
+}
+
+.moreWrap {
+  display: flex;
+  justify-content: center;
+  padding: 20px 5% 0;
+}
+.seeAll {
+  font-size: 14px;
+  color: #f3f1ec;
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
+  padding: 9px 20px;
   cursor: pointer;
 }
 
@@ -151,7 +182,6 @@
   }
 
   .item {
-    height: 8.3rem;
     border-radius: 0.9rem;
   }
 }

@@ -71,9 +71,9 @@ export default function Nav() {
                   setMobileOpen(false);
                 }}
               >
-                <span className="en">{c.name}</span>
+                <span className="en" lang="en">{c.name}</span>
                 <span className={styles.sub}>
-                  <span dir="ltr">{c.date}</span> · {c.location}
+                  <span dir="ltr" lang="en">{c.date}</span> · {c.location}
                 </span>
               </Link>
             ))}

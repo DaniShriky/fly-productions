@@ -2,10 +2,23 @@
   padding: 34px 5%;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   margin-top: 50px;
+}
+
+.main {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
+}
+
+.legal {
+  text-align: center;
+  margin-top: 20px;
+}
+.legal a {
+  font-size: 0.85rem;
+  color: #9c9a93;
+  text-decoration: underline;
 }
 
 /* Pinned with `order` (not `direction`) so contact info stays on the
@@ -85,9 +98,12 @@
 
 @media (max-width: 900px) {
   .footer {
+    margin-top: 13px;
+  }
+
+  .main {
     flex-direction: column;
     text-align: center;
-        margin-top: 13px;
   }
   
   .contact,

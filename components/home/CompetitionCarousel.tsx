@@ -25,7 +25,7 @@ export default function CompetitionCarousel() {
         <button className={styles.seeAll} onClick={() => setExpanded((e) => !e)}>
           {expanded ? "הצגה מצומצמת" : `צפייה בכל ${competitions.length} התחרויות`}
         </button>
-        <h2 className="en">OUR COMPETITIONS</h2>
+        <h2 className="en" lang="en">OUR COMPETITIONS</h2>
       </div>
 
       <div
