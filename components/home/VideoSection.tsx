@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import styles from "./VideoSection.module.css";
 
 // Self-hosted from /public/videos/highlight.mp4 (not a YouTube embed) so
@@ -12,8 +12,7 @@ const QUOTE_PARAGRAPHS = [
 ];
 
 export default function VideoSection() {
-  const [isMuted, setIsMuted] = useState(true);
-  const sectionRef = useRef<HTMLButtonElement>(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -21,11 +20,20 @@ export default function VideoSection() {
     const video = videoRef.current;
     if (!section || !video) return;
 
+    // Sound follows visibility: unmuted while the video is on screen, muted
+    // once it scrolls away, so nothing needs a manual mute toggle. Browsers
+    // that block unmuted autoplay without a prior user gesture just keep it
+    // muted until one happens (a click/scroll elsewhere on the page).
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          video.play();
-          observer.disconnect();
+          video.muted = false;
+          video.play().catch(() => {
+            video.muted = true;
+            video.play();
+          });
+        } else {
+          video.muted = true;
         }
       },
       { threshold: 0.3 }
@@ -34,23 +42,10 @@ export default function VideoSection() {
     return () => observer.disconnect();
   }, []);
 
-  const toggleMute = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    video.muted = !video.muted;
-    setIsMuted(video.muted);
-  };
-
   return (
     <section style={{ paddingTop: 10 }}>
       <div className={styles.row}>
-        <button
-          ref={sectionRef}
-          type="button"
-          className={styles.videoSection}
-          onClick={toggleMute}
-          aria-label={isMuted ? "הפעלת קול לסרטון" : "השתקת הסרטון"}
-        >
+        <div ref={sectionRef} className={styles.videoSection}>
           <div className={styles.ambientWrap}>
             <video
               ref={videoRef}
@@ -63,8 +58,7 @@ export default function VideoSection() {
               tabIndex={-1}
             />
           </div>
-          <div className={styles.muteBtn}>{isMuted ? "🔇" : "🔊"}</div>
-        </button>
+        </div>
 
         <div className={styles.quote}>
           {/* No visible section title by design — kept for screen readers

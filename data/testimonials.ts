@@ -31,27 +31,27 @@ export const testimonials: Testimonial[] = [
     quote:
       "Есть светлые на свете люди! Своим творчеством вы делаете мир добрее и интереснее. Ваши проекты всегда на высоте! Ваш профессионализм и позитив заряжает нас энергией и даёт нам мотивацию и силы. Как хорошо что вы есть! Как хорошо что мы с Вами!",
     studioName: "Style - Tatiana Alipov",
-    city: "חיפה", // TODO: placeholder city — replace with the real one, see chat note
+    city: "ראשון לציון", // TODO: placeholder city — replace with the real one, see chat note
   },
   {
     id: "6",
     quote:
       "אני חייבת להמליץ לכולם להשתתף בתחרויות והכנסים מבית פליי הפקות בכיכובם של טליה ואנדרי ברישניקוב! השתתפנו בתחרויות הוירטואליות שהיו בקורונה וגם על הבמות המטורפות וזה היה פשוט חוויה מטורפת!! רמה מאוד גבוהה! שיפוט הוגן! הכל בצורה מקצועית וחוויתית ושימת לב לדברים הקטנים! שלא נדבר על הגביעים, המדליות והתעודות, הכל עשיר מאוד ומושלם!! אתם מדהימים וניפגש בקרוב",
     studioName: "Noy Dance - Noy Yaqutieli",
-    city: "חיפה", // TODO: placeholder city — replace with the real one, see chat note
+    city: "רחובות", // TODO: placeholder city — replace with the real one, see chat note
   },
   {
     id: "7",
     quote:
       "אני כל כך ממליצה על ההפקות שלהם!!! כל אירוע שלהם מטורף במיוחד!!! עם צוות של שופטים/מורים מקצועיים! טליה ואנדריי תודה לכם על חוויות שאי אפשר להסביר אותן במילים. מחכות בקוצר רוח לאירועים הבאים! מכל הלב",
     studioName: "Studio Move - Tal Maman",
-    city: "חיפה", // TODO: placeholder city — replace with the real one, see chat note
+    city: "קריית אתא", // TODO: placeholder city — replace with the real one, see chat note
   },
   {
     id: "8",
     quote:
       "На протяжении многих лет наш коллектив Glory принимает участие в мероприятиях, которые устраивает семья Барышников. Все организованно на высоком уровне, с честным судейством! Мы всегда ждём новых конкурсов, потому что знаем, это будет праздник! Всегда достойные, сильные творческие коллективы, соревноваться с которыми большая честь! Желаем дальнейших успехов, и процветания!",
     studioName: "Glory - Lada Quet",
-    city: "חיפה", // TODO: placeholder city — replace with the real one, see chat note
+    city: "אשדוד", // TODO: placeholder city — replace with the real one, see chat note
   },
 ];
