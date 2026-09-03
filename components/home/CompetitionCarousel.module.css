@@ -4,10 +4,10 @@
 
 .head {
   display: flex;
-  align-items: center;
+align-items: baseline;
   justify-content: space-between;
-      flex-direction: row-reverse;
-  margin-bottom: 30px;
+      /* flex-direction: row-reverse; */
+  margin-bottom: 23px;
 }
 
 /* Pinned with `order` (not `direction`) so the heading stays on the
@@ -23,7 +23,7 @@
 }
 
 .head h2 {
-  font-size: 22px;
+  font-size: 35px;
   font-weight: 800;
   letter-spacing: 1px;
       text-align: left;

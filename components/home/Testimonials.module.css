@@ -1,10 +1,10 @@
 .head {
   text-align: center;
   margin-bottom: 34px;
-  padding: 60px 5% 0;
+  padding: 18px 5% 0;
 }
 .head h2 {
-  font-size: 24px;
+  font-size: 35px;
   font-weight: 800;
   letter-spacing: 1px;
 }
@@ -14,9 +14,18 @@
   padding: 0 5%;
 }
 
+/* direction: ltr here is deliberate — see lib/useAutoScroll.ts comment.
+   It keeps scrollLeft math predictable regardless of page direction;
+   each .card below sets direction: rtl again for correct Hebrew text. */
 .viewport {
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   direction: ltr;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.viewport::-webkit-scrollbar {
+  display: none;
 }
 
 .track {

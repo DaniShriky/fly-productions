@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Competition } from "@/types/competition";
 import { splitReligiousSuffix } from "@/lib/splitReligiousSuffix";
-import { getCompetitionDays } from "@/lib/getCompetitionDays";
+import { getCompetitionDays, getCompetitionDateLabel } from "@/lib/getCompetitionDays";
 import { breakAfterTwoWords } from "@/lib/breakAfterTwoWords";
 import styles from "./CompetitionCarousel.module.css";
 
@@ -46,7 +46,7 @@ export default function CompetitionCard({ competition }: { competition: Competit
             </>
           )}
         </h3>
-        <div className={styles.date} dir="ltr" lang="en">{competition.date}</div>
+        <div className={styles.date} dir="ltr" lang="en">{getCompetitionDateLabel(competition.date)}</div>
         <div className={styles.day}>{getCompetitionDays(competition.date)}</div>
         <div className={styles.loc}>{competition.location}</div>
         <span className={styles.btn}>

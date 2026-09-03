@@ -13,6 +13,11 @@ export const competitions: Competition[] = [
     location: "היכל התרבות כרמיאל",
     isReligious: false,
     image: "/images/compBtns/art-fantasy.jpg",
+    // 12% (not all the way to top) so the upside-down dancer's head near the
+    // bottom of the photo (~65% down) doesn't get cropped on wide/short
+    // desktop windows, while the two standing girls' bows (~6% down) still
+    // clear the top.
+    heroImagePosition: "center 22%",
     logo: "/images/logo/art-fantasy.png",
     videoUrl: "https://www.instagram.com/reel/DTLCgMmCI4P/",
     descriptionParagraphs: [
@@ -78,6 +83,7 @@ export const competitions: Competition[] = [
     location: "היכל התרבות נס ציונה",
     isReligious: true,
     image: "/images/compBtns/mega-star-religious.jpg",
+    heroImagePosition: "center top",
     logo: "/images/logo/mega-star-religious.png",
     descriptionParagraphs: [
       'פסטיבל המחול <span class="hl">MEGA STAR</span> מבית <span class="hl">FLY הפקות</span> הוא אירוע תחרותי מקצועי ומושקע, המיועד ללהקות ולרקדניות מהציבור הדתי והחרדי. הפסטיבל מעניק לבנות ולנשים מכל הגילים ומכל רמות הניסיון הזדמנות להתחרות זו בזו על במה גדולה ומרשימה, במסגרת תחרות מחול ברמה גבוהה המתקיימת בהתאמה מלאה לאורח החיים הדתי.',

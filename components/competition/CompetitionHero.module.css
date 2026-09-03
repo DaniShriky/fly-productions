@@ -13,6 +13,18 @@
   min-width: 0;
 }
 
+/* Desktop only — overrides object-fit: cover's default center crop with a
+   per-photo position (Competition.heroImagePosition, set via the
+   --hero-img-pos custom property) so important content isn't cut off at
+   very wide/short window aspect ratios. Kept out of the mobile layout
+   below, where the image box's own aspect ratio crops far less
+   aggressively to begin with. */
+@media (min-width: 901px) {
+  .imageBoxCustomPos img {
+    object-position: var(--hero-img-pos);
+  }
+}
+
 .imageFade {
   position: absolute;
   inset: 0;
@@ -89,11 +101,24 @@
   margin-bottom: 4px;
 }
 
+.metaDay {
+  font-size: 20px;
+  font-weight: 500;
+  color: #d8d6cf;
+  margin-bottom: 4px;
+}
+
 .metaLoc {
   font-size: 20px;
   font-weight: 500;
   color: #d8d6cf;
   margin-bottom: 22px;
+}
+
+.actionsRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
 }
 
 .routeWrap {
@@ -194,6 +219,10 @@
   }
 
   .metaDate {
+  font-size: 16px;
+}
+
+.metaDay {
   font-size: 16px;
 }
 

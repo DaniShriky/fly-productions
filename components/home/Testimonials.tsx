@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { testimonials } from "@/data/testimonials";
+import { useAutoScroll } from "@/lib/useAutoScroll";
 import styles from "./Testimonials.module.css";
 
 const REPEAT = 3;
@@ -9,7 +10,7 @@ const MAX_LINES = 4;
 type ClampResult = { text: string; truncated: boolean };
 
 export default function Testimonials() {
-  const trackRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useAutoScroll<HTMLDivElement>(SPEED, REPEAT);
   const measureCardRef = useRef<HTMLDivElement>(null);
   const measureQuoteRef = useRef<HTMLParagraphElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
@@ -99,42 +100,12 @@ export default function Testimonials() {
     wasOpenRef.current = isOpen;
   }, [selectedIndex]);
 
-  // Drives the track with a CSS transform instead of native scrollLeft.
-  // This carousel doesn't need manual drag-to-scroll (cards are click-to-
-  // expand, not swiped), so a transform loop sidesteps every native-scroll
-  // quirk — momentum, scroll-anchoring, snap, smooth-scroll interpolation —
-  // that could stall a scrollLeft-driven animation in some browsers.
-  useEffect(() => {
-    const track = trackRef.current;
-    if (!track) return;
-
-    let offset = 0;
-    let last: number | null = null;
-    let frameId: number;
-
-    const step = (ts: number) => {
-      if (last === null) last = ts;
-      const dt = Math.min(ts - last, 50);
-      last = ts;
-
-      const unitWidth = track.scrollWidth / REPEAT;
-      if (unitWidth > 0) {
-        offset = (offset + (SPEED * dt) / 1000) % unitWidth;
-        track.style.transform = `translateX(${-offset}px)`;
-      }
-      frameId = requestAnimationFrame(step);
-    };
-    frameId = requestAnimationFrame(step);
-
-    return () => cancelAnimationFrame(frameId);
-  }, []);
-
   const selected = selectedIndex === null ? null : testimonials[selectedIndex];
 
   return (
     <section>
       <div className={styles.head}>
-        <h2 className="en" lang="en">WHAT OUR CLIENTS ARE SAYING</h2>
+        <h2>לקוחות מספרים</h2>
       </div>
       {/* Off-screen clone used only to measure how much of each quote fits
           in MAX_LINES at the card's real width/font — see the effect above.
@@ -152,8 +123,8 @@ export default function Testimonials() {
       </div>
 
       <div className={styles.wrapper}>
-        <div className={styles.viewport}>
-          <div ref={trackRef} className={styles.track}>
+        <div ref={scrollRef} className={styles.viewport}>
+          <div className={styles.track}>
             {trackItems.map((t, i) => {
               const clamp = clampedQuotes[t.id];
               return (

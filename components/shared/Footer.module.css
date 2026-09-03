@@ -4,11 +4,15 @@
   margin-top: 50px;
 }
 
+/* Grid (not flex) so the logo sits in a dedicated centered column that's
+   always exactly in the middle of the row, no matter how wide .contact
+   vs. .follow are — the two 1fr side columns are always equal. .contact
+   and .follow are each pushed to their column's outer edge below. */
 .main {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  column-gap: 20px;
   align-items: center;
-  justify-content: space-between;
-  gap: 20px;
 }
 
 .legal {
@@ -28,6 +32,8 @@
 .contact {
   text-align: right;
   order: 3;
+  justify-self: end;
+      margin-left: 6rem;
 }
 
 .logo {
@@ -60,6 +66,7 @@
 .follow {
   text-align: left;
   order: 1;
+  justify-self: start;
 }
 
 .follow .label {
@@ -103,8 +110,14 @@
   }
 
   .main {
+    display: flex;
     flex-direction: column;
     text-align: center;
+  }
+
+  .contact {
+          margin-left: 0rem;
+
   }
   
   .contact,
@@ -113,7 +126,7 @@
   }
 
   .logo {
-        margin-top: 1rem;
+    margin-top: 1rem;
   }
 
   .label {

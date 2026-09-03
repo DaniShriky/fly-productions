@@ -21,7 +21,7 @@ export default function MoreCompetitions({ current }: { current: Competition }) 
         <button type="button" className={styles.seeAll} onClick={() => setExpanded((e) => !e)}>
           {expanded ? "הצגה מצומצמת" : `צפייה בשאר התחרויות`}
         </button>
-        <h2 className="en" lang="en">CHECK MORE COMPETITIONS</h2>
+        <h2>גלו תחרויות נוספות</h2>
       </div>
       <div
         ref={scrollRef}

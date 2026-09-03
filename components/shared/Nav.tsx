@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { competitions } from "@/data/competitions";
+import { getCompetitionDateLabel } from "@/lib/getCompetitionDays";
 import styles from "./Nav.module.css";
 
 export default function Nav() {
@@ -66,14 +67,20 @@ export default function Nav() {
               <Link
                 key={c.slug}
                 href={`/competitions/${c.slug}`}
+                className={styles.menuItem}
                 onClick={() => {
                   setOpen(false);
                   setMobileOpen(false);
                 }}
               >
-                <span className="en" lang="en">{c.name}</span>
-                <span className={styles.sub}>
-                  <span dir="ltr" lang="en">{c.date}</span> · {c.location}
+                <span className={styles.menuItemLogo}>
+                  {c.logo && <Image src={c.logo} alt="" width={40} height={40} />}
+                </span>
+                <span className={styles.menuItemText}>
+                  <span className="en" lang="en">{c.name}</span>
+                  <span className={styles.sub}>
+                    <span dir="ltr" lang="en">{getCompetitionDateLabel(c.date)}</span> · {c.location}
+                  </span>
                 </span>
               </Link>
             ))}

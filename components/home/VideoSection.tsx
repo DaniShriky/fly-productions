@@ -1,44 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import styles from "./VideoSection.module.css";
 
-// FLY's general highlight reel, shown on the home page (not tied to a
-// specific competition — each competition page gets its own video later
-// via competition.videoUrl).
-const HIGHLIGHT_VIDEO_ID = "jP5DCJajIKs";
-
-// iOS Safari doesn't reliably honor `?autoplay=1` on a plain embedded
-// iframe src — it only starts playback consistently when playVideo() is
-// called explicitly through the YouTube IFrame Player API once the player
-// reports ready. That's why this loads the API script and drives the
-// player via JS instead of just setting an iframe src.
-declare global {
-  interface Window {
-    YT: any;
-    onYouTubeIframeAPIReady?: () => void;
-  }
-}
-
-let apiLoading: Promise<void> | null = null;
-function loadYouTubeIframeApi(): Promise<void> {
-  if (typeof window === "undefined") return Promise.resolve();
-  if (window.YT?.Player) return Promise.resolve();
-  if (apiLoading) return apiLoading;
-
-  apiLoading = new Promise((resolve) => {
-    const previousCallback = window.onYouTubeIframeAPIReady;
-    window.onYouTubeIframeAPIReady = () => {
-      previousCallback?.();
-      resolve();
-    };
-    if (!document.getElementById("youtube-iframe-api")) {
-      const script = document.createElement("script");
-      script.id = "youtube-iframe-api";
-      script.src = "https://www.youtube.com/iframe_api";
-      document.body.appendChild(script);
-    }
-  });
-  return apiLoading;
-}
+// Self-hosted from /public/videos/highlight.mp4 (not a YouTube embed) so
+// there's no external script/API handshake delay once it does start.
+const HIGHLIGHT_VIDEO_SRC = "/videos/highlight.mp4";
 
 const QUOTE_PARAGRAPHS = [
   "FLY הפקות אירועים מדהימים יוצרת ומפיקה כבר למעלה מ־20 שנה תחרויות, פסטיבלים וכנסי מחול ברמה גבוהה, המארחים להקות, סטודיואים ורקדנים מכל רחבי הארץ ומחו״ל. כל אירוע נבנה מתוך הקפדה על מקצועיות, איכות וחוויה מרשימה.",
@@ -47,72 +12,33 @@ const QUOTE_PARAGRAPHS = [
 ];
 
 export default function VideoSection() {
-  const [hasEnteredView, setHasEnteredView] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const sectionRef = useRef<HTMLButtonElement>(null);
-  const playerHostRef = useRef<HTMLDivElement>(null);
-  const playerRef = useRef<any>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    const el = sectionRef.current;
-    if (!el) return;
+    const section = sectionRef.current;
+    const video = videoRef.current;
+    if (!section || !video) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setHasEnteredView(true);
+          video.play();
           observer.disconnect();
         }
       },
       { threshold: 0.3 }
     );
-    observer.observe(el);
+    observer.observe(section);
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    if (!hasEnteredView) return;
-    let cancelled = false;
-
-    loadYouTubeIframeApi().then(() => {
-      if (cancelled || !playerHostRef.current) return;
-      playerRef.current = new window.YT.Player(playerHostRef.current, {
-        videoId: HIGHLIGHT_VIDEO_ID,
-        playerVars: {
-          autoplay: 1,
-          mute: 1,
-          loop: 1,
-          playlist: HIGHLIGHT_VIDEO_ID,
-          controls: 0,
-          modestbranding: 1,
-          rel: 0,
-          playsinline: 1,
-        },
-        events: {
-          onReady: (e: any) => {
-            e.target.mute();
-            e.target.playVideo();
-            const iframe = e.target.getIframe();
-            iframe.className = styles.ambientPlayer;
-            iframe.title = "FLY Productions";
-            iframe.tabIndex = -1;
-          },
-        },
-      });
-    });
-
-    return () => {
-      cancelled = true;
-      playerRef.current?.destroy?.();
-    };
-  }, [hasEnteredView]);
-
   const toggleMute = () => {
-    const player = playerRef.current;
-    if (!player) return;
-    if (isMuted) player.unMute();
-    else player.mute();
-    setIsMuted(!isMuted);
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = !video.muted;
+    setIsMuted(video.muted);
   };
 
   return (
@@ -125,11 +51,18 @@ export default function VideoSection() {
           onClick={toggleMute}
           aria-label={isMuted ? "הפעלת קול לסרטון" : "השתקת הסרטון"}
         >
-          {hasEnteredView && (
-            <div className={styles.ambientWrap}>
-              <div ref={playerHostRef} className={styles.ambientPlayer} />
-            </div>
-          )}
+          <div className={styles.ambientWrap}>
+            <video
+              ref={videoRef}
+              className={styles.ambientPlayer}
+              src={HIGHLIGHT_VIDEO_SRC}
+              muted
+              loop
+              playsInline
+              preload="auto"
+              tabIndex={-1}
+            />
+          </div>
           <div className={styles.muteBtn}>{isMuted ? "🔇" : "🔊"}</div>
         </button>
 
