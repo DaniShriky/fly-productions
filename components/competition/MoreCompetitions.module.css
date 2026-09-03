@@ -61,12 +61,16 @@
   }
 
   .head h2 {
-    font-size: 1rem;
-    width: min-content;
+    font-size: 1.3rem;
+    /* width: min-content; */
   }
 
   .seeAll {
             font-size: 12px;
         padding: 6px 12px;
   }
+
+  .head {
+  padding: 60px 5% 19px;
+}
 }

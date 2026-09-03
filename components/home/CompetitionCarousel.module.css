@@ -168,7 +168,7 @@ align-items: baseline;
   }
 
   .head h2 {
-font-size: 1rem;
+font-size: 1.3rem;
   }
 
   .card {
@@ -184,7 +184,7 @@ font-size: 1rem;
     }
 
     .head {
-    margin-bottom: 19px;
+    margin-bottom: 14px;
       }
 
       .logoBadge {
@@ -209,16 +209,22 @@ font-size: 1rem;
       }
 
       .info .loc {
-        font-size: 0.75rem;
+        font-size: 0.85rem;
         margin-bottom: 6px;
       }
 
       .info .date,
       .info .day {
-        font-size: 0.75rem;
+        font-size: 0.85rem;
       }
 
       .btn {
-        font-size: 11px;
+        font-size: 13px;
       }
+
+      .arrowIcon {
+  width: 0.9em;
+  height: 0.9em;
+  vertical-align: -0.1em;
+}
 }

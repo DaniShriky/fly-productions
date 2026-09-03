@@ -74,13 +74,18 @@
     order: -1; /* the row-mode order:1 trick would otherwise put it second (below the text) once stacked */
     /* flex-basis: auto; */
     aspect-ratio: 3 / 2;
+      flex: 1 1 55%;
+
   }
 
   .content {
     flex-basis: auto;
     min-width: 0;
-    padding: 6% 6% 8%;
+    /* padding: 6% 6% 8%; */
     font-size: 1.8rem;
+            padding: 6% 0% 8%;
+     
+        margin-right: 1rem;
   }
 
   .fade {
@@ -97,7 +102,7 @@
   }
 
   .content p {
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     max-width: none;
     margin-top: 9px;
     line-height: 1.4;
