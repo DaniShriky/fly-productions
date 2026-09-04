@@ -72,7 +72,7 @@ align-items: baseline;
   display: flex;
   flex-direction: column;
   /* box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); */
-  box-shadow: -2px 0px 20px 0px rgb(21 21 21 / 52%);
+box-shadow: -2px 0px 20px 0px rgb(21 21 21);
 }
 
 /* The image fades to the page background color toward its bottom, and
@@ -151,6 +151,7 @@ align-items: baseline;
   display: inline-block;
   font-size: 13px;
   color: #f3f1ec;
+      margin-bottom: 1rem;
 }
 .arrowIcon {
   display: inline-block;
