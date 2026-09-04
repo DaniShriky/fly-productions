@@ -71,8 +71,6 @@ align-items: baseline;
   direction: rtl;
   display: flex;
   flex-direction: column;
-  /* box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); */
-box-shadow: -2px 0px 20px 0px rgb(21 21 21);
 }
 
 /* The image fades to the page background color toward its bottom, and
@@ -176,6 +174,10 @@ font-size: 1.3rem;
 
   .card {
         flex: 0 0 180px;
+  }
+
+  .viewport.expanded .card {
+    box-shadow: -2px 0px 20px 0px rgb(21 21 21);
   }
 
   .thumb {
