@@ -10,6 +10,9 @@ export default function Document() {
             its own. Remove once those reels are self-hosted as mp4. */}
         <link rel="preconnect" href="https://www.instagram.com" />
         <link rel="dns-prefetch" href="https://www.instagram.com" />
+
+        <link rel="icon" href="/images/fly-logo.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/images/fly-logo.png" />
       </Head>
       <body>
         <Main />

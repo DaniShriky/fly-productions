@@ -25,7 +25,10 @@ export default function Footer() {
         </div>
 
         <div className={styles.logo}>
-          <Image src="/images/fly-logo.png" alt="FLY Production" width={113} height={46} />
+          {/* Logo's native resolution is ~1487:1306 — width/height kept in
+              that ratio so next/image doesn't stretch it into the old
+              wordmark logo's wider 113:46 box. */}
+          <Image src="/images/fly-logo.png" alt="FLY Production" width={52} height={46} />
         </div>
 
         <div className={styles.follow}>

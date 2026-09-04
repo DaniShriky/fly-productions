@@ -33,7 +33,10 @@ export default function Nav() {
   return (
     <nav className={styles.nav}>
       <Link href="/" className={styles.logoWrap}>
-        <Image src="/images/fly-logo.png" alt="FLY Production" width={94} height={38} />
+        {/* Logo's native resolution is ~1487:1306 — width/height kept in
+            that ratio so next/image doesn't stretch it into the old
+            wordmark logo's wider 94:38 box. */}
+        <Image src="/images/fly-logo.png" alt="FLY Production" width={46} height={40} />
       </Link>
 
       <button

@@ -30,6 +30,7 @@ export const competitions: Competition[] = [
       "/images/gallery/art-fantasy/1.jpg",
       "/images/gallery/art-fantasy/2.jpg",
       "/images/gallery/art-fantasy/3.jpg",
+      "/images/gallery/art-fantasy/4.jpg",
     ],
   },
   {
@@ -51,6 +52,7 @@ export const competitions: Competition[] = [
       "/images/gallery/dance-star-international/1.jpg",
       "/images/gallery/dance-star-international/2.jpg",
       "/images/gallery/dance-star-international/3.jpg",
+      "/images/gallery/dance-star-international/4.jpg",
     ],
   },
   {
@@ -73,6 +75,7 @@ export const competitions: Competition[] = [
       "/images/gallery/mega-star/1.jpg",
       "/images/gallery/mega-star/2.jpg",
       "/images/gallery/mega-star/3.jpg",
+      "/images/gallery/mega-star/4.jpg",
     ],
   },
   {
@@ -142,6 +145,7 @@ export const competitions: Competition[] = [
       "/images/gallery/star-of-the-dance/1.jpg",
       "/images/gallery/star-of-the-dance/2.jpg",
       "/images/gallery/star-of-the-dance/3.jpg",
+      "/images/gallery/star-of-the-dance/4.jpg",
     ],
   },
   {

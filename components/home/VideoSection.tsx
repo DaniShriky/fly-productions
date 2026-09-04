@@ -25,10 +25,11 @@ export default function VideoSection() {
     const video = videoRef.current;
     if (!section || !video) return;
 
-    // Sound follows visibility: unmuted while the video is on screen (unless
-    // the user muted it themselves), muted once it scrolls away. Browsers
-    // that block unmuted autoplay without a prior user gesture just keep it
-    // muted until one happens (a click/scroll elsewhere on the page).
+    // Playback follows visibility: plays (with sound, unless the user muted
+    // it themselves) while the video is on screen, pauses once it scrolls
+    // away. Browsers that block unmuted autoplay without a prior user
+    // gesture just keep it muted until one happens (a click/scroll
+    // elsewhere on the page).
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -42,7 +43,7 @@ export default function VideoSection() {
             video.play().catch(() => {});
           }
         } else {
-          video.muted = true;
+          video.pause();
         }
         setIsMuted(video.muted);
       },
