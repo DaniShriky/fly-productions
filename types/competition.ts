@@ -15,5 +15,5 @@ export interface Competition {
   logo?: string; // competition's own badge/logo graphic, shown on its hero — not every competition has one yet
   descriptionParagraphs: string[]; // each string can include <span class="hl">…</span> for highlighted brand terms
   gallery: string[]; // real photo paths under /images/gallery/{slug}/ — can be empty (e.g. no photos yet)
-  videoUrl?: string;
+  videoFile?: string; // self-hosted mp4 path under /public/videos/{slug}.mp4 — not every competition has footage yet
 }

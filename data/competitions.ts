@@ -19,7 +19,7 @@ export const competitions: Competition[] = [
     // clear the top.
     heroImagePosition: "center 22%",
     logo: "/images/logo/art-fantasy.png",
-    videoUrl: "https://www.instagram.com/reel/DTLCgMmCI4P/",
+    videoFile: "/videos/art-fantasy.mp4",
     descriptionParagraphs: [
       'פסטיבל <span class="hl">ART FANTASY</span> מבית <span class="hl">FLY הפקות</span> מתקיים מדי שנה בכרמיאל ומביא לצפון הארץ חוויית מחול גדולה, מקצועית ומרגשת. הפסטיבל מארח להקות, סטודיואים ורקדנים מכל רחבי הארץ ומכל הגילים, ומעניק לכל משתתף הזדמנות לעלות על במה מרשימה ולהציג את היצירה שלו באירוע ברמה הגבוהה ביותר.',
       "במרכז הפסטיבל עומדים מקצועיות, איכות ואהבה אמיתית לעולם המחול. כל הופעה זוכה להתייחסות מצוות שופטים מוביל ומנוסה, המעניק חוות דעת מקצועית ומשוב משמעותי המסייע לרקדנים וליוצרים להתפתח, ללמוד ולהמשיך לצמוח.",
@@ -42,6 +42,7 @@ export const competitions: Competition[] = [
     isReligious: false,
     image: "/images/compBtns/dance-star-international.jpg",
     logo: "/images/logo/dance-star-international.png",
+    videoFile: "/videos/dance-star-international.mp4",
     descriptionParagraphs: [
       'פסטיבל המחול הבינלאומי <span class="hl">DANCE STAR INTERNATIONAL</span> מבית <span class="hl">FLY הפקות</span> הוא אחד מאירועי המחול הגדולים והמרשימים בישראל. הפסטיבל מתקיים בנס ציונה ומארח להקות, סטודיואים ורקדנים מכל רחבי הארץ, למפגש תחרותי ברמה גבוהה עם שופטים וכוריאוגרפים מובילים מהארץ ומחו״ל.',
       "בזכות היקף המשתתפים הגדול, הפסטיבל מתפרס על פני מספר ימי תחרות, שבמהלכם עולות על הבמה להקות רבות במגוון רחב של סגנונות, גילים ורמות. כל הופעה זוכה לבחינה מקצועית ומדויקת באמצעות שיטת שיפוט גלויה, לצד מערכת מתקדמת המשכללת את הציון ברמה מדויקת ומעמיקה, המעניקה למנהלי הלהקות ולרקדנים חוות דעת משמעותית וכלים להמשך ההתפתחות המקצועית.",
@@ -65,7 +66,7 @@ export const competitions: Competition[] = [
     isReligious: false,
     image: "/images/compBtns/mega-star.jpg",
     logo: "/images/logo/mega-star.png",
-    videoUrl: "https://www.instagram.com/reel/DUDu8ZeDbcA/",
+    videoFile: "/videos/mega-star.mp4",
     descriptionParagraphs: [
       'פסטיבל <span class="hl">MEGA STAR</span> מבית <span class="hl">FLY הפקות</span> מתקיים מדי שנה בתיאטרון הצפון ומארח במשך מספר ימים להקות, סטודיואים ורקדנים מכל רחבי הארץ. פסטיבל מחול תחרותי גדול, מקצועי ומרגש, המעניק לכל משתתף הזדמנות להופיע על במת תיאטרון מרשימה ולהציג את כישרונו באירוע תחרותי ברמה הגבוהה ביותר, מול שופטים מהשורה הראשונה בארץ ובעולם, בתחרות מקצועית ומאתגרת שבה הרקדנים נותנים שואו אמיתי ומתחרים ברמה הגבוהה ביותר, והכול בהפקה המופקת בסטנדרטים הגבוהים ביותר.',
       "כל הופעה נבחנת על ידי שופטים וכוריאוגרפים מהשורה הראשונה בארץ ובעולם, באמצעות שיטת שיפוט גלויה המעניקה למנהלי הלהקות ולרקדנים חוות דעת מקצועית, מעשירה ומשמעותית להמשך הדרך.",
@@ -89,6 +90,7 @@ export const competitions: Competition[] = [
     image: "/images/compBtns/mega-star-religious.jpg",
     heroImagePosition: "center top",
     logo: "/images/logo/mega-star-religious.png",
+    videoFile: "/videos/mega-star-religious.mp4",
     descriptionParagraphs: [
       'פסטיבל המחול <span class="hl">MEGA STAR</span> מבית <span class="hl">FLY הפקות</span> הוא אירוע תחרותי מקצועי ומושקע, המיועד ללהקות ולרקדניות מהציבור הדתי והחרדי. הפסטיבל מעניק לבנות ולנשים מכל הגילים ומכל רמות הניסיון הזדמנות להתחרות זו בזו על במה גדולה ומרשימה, במסגרת תחרות מחול ברמה גבוהה המתקיימת בהתאמה מלאה לאורח החיים הדתי.',
       "במרכז הפסטיבל עומדת רמה מקצועית גבוהה, ללא פשרות. במה רחבת ידיים, מערכות תאורה והגברה מתקדמות, מסכי לד, הנחיה מקצועית והפקה מוקפדת מעניקים לכל להקה את הבמה המלאה והמיטבית להופעה עוצמתית ומרגשת. כל זאת לצד יחס אישי, אווירה חמה ותומכת וארגון מקצועי המלווה את האירוע לאורך כל שלביו.",
@@ -107,7 +109,7 @@ export const competitions: Competition[] = [
     isReligious: false,
     image: "/images/compBtns/eilat-dance-international.jpg",
     logo: "/images/logo/super-star-eilat.png",
-    videoUrl: "https://www.instagram.com/reel/C6WQNdsIyGO/",
+    videoFile: "/videos/super-star-eilat.mp4",
     descriptionParagraphs: [
       'פסטיבל המחול <span class="hl">סופר סטאר אילת</span> מבית <span class="hl">FLY הפקות</span> הוא אירוע המחול הגדול של תקופת טרום פסח, המשלב תחרות מקצועית ויוקרתית עם חוויה מלאה של שלושה ימים באילת. להקות, סטודיואים ורקדנים מכל רחבי הארץ נפגשים לחגיגה גדולה של מחול, הכוללת במה מקצועית, שיפוט בינלאומי, סדנאות אמן, מופעים, מסיבות ואטרקציות.',
       "במרכז הפסטיבל עומדת תחרות מחול גדולה המתקיימת בתיאטראות אילת. ההופעות מתקיימות על במה גדולה ומושקעת, עם מערכות תאורה והגברה מתקדמות, מסכי לד, הנחיה מקצועית והפקה מוקפדת. התחרות פתוחה למגוון סגנונות, גילים ורמות, ומעניקה לכל להקה הזדמנות להציג את עבודתה באירוע מקצועי, מרשים וברמה גבוהה.",
