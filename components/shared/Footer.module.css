@@ -59,7 +59,13 @@
   text-decoration: underline;
 }
 
+/* height fixed, width auto: the browser then scales the logo using its own
+   real aspect ratio, so the width/height props on next/image (needed just
+   to render the element before the file loads) don't have to be kept in
+   sync by hand every time the logo file gets swapped for a different shape. */
 .logo img {
+  height: 46px;
+  width: auto;
   opacity: 0.9;
 }
 

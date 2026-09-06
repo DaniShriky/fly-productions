@@ -20,6 +20,15 @@
   order: 3;
 }
 
+/* height fixed, width auto: the browser then scales the logo using its own
+   real aspect ratio, so the width/height props on next/image (needed just
+   to render the element before the file loads) don't have to be kept in
+   sync by hand every time the logo file gets swapped for a different shape. */
+.logoWrap img {
+  height: 40px;
+  width: auto;
+}
+
 .navLinks {
   display: flex;
   align-items: center;
@@ -225,4 +234,8 @@
     text-align: center;
     margin-top: 8px;
   }
+
+  .logoWrap img {
+    margin: 5px;
+    }
 }

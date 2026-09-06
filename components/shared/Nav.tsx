@@ -33,10 +33,10 @@ export default function Nav() {
   return (
     <nav className={styles.nav}>
       <Link href="/" className={styles.logoWrap}>
-        {/* Logo's native resolution is ~1487:1306 — width/height kept in
-            that ratio so next/image doesn't stretch it into the old
-            wordmark logo's wider 94:38 box. */}
-        <Image src="/images/fly-logo.png" alt="FLY Production" width={46} height={40} />
+        {/* width/height are just next/image's required layout hint — actual
+            display size comes from .logoWrap img's height:40/width:auto in
+            the CSS module, which scales to the file's real aspect ratio. */}
+        <Image src="/images/fly-logo.png" alt="FLY Production" width={200} height={145} />
       </Link>
 
       <button
@@ -77,7 +77,7 @@ export default function Nav() {
                 }}
               >
                 <span className={styles.menuItemLogo}>
-                  {c.logo && <Image src={c.logo} alt="" width={40} height={40} />}
+                  {c.logo && <Image src={c.logo} alt="" width={60} height={50} />}
                 </span>
                 <span className={styles.menuItemText}>
                   <span className="en" lang="en">{c.name}</span>

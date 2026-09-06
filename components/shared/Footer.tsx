@@ -25,10 +25,10 @@ export default function Footer() {
         </div>
 
         <div className={styles.logo}>
-          {/* Logo's native resolution is ~1487:1306 — width/height kept in
-              that ratio so next/image doesn't stretch it into the old
-              wordmark logo's wider 113:46 box. */}
-          <Image src="/images/fly-logo.png" alt="FLY Production" width={52} height={46} />
+          {/* width/height are just next/image's required layout hint — actual
+              display size comes from .logo img's height:46/width:auto in the
+              CSS module, which scales to the file's real aspect ratio. */}
+          <Image src="/images/fly-logo.png" alt="FLY Production" width={200} height={145} />
         </div>
 
         <div className={styles.follow}>

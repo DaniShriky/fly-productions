@@ -11,8 +11,12 @@ export default function Document() {
         <link rel="preconnect" href="https://www.instagram.com" />
         <link rel="dns-prefetch" href="https://www.instagram.com" />
 
-        <link rel="icon" href="/images/fly-logo.png" type="image/png" />
-        <link rel="apple-touch-icon" href="/images/fly-logo.png" />
+        {/* Browsers stretch a non-square <link rel="icon"> into the square
+            tab-icon slot instead of letterboxing it — fly-logo.png is a
+            wide crest, so it needs its own square, padded render here.
+            Regenerate with scripts/make-favicon.js if the logo changes. */}
+        <link rel="icon" href="/images/favicon.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/images/favicon.png" />
       </Head>
       <body>
         <Main />
