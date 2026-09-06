@@ -74,6 +74,7 @@ export default function CompetitionHero({ competition }: { competition: Competit
               className={styles.routeBtn}
               onClick={(e) => {
                 e.stopPropagation();
+                setCalendarOpen(false);
                 setRouteOpen((o) => !o);
               }}
             >
@@ -110,6 +111,7 @@ export default function CompetitionHero({ competition }: { competition: Competit
                 className={styles.routeBtn}
                 onClick={(e) => {
                   e.stopPropagation();
+                  setRouteOpen(false);
                   setCalendarOpen((o) => !o);
                 }}
               >
