@@ -4,4 +4,4 @@
 // points at an external form/link Dani sends directly to clients.
 // TODO: replace with the real link once Dani sends it, then again with the
 // real in-site registration flow once Phase 3 lands.
-export const REGISTRATION_URL = "#";
+export const REGISTRATION_URL = "https://forms.gle/XyvWwyQ5KM2crzueA";
