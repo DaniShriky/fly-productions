@@ -115,6 +115,25 @@
   margin-bottom: 22px;
 }
 
+.registerBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f1ec;
+  color: #050505;
+  padding: 14px 36px;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 22px;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.registerBtn:hover {
+  opacity: 0.85;
+  transform: scale(1.02);
+}
+
 .actionsRow {
   display: flex;
   align-items: flex-start;
@@ -236,6 +255,12 @@
 
 .metaLoc {
   font-size: 16px;
+}
+
+.registerBtn {
+  font-size: 14px;
+  padding: 12px 28px;
+  margin-bottom: 16px;
 }
 
 .circle {

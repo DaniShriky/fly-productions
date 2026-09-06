@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { competitions } from "@/data/competitions";
+import { REGISTRATION_URL } from "@/data/registration";
 import { getCompetitionDateLabel } from "@/lib/getCompetitionDays";
 import styles from "./Nav.module.css";
 
@@ -51,9 +52,15 @@ export default function Nav() {
       </button>
 
       <div className={`${styles.navLinks} ${mobileOpen ? styles.mobileOpen : ""}`}>
-        <Link href="#" className={styles.ctaPill} onClick={() => setMobileOpen(false)}>כניסת מנהלים</Link>
-
-        <Link href="#" onClick={() => setMobileOpen(false)}>צילומים</Link>
+        <a
+          href={REGISTRATION_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.ctaPill}
+          onClick={() => setMobileOpen(false)}
+        >
+          הרשמה לתחרויות
+        </a>
 
         <div ref={dropdownRef} className={`${styles.dropdown} ${open ? styles.open : ""}`}>
           <button
