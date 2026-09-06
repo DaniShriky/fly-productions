@@ -12,6 +12,15 @@ body {
   color: #f3f1ec;
   font-family: "Assistant", sans-serif;
   line-height: 1.6;
+  /* Without this, mobile browsers auto-inflate font-size for narrow text
+     columns ("text autosizing") — and they don't apply it consistently to
+     off-screen/hidden elements, so an element cloned purely for JS text
+     measurement (e.g. Testimonials.tsx's line-clamp) can end up rendering
+     at a different font-size than the real, visible one it's supposed to
+     match, throwing off any pixel-based measurement. Fixing font-size to
+     exactly what CSS specifies avoids that mismatch everywhere. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 a {

@@ -49,10 +49,20 @@
   text-align: left;
 }
 
+.wordmarkWrap {
+  position: relative;
+  display: inline-block;
+}
+
 .wordmark {
   display: inline-block;
   height: 10rem;
   width: auto;
+}
+
+.taglineWrap {
+  position: relative;
+  display: inline-block;
 }
 
 .content p {
@@ -61,6 +71,128 @@
   max-width: 420px;
   margin-top: 22px;
   text-align: right;
+}
+
+/* White sparkle accents over the wordmark and the tagline — twinkle is a
+   staggered opacity/scale pulse per instance (via animation-delay set
+   inline in Hero.tsx) so they don't all flash in sync. A soft glow keeps
+   plain white from reading flat against the black background. */
+.sparkle {
+  position: absolute;
+  color: #fff;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.7));
+  pointer-events: none;
+  animation: twinkle 2.8s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.3) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1) rotate(25deg);
+  }
+}
+
+.sparkleA {
+  width: 22px;
+  height: 22px;
+  top: -6px;
+  left: -18px;
+}
+.sparkleB {
+  width: 14px;
+  height: 14px;
+  top: 18%;
+  right: -14px;
+}
+.sparkleC {
+  width: 16px;
+  height: 16px;
+  bottom: 6%;
+  left: 8%;
+}
+.sparkleD {
+  width: 16px;
+  height: 16px;
+  top: -14px;
+  right: -6px;
+}
+.sparkleE {
+  width: 12px;
+  height: 12px;
+  bottom: -10px;
+  left: 22%;
+}
+.sparkleF {
+  width: 12px;
+  height: 12px;
+  top: 42%;
+  right: 2%;
+}
+.sparkleG {
+  width: 18px;
+  height: 18px;
+  bottom: -10px;
+  right: 22%;
+}
+.sparkleH {
+  width: 14px;
+  height: 14px;
+  top: 45%;
+  left: -12px;
+}
+
+@media (max-width: 900px) {
+  .sparkleA {
+    width: 14px;
+    height: 14px;
+    top: -4px;
+    left: -10px;
+  }
+  .sparkleB {
+    width: 10px;
+    height: 10px;
+  }
+  .sparkleC {
+    width: 11px;
+    height: 11px;
+  }
+  .sparkleD {
+    width: 11px;
+    height: 11px;
+    top: -9px;
+  }
+  .sparkleE {
+    width: 9px;
+    height: 9px;
+    bottom: -7px;
+  }
+  .sparkleF {
+    width: 8px;
+    height: 8px;
+  }
+  .sparkleG {
+    width: 12px;
+    height: 12px;
+    bottom: -7px;
+  }
+  .sparkleH {
+    width: 9px;
+    height: 9px;
+    left: -8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sparkle {
+    animation: none;
+    opacity: 0.6;
+    transform: none;
+  }
 }
 
 @media (max-width: 900px) {

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { fadeInVolume } from "@/lib/fadeInVolume";
 import styles from "./VideoSection.module.css";
 
 // Self-hosted from /public/videos/highlight.mp4 (not a YouTube embed) so
@@ -35,6 +36,7 @@ export default function VideoSection() {
         if (entry.isIntersecting) {
           if (!userMutedRef.current) {
             video.muted = false;
+            fadeInVolume(video);
             video.play().catch(() => {
               video.muted = true;
               video.play();
@@ -60,6 +62,7 @@ export default function VideoSection() {
     video.muted = next;
     userMutedRef.current = next;
     setIsMuted(next);
+    if (!next) fadeInVolume(video);
   };
 
   return (

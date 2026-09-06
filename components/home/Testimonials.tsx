@@ -31,8 +31,15 @@ export default function Testimonials() {
 
     function measure() {
       if (!quoteEl) return;
-      quoteEl.textContent = "מ";
-      const lineHeight = quoteEl.getBoundingClientRect().height;
+      // Read line-height from computed style rather than rendering a
+      // sample glyph and measuring its box — a Hebrew "מ" renders through
+      // Assistant, but testimonials with Cyrillic/Latin text fall back to
+      // a different font with different glyph metrics, so a glyph-based
+      // baseline under-measured the real per-line height for those quotes
+      // and let a 5th/6th line slip past MAX_LINES. line-height: 1.5 in
+      // the CSS is unitless, so the computed value below is a fixed px
+      // number independent of which font ends up rendering the text.
+      const lineHeight = parseFloat(getComputedStyle(quoteEl).lineHeight);
       const maxHeight = lineHeight * MAX_LINES + 1;
 
       const next: Record<string, ClampResult> = {};
@@ -43,11 +50,16 @@ export default function Testimonials() {
           continue;
         }
 
+        // Measured with the trailing "…" appended (matching what's actually
+        // rendered — see the truncated-quote JSX below) — without it, a cut
+        // landing right at the line-4 edge could fit as plain text but wrap
+        // to a 5th line once the ellipsis glyph's own width was added on
+        // render, which is exactly what let cards intermittently overflow.
         let lo = 0;
         let hi = t.quote.length;
         while (lo < hi) {
           const mid = Math.ceil((lo + hi) / 2);
-          quoteEl.textContent = t.quote.slice(0, mid).trimEnd();
+          quoteEl.textContent = t.quote.slice(0, mid).trimEnd() + "…";
           if (quoteEl.getBoundingClientRect().height <= maxHeight) {
             lo = mid;
           } else {
@@ -64,8 +76,22 @@ export default function Testimonials() {
     }
 
     measure();
+    // Re-measure once webfonts finish loading — if the first measure() runs
+    // before Hubot Sans/Assistant are ready, it clamps using the fallback
+    // font's metrics, then the real font swaps in with different line
+    // height/character width and the "4 lines" of cut text no longer is,
+    // overflowing the card. document.fonts.ready catches that race; the
+    // resize listener alone doesn't (no resize actually happens on font swap).
+    let cancelled = false;
+    document.fonts?.ready.then(() => {
+      if (!cancelled) measure();
+    });
+
     window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("resize", measure);
+    };
   }, []);
 
   const goPrev = () =>
@@ -110,12 +136,18 @@ export default function Testimonials() {
       {/* Off-screen clone used only to measure how much of each quote fits
           in MAX_LINES at the card's real width/font — see the effect above.
           The fixed 0x0 clipped wrapper keeps it from ever affecting page
-          scroll size, regardless of the cloned card's own width/position. */}
-      <div style={{ position: "fixed", top: 0, left: 0, width: 0, height: 0, overflow: "hidden" }}>
+          scroll size, regardless of the cloned card's own width/position.
+          It must be `display: flex` so .card's own `flex: 0 0 260px` (and
+          the 230px mobile override) actually sizes it as a flex item —
+          a hardcoded inline width here previously stayed 260px even on
+          mobile, where real cards narrow to 230px, so text was measured
+          wider than it actually renders and under-truncated, overflowing
+          past MAX_LINES on phones. */}
+      <div style={{ position: "fixed", top: 0, left: 0, width: 0, height: 0, overflow: "hidden", display: "flex" }}>
         <div
           ref={measureCardRef}
           className={styles.card}
-          style={{ visibility: "hidden", width: 260, height: "auto" }}
+          style={{ visibility: "hidden", height: "auto" }}
           aria-hidden="true"
         >
           <p ref={measureQuoteRef} className={styles.quote} />

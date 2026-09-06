@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Competition } from "@/types/competition";
+import { fadeInVolume } from "@/lib/fadeInVolume";
 import styles from "./CompetitionDetail.module.css";
 
 export default function CompetitionDetail({ competition }: { competition: Competition }) {
@@ -23,6 +24,7 @@ export default function CompetitionDetail({ competition }: { competition: Compet
         if (entry.isIntersecting) {
           if (!userMutedRef.current) {
             video.muted = false;
+            fadeInVolume(video);
             video.play().catch(() => {
               video.muted = true;
               video.play();
@@ -48,6 +50,7 @@ export default function CompetitionDetail({ competition }: { competition: Compet
     video.muted = next;
     userMutedRef.current = next;
     setIsMuted(next);
+    if (!next) fadeInVolume(video);
   };
 
   return (

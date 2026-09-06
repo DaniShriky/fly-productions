@@ -175,6 +175,7 @@ export const competitions: Competition[] = [
       "/images/gallery/eilat-dance-international/5.jpg",
       "/images/gallery/eilat-dance-international/6.jpg",
       "/images/gallery/eilat-dance-international/7.jpg",
+      "/images/gallery/eilat-dance-international/8.jpg",
     ],
   },
 ];

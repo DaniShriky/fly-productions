@@ -237,4 +237,7 @@
   flex: 0 0 230px;
 }
 
+.expanded .quote {
+  font-size: 1rem;
+}
 }
