@@ -127,10 +127,29 @@ export default function CompetitionHero({ competition }: { competition: Competit
               {calendarOpen && (
                 <div className={styles.routeMenu}>
                   <a href={googleCalendarUrl} target="_blank" rel="noopener noreferrer">
-                    📅 Google Calendar
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <rect x="3" y="5" width="18" height="16" rx="3" />
+                      <path d="M3 10h18" />
+                      <path d="M8 3v4" />
+                      <path d="M16 3v4" />
+                    </svg>
+                    <span>Google Calendar</span>
                   </a>
-                  <a href={icsDataUrl} download={`${competition.slug}.ics`}>
-                    📱 יומן הטלפון
+                  {/* No `download` attribute — on iOS Safari that forces a
+                      save to the Files app instead of opening the native
+                      "Add Event" prompt. Plain navigation to the data: URL
+                      lets each platform hand it to its own calendar app
+                      (Apple Calendar, Samsung/Google Calendar, Outlook…). */}
+                  <a href={icsDataUrl} target="_blank" rel="noopener noreferrer">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <rect x="3" y="5" width="18" height="16" rx="3" />
+                      <path d="M3 10h18" />
+                      <path d="M8 3v4" />
+                      <path d="M16 3v4" />
+                      <path d="M12 13v6" />
+                      <path d="M9 16h6" />
+                    </svg>
+                    <span>Apple Calendar</span>
                   </a>
                 </div>
               )}
