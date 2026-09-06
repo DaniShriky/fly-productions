@@ -4,6 +4,7 @@ import Link from "next/link";
 import { competitions } from "@/data/competitions";
 import { REGISTRATION_URL } from "@/data/registration";
 import { getCompetitionDateLabel } from "@/lib/getCompetitionDays";
+import { SHOW_REGISTRATION } from "@/lib/featureFlags";
 import styles from "./Nav.module.css";
 
 export default function Nav() {
@@ -41,15 +42,17 @@ export default function Nav() {
       </Link>
 
       <div className={styles.navRight}>
-        <a
-          href={REGISTRATION_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={styles.ctaPill}
-          onClick={() => setMobileOpen(false)}
-        >
-          הרשמה לתחרויות
-        </a>
+        {SHOW_REGISTRATION && (
+          <a
+            href={REGISTRATION_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.ctaPill}
+            onClick={() => setMobileOpen(false)}
+          >
+            הרשמה לתחרויות
+          </a>
+        )}
 
         <button
           className={styles.menuButton}
