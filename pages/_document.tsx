@@ -4,6 +4,11 @@ export default function Document() {
   return (
     <Html lang="he" dir="rtl">
       <Head>
+        {/* Soft-launch phase — the site is only being shared directly with
+            specific clients, not meant to show up in search yet. Remove
+            this tag when it's time for the public launch. */}
+        <meta name="robots" content="noindex, nofollow" />
+
         {/* Competition pages embed Instagram Reels (see CompetitionDetail) —
             preconnecting shaves the connection setup off that iframe's load,
             since Instagram's embed can't be made to autoplay instantly on
