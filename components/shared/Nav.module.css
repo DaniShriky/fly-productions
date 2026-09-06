@@ -38,7 +38,7 @@
   order: 1;
 }
 
-.navLinks a:hover {
+.navLinks a:hover:not(.ctaPill) {
   color: #fff;
 }
 
@@ -153,13 +153,20 @@
 }
 
 .ctaPill {
-  background: transparent;
-  color: #f3f1ec;
+  background: linear-gradient(135deg, #f5c542, #e0a84a);
+  color: #050505;
   padding: 10px 26px;
   border-radius: 999px;
   font-size: 14px;
-  font-weight: 500;
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  font-weight: 700;
+  border: none;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+}
+
+.ctaPill:hover {
+  transform: scale(1.06);
+  filter: brightness(1.08);
+  box-shadow: 0 6px 20px rgba(224, 168, 74, 0.5);
 }
 
 .menuButton {
