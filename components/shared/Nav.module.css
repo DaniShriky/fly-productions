@@ -248,6 +248,7 @@
 
   .navRight {
     gap: 14px;
+        flex-direction: row-reverse;
   }
 
   .ctaPill {
