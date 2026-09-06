@@ -73,6 +73,11 @@ export function useAutoScroll<T extends HTMLElement>(
     // forever. That's the "carousel stops after a while" bug.
     window.addEventListener("touchend", resumeSoon);
     window.addEventListener("pointerup", resumeSoon);
+    // A touch that starts on the carousel but turns into vertical page
+    // scroll fires touchcancel, not touchend, on real mobile browsers —
+    // without this, that touch leaves the carousel paused forever, which
+    // reads as "the carousel doesn't move" on phones.
+    window.addEventListener("touchcancel", resumeSoon);
     document.addEventListener("visibilitychange", onVisibility);
 
     const step = (ts: number) => {
@@ -103,6 +108,7 @@ export function useAutoScroll<T extends HTMLElement>(
       el.removeEventListener("pointerdown", pauseNow);
       window.removeEventListener("touchend", resumeSoon);
       window.removeEventListener("pointerup", resumeSoon);
+      window.removeEventListener("touchcancel", resumeSoon);
       document.removeEventListener("visibilitychange", onVisibility);
       if (resumeTimer) clearTimeout(resumeTimer);
     };
