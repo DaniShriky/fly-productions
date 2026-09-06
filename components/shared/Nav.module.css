@@ -29,16 +29,26 @@
   width: auto;
 }
 
+/* Groups the CTA, hamburger, and collapsible dropdown into one flex item so
+   `.nav`'s justify-content: space-between only ever splits two things (logo
+   vs. everything else) — the CTA and hamburger need to stay visible in this
+   row on mobile even while the dropdown panel itself collapses. */
+.navRight {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  order: 1;
+}
+
 .navLinks {
   display: flex;
   align-items: center;
   gap: 30px;
   font-size: 15px;
   color: #d8d6cf;
-  order: 1;
 }
 
-.navLinks a:hover:not(.ctaPill) {
+.navLinks a:hover {
   color: #fff;
 }
 
@@ -215,7 +225,7 @@
     display: flex;
   }
 
-  .navLinks a:not(.ctaPill),
+  .navLinks a,
   .dropdownTrigger {
     width: 100%;
     padding: 12px 0;
@@ -236,10 +246,13 @@
     margin-top: 4px;
   }
 
+  .navRight {
+    gap: 14px;
+  }
+
   .ctaPill {
-    width: 100%;
-    text-align: center;
-    margin-top: 8px;
+    padding: 8px 18px;
+    font-size: 13px;
   }
 
   .logoWrap img {

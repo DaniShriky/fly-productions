@@ -4,7 +4,6 @@ import { Competition } from "@/types/competition";
 import { splitReligiousSuffix } from "@/lib/splitReligiousSuffix";
 import { getCompetitionDays, getCompetitionDateLabel } from "@/lib/getCompetitionDays";
 import { getGoogleCalendarUrl, getIcsDataUrl } from "@/lib/calendarLinks";
-import { REGISTRATION_URL } from "@/data/registration";
 import styles from "./CompetitionHero.module.css";
 
 export default function CompetitionHero({ competition }: { competition: Competition }) {
@@ -67,15 +66,6 @@ export default function CompetitionHero({ competition }: { competition: Competit
         <div className={styles.metaDate} dir="ltr" lang="en">{getCompetitionDateLabel(competition.date)}</div>
         <div className={styles.metaDay}>{getCompetitionDays(competition.date)}</div>
         <div className={styles.metaLoc}>{competition.location}</div>
-
-        <a
-          href={REGISTRATION_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={styles.registerBtn}
-        >
-          הרשמה לתחרות
-        </a>
 
         <div className={styles.actionsRow}>
           <div ref={routeRef} className={styles.routeWrap}>

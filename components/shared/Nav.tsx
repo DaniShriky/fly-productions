@@ -40,18 +40,7 @@ export default function Nav() {
         <Image src="/images/fly-logo.png" alt="FLY Production" width={200} height={145} />
       </Link>
 
-      <button
-        className={styles.menuButton}
-        aria-label={mobileOpen ? "סגירת תפריט" : "פתיחת תפריט"}
-        aria-expanded={mobileOpen}
-        onClick={() => setMobileOpen((o) => !o)}
-      >
-        <span />
-        <span />
-        <span />
-      </button>
-
-      <div className={`${styles.navLinks} ${mobileOpen ? styles.mobileOpen : ""}`}>
+      <div className={styles.navRight}>
         <a
           href={REGISTRATION_URL}
           target="_blank"
@@ -62,38 +51,51 @@ export default function Nav() {
           הרשמה לתחרויות
         </a>
 
-        <div ref={dropdownRef} className={`${styles.dropdown} ${open ? styles.open : ""}`}>
-          <button
-            className={styles.dropdownTrigger}
-            onClick={(e) => {
-              e.stopPropagation();
-              setOpen((o) => !o);
-            }}
-          >
-            תחרויות <span className={styles.chev}>▾</span>
-          </button>
-          <div className={styles.dropdownMenu}>
-            {competitions.map((c) => (
-              <Link
-                key={c.slug}
-                href={`/competitions/${c.slug}`}
-                className={styles.menuItem}
-                onClick={() => {
-                  setOpen(false);
-                  setMobileOpen(false);
-                }}
-              >
-                <span className={styles.menuItemLogo}>
-                  {c.logo && <Image src={c.logo} alt="" width={60} height={50} />}
-                </span>
-                <span className={styles.menuItemText}>
-                  <span className="en" lang="en">{c.name}</span>
-                  <span className={styles.sub}>
-                    <span dir="ltr" lang="en">{getCompetitionDateLabel(c.date)}</span> · {c.location}
+        <button
+          className={styles.menuButton}
+          aria-label={mobileOpen ? "סגירת תפריט" : "פתיחת תפריט"}
+          aria-expanded={mobileOpen}
+          onClick={() => setMobileOpen((o) => !o)}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+
+        <div className={`${styles.navLinks} ${mobileOpen ? styles.mobileOpen : ""}`}>
+          <div ref={dropdownRef} className={`${styles.dropdown} ${open ? styles.open : ""}`}>
+            <button
+              className={styles.dropdownTrigger}
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpen((o) => !o);
+              }}
+            >
+              תחרויות <span className={styles.chev}>▾</span>
+            </button>
+            <div className={styles.dropdownMenu}>
+              {competitions.map((c) => (
+                <Link
+                  key={c.slug}
+                  href={`/competitions/${c.slug}`}
+                  className={styles.menuItem}
+                  onClick={() => {
+                    setOpen(false);
+                    setMobileOpen(false);
+                  }}
+                >
+                  <span className={styles.menuItemLogo}>
+                    {c.logo && <Image src={c.logo} alt="" width={60} height={50} />}
                   </span>
-                </span>
-              </Link>
-            ))}
+                  <span className={styles.menuItemText}>
+                    <span className="en" lang="en">{c.name}</span>
+                    <span className={styles.sub}>
+                      <span dir="ltr" lang="en">{getCompetitionDateLabel(c.date)}</span> · {c.location}
+                    </span>
+                  </span>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </div>
