@@ -177,9 +177,17 @@
 }
 
 .routeMenu a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   padding: 10px 14px;
   border-radius: 8px;
   font-size: 14px;
+}
+
+.routeMenu a svg {
+  flex: 0 0 auto;
+  opacity: 0.85;
 }
 
 .routeMenu a:hover {
