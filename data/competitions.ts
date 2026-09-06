@@ -157,6 +157,7 @@ export const competitions: Competition[] = [
     location: "תיאטראות אילת",
     isReligious: false,
     image: "/images/compBtns/super-star-eilat.jpg",
+    logo: "/images/logo/eilat-dance-international.png",
     descriptionParagraphs: [
       'פסטיבל <span class="hl">EILAT DANCE INTERNATIONAL</span> מבית <span class="hl">FLY הפקות</span> הוא פסטיבל בינלאומי גדול לסיום עונת המחול, המשלב תחרות מקצועית ברמה גבוהה עם חוויית קיץ מלאה של שלושה ימים באילת. להקות, סטודיואים ורקדנים מכל רחבי הארץ נפגשים לאירוע חגיגי ומושקע, שמחבר בין מחול, במה, סדנאות, מופעים וחוויה משותפת באילת.',
       "התחרות פתוחה למגוון סגנונות, גילים ורמות ומעניקה לכל להקה הזדמנות להשתתף באירוע מרשים ובסטנדרט מקצועי גבוה.",
