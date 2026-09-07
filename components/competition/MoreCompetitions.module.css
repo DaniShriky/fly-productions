@@ -27,18 +27,13 @@
 }
 
 /* direction: ltr here is deliberate — see lib/useAutoScroll.ts comment.
-   It keeps scrollLeft math predictable regardless of page direction;
+   It keeps the flex layout order predictable regardless of page
+   direction, which is what the marquee's translateX direction relies on;
    each card sets direction: rtl again internally for correct Hebrew text. */
 .viewport {
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: hidden;
   direction: ltr;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
   padding: 0 5%;
-}
-.viewport::-webkit-scrollbar {
-  display: none;
 }
 .viewport.expanded {
   overflow: visible;
@@ -48,11 +43,33 @@
   display: flex;
   gap: 18px;
   direction: ltr;
+  animation: marquee var(--marquee-duration, 40s) linear infinite;
 }
+.viewport:hover .track,
+.viewport:active .track {
+  animation-play-state: paused;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-1 * var(--marquee-distance, 50%)));
+  }
+}
+
 .viewport.expanded .track {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   direction: rtl;
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track {
+    animation: none;
+  }
 }
 
 @media (max-width: 900px) {
