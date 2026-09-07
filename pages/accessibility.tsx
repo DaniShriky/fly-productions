@@ -1,16 +1,20 @@
 import Head from "next/head";
+import type { GetStaticProps, InferGetStaticPropsType } from "next";
 import Nav from "@/components/shared/Nav";
 import Footer from "@/components/shared/Footer";
+import { getAllCompetitions } from "@/lib/queries/competitions";
 import styles from "./accessibility.module.css";
 
-export default function Accessibility() {
+export default function Accessibility({
+  competitions,
+}: InferGetStaticPropsType<typeof getStaticProps>) {
   return (
     <>
       <Head>
         <title>הצהרת נגישות | FLY Productions</title>
       </Head>
 
-      <Nav />
+      <Nav competitions={competitions} />
 
       <main className={styles.wrap}>
         <h1>הצהרת נגישות</h1>
@@ -60,3 +64,8 @@ export default function Accessibility() {
     </>
   );
 }
+
+export const getStaticProps: GetStaticProps = async () => {
+  const competitions = await getAllCompetitions();
+  return { props: { competitions } };
+};

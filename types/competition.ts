@@ -1,7 +1,6 @@
-// This shape mirrors the `competitions` table in Supabase (see architecture doc).
-// Right now the data comes from /data/competitions.ts (hardcoded).
-// Later, pages/index.tsx and pages/competitions/[slug].tsx will fetch this
-// shape from Supabase inside getStaticProps instead — nothing else changes.
+// This shape mirrors the `competitions` table in Supabase (see
+// supabase/schema.sql). lib/queries/competitions.ts maps DB rows into this
+// shape; every page/component just consumes this type, same as before.
 
 export interface Competition {
   id: string;

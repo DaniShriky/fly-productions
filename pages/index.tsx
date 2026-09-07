@@ -7,8 +7,13 @@ import CompetitionCarousel from "@/components/home/CompetitionCarousel";
 import VideoSection from "@/components/home/VideoSection";
 import Testimonials from "@/components/home/Testimonials";
 import PromoBanner from "@/components/home/PromoBanner";
+import { getAllCompetitions } from "@/lib/queries/competitions";
+import { getAllTestimonials } from "@/lib/queries/testimonials";
 
-export default function Home(_props: InferGetStaticPropsType<typeof getStaticProps>) {
+export default function Home({
+  competitions,
+  testimonials,
+}: InferGetStaticPropsType<typeof getStaticProps>) {
   return (
     <>
       <Head>
@@ -19,22 +24,22 @@ export default function Home(_props: InferGetStaticPropsType<typeof getStaticPro
         />
       </Head>
 
-      <Nav />
+      <Nav competitions={competitions} />
       <Hero />
-      <CompetitionCarousel />
+      <CompetitionCarousel competitions={competitions} />
       <VideoSection />
-      <Testimonials />
+      <Testimonials testimonials={testimonials} />
       <PromoBanner />
       <Footer />
     </>
   );
 }
 
-// Currently a no-op (competitions/testimonials come from the hardcoded
-// data/ files, imported directly by each component). Once Supabase is
-// connected, fetch the competitions list here and pass it down as props
-// instead of importing data/competitions.ts directly in each component —
-// that's the only structural change needed.
 export const getStaticProps: GetStaticProps = async () => {
-  return { props: {} };
+  const [competitions, testimonials] = await Promise.all([
+    getAllCompetitions(),
+    getAllTestimonials(),
+  ]);
+
+  return { props: { competitions, testimonials } };
 };

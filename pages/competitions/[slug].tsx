@@ -6,10 +6,15 @@ import CompetitionHero from "@/components/competition/CompetitionHero";
 import CompetitionDetail from "@/components/competition/CompetitionDetail";
 import Gallery from "@/components/competition/Gallery";
 import MoreCompetitions from "@/components/competition/MoreCompetitions";
-import { competitions, getCompetitionBySlug } from "@/data/competitions";
+import {
+  getAllCompetitions,
+  getAllCompetitionSlugs,
+  getCompetitionBySlug,
+} from "@/lib/queries/competitions";
 
 export default function CompetitionPage({
   competition,
+  competitions,
 }: InferGetStaticPropsType<typeof getStaticProps>) {
   return (
     <>
@@ -21,36 +26,36 @@ export default function CompetitionPage({
         />
       </Head>
 
-      <Nav />
+      <Nav competitions={competitions} />
       <CompetitionHero competition={competition} />
       <CompetitionDetail competition={competition} />
       <Gallery competition={competition} />
-      <MoreCompetitions current={competition} />
+      <MoreCompetitions current={competition} competitions={competitions} />
       <Footer />
     </>
   );
 }
 
 // Pre-builds one static page per competition at build time (this is the
-// SEO-friendly SSG approach from the architecture doc). Once connected to
-// Supabase, this should fetch all slugs from the `competitions` table
-// instead of importing the hardcoded array.
+// SEO-friendly SSG approach from the architecture doc).
 export const getStaticPaths: GetStaticPaths = async () => {
+  const slugs = await getAllCompetitionSlugs();
   return {
-    paths: competitions.map((c) => ({ params: { slug: c.slug } })),
+    paths: slugs.map((slug) => ({ params: { slug } })),
     fallback: false,
   };
 };
 
-// Same idea — swap this body for a Supabase query by slug later;
-// everything else on this page stays exactly the same.
 export const getStaticProps: GetStaticProps = async ({ params }) => {
   const slug = params?.slug as string;
-  const competition = getCompetitionBySlug(slug);
+  const [competition, competitions] = await Promise.all([
+    getCompetitionBySlug(slug),
+    getAllCompetitions(),
+  ]);
 
   if (!competition) {
     return { notFound: true };
   }
 
-  return { props: { competition } };
+  return { props: { competition, competitions } };
 };

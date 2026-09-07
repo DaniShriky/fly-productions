@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { testimonials } from "@/data/testimonials";
+import { Testimonial } from "@/types/testimonial";
 import { useAutoScroll } from "@/lib/useAutoScroll";
 import styles from "./Testimonials.module.css";
 
@@ -9,7 +9,7 @@ const MAX_LINES = 4;
 
 type ClampResult = { text: string; truncated: boolean };
 
-export default function Testimonials() {
+export default function Testimonials({ testimonials }: { testimonials: Testimonial[] }) {
   const scrollRef = useAutoScroll<HTMLDivElement>(SPEED, REPEAT);
   const measureCardRef = useRef<HTMLDivElement>(null);
   const measureQuoteRef = useRef<HTMLParagraphElement>(null);

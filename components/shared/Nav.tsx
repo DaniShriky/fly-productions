@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { competitions } from "@/data/competitions";
+import { Competition } from "@/types/competition";
 import { REGISTRATION_URL } from "@/data/registration";
 import { getCompetitionDateLabel } from "@/lib/getCompetitionDays";
 import styles from "./Nav.module.css";
 
-export default function Nav() {
+export default function Nav({ competitions }: { competitions: Competition[] }) {
   const [open, setOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);

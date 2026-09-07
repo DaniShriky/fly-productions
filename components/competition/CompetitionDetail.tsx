@@ -127,11 +127,9 @@ export default function CompetitionDetail({ competition }: { competition: Compet
           </div>
         )}
         <div className={styles.description}>
-          {/* dangerouslySetInnerHTML is safe here only because the paragraphs
-              come from our own hardcoded data/competitions.ts file. Once this
-              is fetched from Supabase, either keep this field admin-only
-              (not user-submitted) or sanitize it (e.g. with the `dompurify`
-              package) before rendering. */}
+          {/* descriptionParagraphs is sanitized with isomorphic-dompurify in
+              lib/queries/competitions.ts before it ever reaches this
+              component — safe to render as-is here. */}
           {competition.descriptionParagraphs.map((html, i) => (
             <p key={i} dangerouslySetInnerHTML={{ __html: html }} />
           ))}
