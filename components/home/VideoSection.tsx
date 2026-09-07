@@ -52,7 +52,15 @@ export default function VideoSection() {
       { threshold: 0.3 }
     );
     observer.observe(section);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      // See the matching comment in CompetitionDetail.tsx — iOS Safari
+      // doesn't reliably free a <video>'s decode buffers just because the
+      // element unmounted, and that accumulates across navigations.
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
+    };
   }, []);
 
   const toggleMute = () => {

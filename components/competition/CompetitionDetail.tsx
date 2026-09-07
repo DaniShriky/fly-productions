@@ -40,7 +40,18 @@ export default function CompetitionDetail({ competition }: { competition: Compet
       { threshold: 0.3 }
     );
     observer.observe(wrap);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      // iOS Safari doesn't reliably release a <video>'s decode buffers just
+      // because the element got unmounted — across enough client-side page
+      // navigations (each with its own multi-MB video) that memory pressure
+      // can crash the WebKit render process, which Safari then reports as a
+      // generic "a problem repeatedly occurred" page. Explicitly clearing
+      // the source on unmount forces it to actually let go.
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
+    };
   }, []);
 
   const toggleMute = () => {

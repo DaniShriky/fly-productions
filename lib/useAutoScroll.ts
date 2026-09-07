@@ -65,14 +65,18 @@ export function useAutoScroll<T extends HTMLElement>(
       el.addEventListener("mouseenter", onEnter);
       el.addEventListener("mouseleave", onLeave);
     }
+    // Touch Events only, deliberately not Pointer Events too — a single
+    // touch fires both, and Pointer Events turned out to have the same
+    // "cancelled" gap as plain touchend (pointercancel instead of
+    // pointerup when the gesture becomes page scroll), except worse: it's
+    // one more redundant pathway that can independently leave `paused`
+    // stuck true. Touch Events alone already cover every touch case below.
     el.addEventListener("touchstart", pauseNow, { passive: true });
-    el.addEventListener("pointerdown", pauseNow);
-    // "up" listeners go on window, not el: a drag that ends outside the
+    // "up" listener goes on window, not el: a drag that ends outside the
     // element (very easy to do — it's a wide, edge-to-edge strip) would
-    // never fire touchend/pointerup on el itself, leaving it paused
-    // forever. That's the "carousel stops after a while" bug.
+    // never fire touchend on el itself, leaving it paused forever. That's
+    // the "carousel stops after a while" bug.
     window.addEventListener("touchend", resumeSoon);
-    window.addEventListener("pointerup", resumeSoon);
     // A touch that starts on the carousel but turns into vertical page
     // scroll fires touchcancel, not touchend, on real mobile browsers —
     // without this, that touch leaves the carousel paused forever, which
@@ -105,9 +109,7 @@ export function useAutoScroll<T extends HTMLElement>(
       el.removeEventListener("mouseenter", onEnter);
       el.removeEventListener("mouseleave", onLeave);
       el.removeEventListener("touchstart", pauseNow);
-      el.removeEventListener("pointerdown", pauseNow);
       window.removeEventListener("touchend", resumeSoon);
-      window.removeEventListener("pointerup", resumeSoon);
       window.removeEventListener("touchcancel", resumeSoon);
       document.removeEventListener("visibilitychange", onVisibility);
       if (resumeTimer) clearTimeout(resumeTimer);
