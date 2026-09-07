@@ -9,6 +9,17 @@ const MAX_LINES = 4;
 
 type ClampResult = { text: string; truncated: boolean };
 
+// Module-level, not component state — persists across mounts within the
+// same page session. Navigating home -> a competition page -> home again
+// fully unmounts and remounts this component each time (separate top-level
+// pages, not a re-render), which previously reran this whole binary-search
+// measurement pass — real layout work, once per testimonial — on every
+// single return to the homepage. Since the testimonials data and the
+// available card width are almost always unchanged between visits, that
+// work was pure repetition. Caching by width skips it whenever nothing
+// that could change the result actually has.
+let clampCache: { width: number; result: Record<string, ClampResult> } | null = null;
+
 export default function Testimonials() {
   const scrollRef = useAutoScroll<HTMLDivElement>(SPEED, REPEAT);
   const measureCardRef = useRef<HTMLDivElement>(null);
@@ -18,7 +29,9 @@ export default function Testimonials() {
   const wasOpenRef = useRef(false);
   const trackItems = Array.from({ length: REPEAT }, () => testimonials).flat();
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const [clampedQuotes, setClampedQuotes] = useState<Record<string, ClampResult>>({});
+  const [clampedQuotes, setClampedQuotes] = useState<Record<string, ClampResult>>(
+    () => clampCache?.result ?? {}
+  );
 
   // Card quotes are clamped to MAX_LINES by measuring actual rendered text
   // in a hidden clone (same width/font as a real card) rather than relying
@@ -31,6 +44,13 @@ export default function Testimonials() {
 
     function measure() {
       if (!quoteEl) return;
+
+      const width = window.innerWidth;
+      if (clampCache && clampCache.width === width) {
+        setClampedQuotes(clampCache.result);
+        return;
+      }
+
       // Read line-height from computed style rather than rendering a
       // sample glyph and measuring its box — a Hebrew "מ" renders through
       // Assistant, but testimonials with Cyrillic/Latin text fall back to
@@ -72,6 +92,7 @@ export default function Testimonials() {
         if (lastSpace > cut.length * 0.6) cut = cut.slice(0, lastSpace);
         next[t.id] = { text: cut.trimEnd(), truncated: true };
       }
+      clampCache = { width, result: next };
       setClampedQuotes(next);
     }
 
