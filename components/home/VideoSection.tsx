@@ -77,7 +77,7 @@ export default function VideoSection() {
               muted
               loop
               playsInline
-              preload="auto"
+              preload="none"
               tabIndex={-1}
             />
           </div>

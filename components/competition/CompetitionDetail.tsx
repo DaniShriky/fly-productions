@@ -69,7 +69,7 @@ export default function CompetitionDetail({ competition }: { competition: Compet
                 muted
                 loop
                 playsInline
-                preload="auto"
+                preload="none"
                 tabIndex={-1}
               />
               <button
