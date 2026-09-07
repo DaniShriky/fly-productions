@@ -43,8 +43,17 @@ align-items: baseline;
    direction, which is what the marquee's translateX direction relies on;
    each .card below sets direction: rtl again for correct Hebrew text. */
 .viewport {
-  overflow: hidden;
+  /* overflow-x: auto (not hidden) so the user can still drag/swipe the
+     content manually with native browser scrolling — see the matching
+     comment in Testimonials.module.css. */
+  overflow-x: auto;
+  overflow-y: hidden;
   direction: ltr;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.viewport::-webkit-scrollbar {
+  display: none;
 }
 .viewport.expanded {
   overflow: visible;

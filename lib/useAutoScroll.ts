@@ -15,10 +15,14 @@ import { useEffect, useRef } from "react";
  * throttling, and pausing it is `animation-play-state` via plain
  * `:hover`/`:active` in CSS — no JS state to get stuck.
  *
- * The trade-off: this drops native manual drag/swipe-to-browse (that's
- * what needed the touch handling in the first place). Tapping a card still
- * works for a closer look where that's wired up (e.g. Testimonials' modal).
+ * Manual drag/swipe-to-browse still works: the container keeps native
+ * `overflow-x: auto` (see .viewport in each .module.css), and a native
+ * scrollLeft change composes fine with the track's own CSS transform —
+ * they're independent, the visible position is just both added together.
+ * Pausing the animation while the user's finger is down (so it doesn't
+ * fight their drag) is the same `:active` rule as `:hover`, not JS.
  *
+
  * This hook's job is just measuring: it sets `--marquee-distance` (one
  * unit's width — the content divided by how many times it's repeated in
  * the JSX, see CompetitionCarousel.tsx / Testimonials.tsx) and

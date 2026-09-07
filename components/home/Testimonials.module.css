@@ -19,8 +19,21 @@
    direction, which is what the marquee's translateX direction relies on;
    each .card below sets direction: rtl again for correct Hebrew text. */
 .viewport {
-  overflow: hidden;
+  /* overflow-x: auto (not hidden) so the user can still drag/swipe the
+     content manually with native browser scrolling — that's independent
+     of the track's own animation below, the two compose fine (native
+     scrollLeft shifts the visible window; the track's transform
+     separately shifts its own position within it), and native scroll
+     handling has none of the touch-event edge cases the old JS-driven
+     version kept hitting. */
+  overflow-x: auto;
+  overflow-y: hidden;
   direction: ltr;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.viewport::-webkit-scrollbar {
+  display: none;
 }
 
 .track {
