@@ -87,10 +87,25 @@ export default function Testimonials() {
       if (!cancelled) measure();
     });
 
-    window.addEventListener("resize", measure);
+    // Debounced — iOS Safari fires resize repeatedly *while scrolling* as
+    // its toolbar collapses/expands with the changing visual viewport
+    // height. Running this straight off each event forces a fresh
+    // getBoundingClientRect binary-search per testimonial (real layout
+    // work) on every one of those, hijacking the main thread mid-scroll —
+    // exactly when both carousels' animation frames most need it. Only
+    // the settled final size actually matters here, so waiting for resize
+    // events to stop for a moment is free.
+    let resizeTimer: ReturnType<typeof setTimeout> | null = null;
+    const debouncedMeasure = () => {
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(measure, 200);
+    };
+
+    window.addEventListener("resize", debouncedMeasure);
     return () => {
       cancelled = true;
-      window.removeEventListener("resize", measure);
+      if (resizeTimer) clearTimeout(resizeTimer);
+      window.removeEventListener("resize", debouncedMeasure);
     };
   }, []);
 
