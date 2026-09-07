@@ -1,120 +1,89 @@
 import { useEffect, useRef } from "react";
 
 /**
- * Drives a horizontally-scrollable element (overflow-x: auto) forward
- * automatically, while still allowing manual drag/swipe/scrollbar use.
+ * Drives an infinitely-looping horizontal marquee via a pure CSS animation
+ * (see the `.track` / `@keyframes` rules in each consumer's .module.css),
+ * rather than a requestAnimationFrame loop nudging `scrollLeft` by hand.
  *
- * This is the React version of the vanilla-JS carousel logic from the
- * HTML prototype. Two things that caused real bugs there are handled
- * here structurally instead of by hand:
+ * That JS-driven version kept breaking on real phones in ways that never
+ * reproduced in testing: iOS throttles rAF callbacks on an otherwise-idle
+ * page (no fix from inside the callback itself can outrun that), and the
+ * touch handlers meant to pause/resume it for manual swipe support had
+ * repeated "cancelled, not ended" gaps (touchcancel vs touchend,
+ * pointercancel vs pointerup) that could leave it stuck paused. A CSS
+ * animation runs on the compositor regardless of main-thread/rAF
+ * throttling, and pausing it is `animation-play-state` via plain
+ * `:hover`/`:active` in CSS — no JS state to get stuck.
  *
- * 1. "Jumps after a while" — caused by requestAnimationFrame accumulating
- *    a huge delta when the tab is backgrounded. Fixed by clamping dt and
- *    resetting the frame timer on visibilitychange.
- * 2. "Only scrolls on narrow screens" — caused by not having enough
- *    duplicated content to overflow on wide screens. In the prototype we
- *    fixed this by cloning DOM nodes at runtime; in React, don't clone —
- *    just render the source array `repeatCount` times in JSX (see
- *    CompetitionCarousel.tsx / Testimonials.tsx). This hook only needs to
- *    know how many repeats exist to compute the correct wrap point.
+ * The trade-off: this drops native manual drag/swipe-to-browse (that's
+ * what needed the touch handling in the first place). Tapping a card still
+ * works for a closer look where that's wired up (e.g. Testimonials' modal).
  *
- * The container should have `direction: ltr` in CSS (see the .viewport
- * class in the accompanying .module.css files) so scrollLeft behaves
- * predictably — individual cards set `direction: rtl` back internally
- * so Hebrew text still reads correctly.
+ * This hook's job is just measuring: it sets `--marquee-distance` (one
+ * unit's width — the content divided by how many times it's repeated in
+ * the JSX, see CompetitionCarousel.tsx / Testimonials.tsx) and
+ * `--marquee-duration` (that distance at the given px/sec speed) as CSS
+ * custom properties on the element, so the animation covers the actual
+ * rendered content width at a consistent speed regardless of how much
+ * content there is. The container still needs `direction: ltr` in CSS
+ * (see the .viewport class in the accompanying .module.css files) so the
+ * flex layout order — and therefore which direction translateX needs to
+ * move to reveal the next item — stays predictable; individual cards set
+ * `direction: rtl` back internally so Hebrew text still reads correctly.
  */
 export function useAutoScroll<T extends HTMLElement>(
   speed: number,
   repeatCount: number,
-  disabled: boolean = false,
-  pauseOnHover: boolean = true
+  disabled: boolean = false
 ) {
   const ref = useRef<T | null>(null);
-  const disabledRef = useRef(disabled);
-
-  useEffect(() => {
-    disabledRef.current = disabled;
-  }, [disabled]);
 
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    if (!el || disabled || repeatCount <= 0) return;
 
-    let paused = false;
-    let resumeTimer: ReturnType<typeof setTimeout> | null = null;
-    let last: number | null = null;
-    let frameId: number;
-
-    const pauseNow = () => {
-      paused = true;
-      if (resumeTimer) clearTimeout(resumeTimer);
-    };
-    const resumeSoon = () => {
-      if (resumeTimer) clearTimeout(resumeTimer);
-      resumeTimer = setTimeout(() => {
-        paused = false;
-      }, 2500);
-    };
-    const onEnter = () => { paused = true; };
-    const onLeave = () => { paused = false; };
-    const onVisibility = () => {
-      if (!document.hidden) last = null;
-    };
-
-    if (pauseOnHover) {
-      el.addEventListener("mouseenter", onEnter);
-      el.addEventListener("mouseleave", onLeave);
-    }
-    // Touch Events only, deliberately not Pointer Events too — a single
-    // touch fires both, and Pointer Events turned out to have the same
-    // "cancelled" gap as plain touchend (pointercancel instead of
-    // pointerup when the gesture becomes page scroll), except worse: it's
-    // one more redundant pathway that can independently leave `paused`
-    // stuck true. Touch Events alone already cover every touch case below.
-    el.addEventListener("touchstart", pauseNow, { passive: true });
-    // "up" listener goes on window, not el: a drag that ends outside the
-    // element (very easy to do — it's a wide, edge-to-edge strip) would
-    // never fire touchend on el itself, leaving it paused forever. That's
-    // the "carousel stops after a while" bug.
-    window.addEventListener("touchend", resumeSoon);
-    // A touch that starts on the carousel but turns into vertical page
-    // scroll fires touchcancel, not touchend, on real mobile browsers —
-    // without this, that touch leaves the carousel paused forever, which
-    // reads as "the carousel doesn't move" on phones.
-    window.addEventListener("touchcancel", resumeSoon);
-    document.addEventListener("visibilitychange", onVisibility);
-
-    const step = (ts: number) => {
-      if (last === null) last = ts;
-      const dt = Math.min(ts - last, 50);
-      last = ts;
-
-      if (!paused && !disabledRef.current && repeatCount > 0) {
-        const unitWidth = el.scrollWidth / repeatCount;
-        if (unitWidth > 0) {
-          const next = el.scrollLeft + (speed * dt) / 1000;
-          // modulo instead of "if past the edge, subtract once" — avoids a
-          // one-time large negative jump to scrollLeft at the wrap point,
-          // which is a much rougher operation for the browser than a small
-          // per-frame nudge and is the most likely spot for a stutter.
-          el.scrollLeft = ((next % unitWidth) + unitWidth) % unitWidth;
-        }
+    function measure() {
+      if (!el) return;
+      const unitWidth = el.scrollWidth / repeatCount;
+      if (unitWidth > 0) {
+        el.style.setProperty("--marquee-distance", `${unitWidth}px`);
+        el.style.setProperty("--marquee-duration", `${unitWidth / speed}s`);
       }
-      frameId = requestAnimationFrame(step);
+    }
+
+    measure();
+    // Re-measure once images have their real box and webfonts have
+    // swapped in — either can change the content's actual width after
+    // this first pass.
+    window.addEventListener("load", measure);
+    let cancelled = false;
+    document.fonts?.ready.then(() => {
+      if (!cancelled) measure();
+    });
+
+    let resizeTimer: ReturnType<typeof setTimeout> | null = null;
+    const debouncedMeasure = () => {
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(measure, 200);
     };
-    frameId = requestAnimationFrame(step);
+    window.addEventListener("resize", debouncedMeasure);
+
+    // A no-op touchstart is enough to make iOS Safari actually apply
+    // :active on tap — with no touch listener present at all, it skips
+    // :active on non-form elements entirely as part of its tap-vs-scroll
+    // disambiguation. The pause itself is the CSS :active rule; this just
+    // switches that on.
+    const noop = () => {};
+    el.addEventListener("touchstart", noop, { passive: true });
 
     return () => {
-      cancelAnimationFrame(frameId);
-      el.removeEventListener("mouseenter", onEnter);
-      el.removeEventListener("mouseleave", onLeave);
-      el.removeEventListener("touchstart", pauseNow);
-      window.removeEventListener("touchend", resumeSoon);
-      window.removeEventListener("touchcancel", resumeSoon);
-      document.removeEventListener("visibilitychange", onVisibility);
-      if (resumeTimer) clearTimeout(resumeTimer);
+      cancelled = true;
+      if (resizeTimer) clearTimeout(resizeTimer);
+      window.removeEventListener("load", measure);
+      window.removeEventListener("resize", debouncedMeasure);
+      el.removeEventListener("touchstart", noop);
     };
-  }, [speed, repeatCount, pauseOnHover]);
+  }, [speed, repeatCount, disabled]);
 
   return ref;
 }
