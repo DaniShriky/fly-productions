@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 import { Competition } from "@/types/competition";
 import { splitReligiousSuffix } from "@/lib/splitReligiousSuffix";
 import { getCompetitionDays, getCompetitionDateLabel } from "@/lib/getCompetitionDays";
@@ -14,7 +13,9 @@ export default function CompetitionCard({ competition }: { competition: Competit
   const isTwoLines = Boolean(titleLine2) || Boolean(suffix);
 
   return (
-    <Link href={`/competitions/${competition.slug}`} className={styles.card}>
+    // Plain <a>, not next/link — see the comment on the same swap in
+    // Nav.tsx's competition dropdown links.
+    <a href={`/competitions/${competition.slug}`} className={styles.card}>
       <div className={styles.thumb}>
         <Image
           src={competition.image}
@@ -65,6 +66,6 @@ export default function CompetitionCard({ competition }: { competition: Competit
           </svg>
         </span>
       </div>
-    </Link>
+    </a>
   );
 }
