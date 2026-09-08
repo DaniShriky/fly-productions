@@ -5,8 +5,9 @@ import { useAutoScroll } from "@/lib/useAutoScroll";
 import CompetitionCard from "@/components/home/CompetitionCard";
 import styles from "./MoreCompetitions.module.css";
 
-// Same repeat trick as CompetitionCarousel.tsx — see useAutoScroll.ts for why.
-const REPEAT = 3;
+// Same repeat trick as CompetitionCarousel.tsx — see useAutoScroll.ts and
+// that file's REPEAT comment for why this dropped from 3x to 2x.
+const REPEAT = 2;
 
 export default function MoreCompetitions({ current }: { current: Competition }) {
   const others = competitions.filter((c) => c.slug !== current.slug);
