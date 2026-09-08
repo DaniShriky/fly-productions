@@ -20,11 +20,16 @@ export default function CompetitionCard({ competition }: { competition: Competit
           src={competition.image}
           alt={competition.name}
           fill
+          sizes="(max-width: 900px) 180px, 350px"
           style={{ objectFit: "cover" }}
         />
         {competition.logo && (
           <div className={styles.logoBadge}>
-            <Image src={competition.logo} alt="" fill style={{ objectFit: "contain" }} />
+            {/* Without `sizes`, next/image defaults a `fill` image to
+                requesting a full-viewport-width source — a huge waste for a
+                56-90px badge, multiplied by every repeated copy of this
+                card in the carousel (see REPEAT in CompetitionCarousel.tsx). */}
+            <Image src={competition.logo} alt="" fill sizes="(max-width: 900px) 56px, 90px" style={{ objectFit: "contain" }} />
           </div>
         )}
       </div>

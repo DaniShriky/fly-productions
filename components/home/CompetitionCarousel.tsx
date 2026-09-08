@@ -7,9 +7,14 @@ import styles from "./CompetitionCarousel.module.css";
 // How many times the full competitions array is rendered back-to-back.
 // This replaces the "clone until it overflows" trick from the HTML
 // prototype — in React it's simpler to just render more copies in JSX.
-// 3x is comfortably wide enough for very large desktop monitors; raise it
-// if you add very few competitions in the future and it stops overflowing.
-const REPEAT = 3;
+// 2x is still comfortably wide enough to overflow any realistic screen
+// width for seamless looping (7 cards at even the narrowest ~180px width
+// already exceeds any phone viewport on its own) — dropped from 3x since
+// each repeat is 2 full-size images (thumb + logo) per card, and this is
+// the single biggest chunk of what the homepage has to load/decode at
+// once on mobile. Raise it if you add very few competitions in the future
+// and it stops overflowing.
+const REPEAT = 2;
 
 export default function CompetitionCarousel({ competitions }: { competitions: Competition[] }) {
   const [expanded, setExpanded] = useState(false);
