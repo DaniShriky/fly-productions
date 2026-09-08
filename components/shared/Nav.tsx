@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { competitions } from "@/data/competitions";
 import { REGISTRATION_URL } from "@/data/registration";
 import { getCompetitionDateLabel } from "@/lib/getCompetitionDays";
@@ -32,14 +33,12 @@ export default function Nav() {
 
   return (
     <nav className={styles.nav}>
-      {/* Plain <a>, not next/link — see the matching comment on the
-          competition links below in the dropdown for why. */}
-      <a href="/" className={styles.logoWrap}>
+      <Link href="/" className={styles.logoWrap}>
         {/* width/height are just next/image's required layout hint — actual
             display size comes from .logoWrap img's height:40/width:auto in
             the CSS module, which scales to the file's real aspect ratio. */}
         <Image src="/images/fly-logo.png" alt="FLY Production" width={200} height={145} />
-      </a>
+      </Link>
 
       <div className={styles.navRight}>
         <a
@@ -75,17 +74,8 @@ export default function Nav() {
               תחרויות <span className={styles.chev}>▾</span>
             </button>
             <div className={styles.dropdownMenu}>
-              {/* Plain <a>, not next/link: navigating home <-> a competition
-                  page repeatedly via client-side routing could trigger a
-                  WebKit crash on iOS Safari ("a problem repeatedly
-                  occurred") after a few round-trips — a refresh on the
-                  exact same URL always recovered instantly, which pointed
-                  at the client-side transition itself rather than the page
-                  or server. A real full navigation sidesteps it entirely,
-                  at the cost of losing the instant client-side transition
-                  for this specific hop. */}
               {competitions.map((c) => (
-                <a
+                <Link
                   key={c.slug}
                   href={`/competitions/${c.slug}`}
                   className={styles.menuItem}
@@ -103,7 +93,7 @@ export default function Nav() {
                       <span dir="ltr" lang="en">{getCompetitionDateLabel(c.date)}</span> · {c.location}
                     </span>
                   </span>
-                </a>
+                </Link>
               ))}
             </div>
           </div>
