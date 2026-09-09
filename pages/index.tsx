@@ -13,10 +13,16 @@ export default function Home(_props: InferGetStaticPropsType<typeof getStaticPro
     <>
       <Head>
         <title>FLY Productions | תחרויות מחול ושירותי במה</title>
-        <meta
-          name="description"
-          content="FLY Productions - הפקת תחרויות ריקוד מובילות בישראל"
-        />
+        <meta name="description" content="Fly הפקות אירועים מדהימים" />
+        <meta property="og:title" content="FLY Productions | תחרויות מחול ושירותי במה" />
+        <meta property="og:description" content="Fly הפקות אירועים מדהימים" />
+        <meta property="og:image" content="https://www.fly-festivals.com/images/og-image.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="FLY Productions | תחרויות מחול ושירותי במה" />
+        <meta name="twitter:description" content="Fly הפקות אירועים מדהימים" />
+        <meta name="twitter:image" content="https://www.fly-festivals.com/images/og-image.png" />
       </Head>
 
       <Nav />
