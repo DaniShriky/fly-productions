@@ -163,6 +163,7 @@
 }
 
 .loginLink {
+  background: none;
   font-size: 14px;
   color: #d8d6cf;
   border: 1px solid rgba(255, 255, 255, 0.18);

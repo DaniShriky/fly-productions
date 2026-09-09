@@ -1,0 +1,91 @@
+.form {
+  background: #0a0a0c;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: 17px;
+  margin-bottom: 16px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: #d8d6cf;
+}
+
+.field input,
+.field select {
+  background: #101014;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 15px;
+  color: #f3f1ec;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.priceLine {
+  font-size: 14px;
+  color: #d8d6cf;
+}
+
+.price {
+  color: #f5c542;
+  font-weight: 700;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.submitButton {
+  background: linear-gradient(135deg, #f5c542, #e0a84a);
+  color: #050505;
+  padding: 10px 24px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  border: none;
+}
+
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.cancelButton {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-size: 13px;
+  color: #d8d6cf;
+}
+
+.cancelButton:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.4);
+}

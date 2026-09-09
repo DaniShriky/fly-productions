@@ -6,10 +6,15 @@ export type StudioManagerStatus = "pending" | "approved" | "rejected";
 export interface StudioManager {
   id: string;
   studioName: string;
+  managerName?: string;
   phone: string;
   email: string;
+  city?: string;
+  danceStyles?: string;
   status: StudioManagerStatus;
   referralSource?: string;
   preferredCompetitionType?: string;
+  additionalNotes?: string;
+  wantsStageServicesInfo: boolean;
   createdAt: string;
 }

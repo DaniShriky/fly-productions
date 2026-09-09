@@ -3,24 +3,45 @@ import styles from "./RegistrationDetailsForm.module.css";
 
 export type RegistrationDetails = {
   studioName: string;
+  managerName: string;
   phone: string;
+  city: string;
+  danceStyles: string;
   referralSource: string;
   preferredCompetitionType: "regular" | "religious";
+  wantsStageServicesInfo: boolean;
 };
 
 type Props = {
   onSubmit: (details: RegistrationDetails) => void;
 };
 
+// Fields match the site's real, already-live registration Google Form
+// (fetched directly from forms.gle/XyvWwyQ5KM2crzueA) — studioName/phone were
+// already here from the original Phase 3 draft; managerName/city/danceStyles/
+// wantsStageServicesInfo were added once the real form's fields were checked.
 export default function RegistrationDetailsForm({ onSubmit }: Props) {
   const [studioName, setStudioName] = useState("");
+  const [managerName, setManagerName] = useState("");
   const [phone, setPhone] = useState("");
+  const [city, setCity] = useState("");
+  const [danceStyles, setDanceStyles] = useState("");
   const [referralSource, setReferralSource] = useState("");
   const [preferredCompetitionType, setPreferredCompetitionType] = useState<"regular" | "religious">("regular");
+  const [wantsStageServicesInfo, setWantsStageServicesInfo] = useState(false);
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    onSubmit({ studioName, phone, referralSource, preferredCompetitionType });
+    onSubmit({
+      studioName,
+      managerName,
+      phone,
+      city,
+      danceStyles,
+      referralSource,
+      preferredCompetitionType,
+      wantsStageServicesInfo,
+    });
   }
 
   return (
@@ -31,7 +52,12 @@ export default function RegistrationDetailsForm({ onSubmit }: Props) {
       </label>
 
       <label className={styles.field}>
-        <span>טלפון</span>
+        <span>שם מנהל/ת הלהקה</span>
+        <input required value={managerName} onChange={(e) => setManagerName(e.target.value)} />
+      </label>
+
+      <label className={styles.field}>
+        <span>טלפון נייד</span>
         <input
           type="tel"
           dir="ltr"
@@ -41,6 +67,16 @@ export default function RegistrationDetailsForm({ onSubmit }: Props) {
           onChange={(e) => setPhone(e.target.value)}
           autoComplete="tel"
         />
+      </label>
+
+      <label className={styles.field}>
+        <span>יישוב</span>
+        <input required value={city} onChange={(e) => setCity(e.target.value)} />
+      </label>
+
+      <label className={styles.field}>
+        <span>סגנונות ריקוד (לא חובה)</span>
+        <input value={danceStyles} onChange={(e) => setDanceStyles(e.target.value)} />
       </label>
 
       <label className={styles.field}>
@@ -69,6 +105,15 @@ export default function RegistrationDetailsForm({ onSubmit }: Props) {
           דתי
         </label>
       </fieldset>
+
+      <label className={styles.radio}>
+        <input
+          type="checkbox"
+          checked={wantsStageServicesInfo}
+          onChange={(e) => setWantsStageServicesInfo(e.target.checked)}
+        />
+        מעוניינת לקבל מידע על שירותי במה מקצועיים
+      </label>
 
       <button type="submit" className={styles.submit}>
         המשך

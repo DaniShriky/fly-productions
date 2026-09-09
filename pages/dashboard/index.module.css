@@ -1,0 +1,16 @@
+.main {
+  padding: 60px 5%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+.hint {
+  font-size: 13px;
+  color: #9c9a93;
+  margin-bottom: 16px;
+}

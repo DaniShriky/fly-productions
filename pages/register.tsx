@@ -23,10 +23,14 @@ export default function Register({ competitions }: InferGetStaticPropsType<typeo
     const { error } = await supabaseBrowserClient.from("studio_managers").insert({
       id: userId,
       studio_name: details.studioName,
+      manager_name: details.managerName,
       phone: details.phone,
       email,
+      city: details.city,
+      dance_styles: details.danceStyles || null,
       referral_source: details.referralSource || null,
       preferred_competition_type: details.preferredCompetitionType === "religious" ? "דתי" : "רגיל",
+      wants_stage_services_info: details.wantsStageServicesInfo,
     });
 
     if (error) {

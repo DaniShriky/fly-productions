@@ -2,7 +2,7 @@ import DOMPurify from "isomorphic-dompurify";
 import { supabase } from "@/lib/supabase";
 import { Competition } from "@/types/competition";
 
-type CompetitionRow = {
+export type CompetitionRow = {
   id: string;
   slug: string;
   name: string;
@@ -20,7 +20,7 @@ type CompetitionRow = {
 // descriptionParagraphs can contain HTML (e.g. <span class="hl">…</span>) and
 // is rendered via dangerouslySetInnerHTML in CompetitionDetail — sanitizing
 // here, once, covers every render site instead of each one remembering to.
-function toCompetition(row: CompetitionRow): Competition {
+export function toCompetition(row: CompetitionRow): Competition {
   return {
     id: row.id,
     slug: row.slug,

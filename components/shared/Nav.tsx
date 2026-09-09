@@ -1,15 +1,36 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { Competition } from "@/types/competition";
 import { REGISTRATION_URL } from "@/data/registration";
 import { getCompetitionDateLabel } from "@/lib/getCompetitionDays";
+import { supabaseBrowserClient } from "@/lib/supabaseBrowserClient";
 import styles from "./Nav.module.css";
 
 export default function Nav({ competitions }: { competitions: Competition[] }) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+  // Reacts to login/logout immediately, including right after /login's
+  // router.push (a soft navigation — Nav doesn't remount, so this needs a
+  // live subscription rather than a one-off check on mount).
+  useEffect(() => {
+    supabaseBrowserClient.auth.getSession().then(({ data: { session } }) => setIsLoggedIn(!!session));
+    const {
+      data: { subscription },
+    } = supabaseBrowserClient.auth.onAuthStateChange((_event, session) => setIsLoggedIn(!!session));
+    return () => subscription.unsubscribe();
+  }, []);
+
+  async function handleSignOut() {
+    await supabaseBrowserClient.auth.signOut();
+    setMobileOpen(false);
+    router.push("/");
+  }
 
   // Close the dropdown when clicking anywhere outside it.
   useEffect(() => {
@@ -98,9 +119,15 @@ export default function Nav({ competitions }: { competitions: Competition[] }) {
             </div>
           </div>
 
-          <Link href="/login" className={styles.loginLink} onClick={() => setMobileOpen(false)}>
-            כניסת מנהלים
-          </Link>
+          {isLoggedIn ? (
+            <button type="button" className={styles.loginLink} onClick={handleSignOut}>
+              התנתקות
+            </button>
+          ) : (
+            <Link href="/login" className={styles.loginLink} onClick={() => setMobileOpen(false)}>
+              כניסת מנהלים
+            </Link>
+          )}
         </div>
       </div>
     </nav>

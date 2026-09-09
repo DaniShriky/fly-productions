@@ -4,11 +4,16 @@ import { StudioManager, StudioManagerStatus } from "@/types/studioManager";
 type StudioManagerRow = {
   id: string;
   studio_name: string;
+  manager_name: string | null;
   phone: string;
   email: string;
+  city: string | null;
+  dance_styles: string | null;
   status: StudioManagerStatus;
   referral_source: string | null;
   preferred_competition_type: string | null;
+  additional_notes: string | null;
+  wants_stage_services_info: boolean;
   created_at: string;
 };
 
@@ -16,11 +21,16 @@ function toStudioManager(row: StudioManagerRow): StudioManager {
   return {
     id: row.id,
     studioName: row.studio_name,
+    ...(row.manager_name ? { managerName: row.manager_name } : {}),
     phone: row.phone,
     email: row.email,
+    ...(row.city ? { city: row.city } : {}),
+    ...(row.dance_styles ? { danceStyles: row.dance_styles } : {}),
     status: row.status,
     ...(row.referral_source ? { referralSource: row.referral_source } : {}),
     ...(row.preferred_competition_type ? { preferredCompetitionType: row.preferred_competition_type } : {}),
+    ...(row.additional_notes ? { additionalNotes: row.additional_notes } : {}),
+    wantsStageServicesInfo: row.wants_stage_services_info,
     createdAt: row.created_at,
   };
 }

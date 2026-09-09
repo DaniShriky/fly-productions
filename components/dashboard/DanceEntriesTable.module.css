@@ -1,0 +1,75 @@
+.empty {
+  font-size: 14px;
+  color: #9c9a93;
+}
+
+.filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.filterButton {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-size: 13px;
+  color: #d8d6cf;
+}
+
+.filterButton:hover {
+  color: #fff;
+}
+
+.filterActive {
+  background: rgba(245, 197, 66, 0.15);
+  border-color: #f5c542;
+  color: #f5c542;
+}
+
+.wrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table th,
+.table td {
+  padding: 12px 14px;
+  text-align: right;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  white-space: nowrap;
+}
+
+.table th {
+  color: #9c9a93;
+  font-weight: 600;
+}
+
+.paid {
+  color: #3fae64;
+  font-weight: 600;
+}
+
+.unpaid {
+  color: #d8d6cf;
+}
+
+.editButton {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 13px;
+  color: #d8d6cf;
+}
+
+.editButton:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.4);
+}

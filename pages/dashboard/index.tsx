@@ -1,14 +1,40 @@
+import { useState } from "react";
 import Head from "next/head";
-import type { GetServerSideProps, InferGetServerSidePropsType } from "next";
+import type { GetServerSideProps } from "next";
 import Nav from "@/components/shared/Nav";
 import Footer from "@/components/shared/Footer";
+import ProfileCard from "@/components/dashboard/ProfileCard";
+import EarlyRegistrationStatus from "@/components/dashboard/EarlyRegistrationStatus";
+import DanceEntryForm from "@/components/dashboard/DanceEntryForm";
+import DanceEntriesTable from "@/components/dashboard/DanceEntriesTable";
 import { requireApprovedManager } from "@/lib/auth";
-import { getAllCompetitions } from "@/lib/queries/competitions";
+import { createSupabaseServerClient } from "@/lib/supabaseServerClient";
+import { CompetitionWithPricing, getCompetitionsWithPricing } from "@/lib/queries/competitionsWithPricing";
+import { DanceEntryInput, getOwnRegistrations, upsertDanceEntry } from "@/lib/queries/registrations";
+import { getOwnStudioManager } from "@/lib/queries/studioManagers";
+import { supabaseBrowserClient } from "@/lib/supabaseBrowserClient";
+import { StudioManager } from "@/types/studioManager";
+import { Registration } from "@/types/registration";
+import styles from "./index.module.css";
 
-// Minimal stub — real dashboard content (registrations, payments, orders) is
-// Phase 4. This exists now purely so /login has a real, session-gated
-// redirect target for approved managers.
-export default function Dashboard({ competitions }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+type Props = {
+  competitions: CompetitionWithPricing[];
+  registrations: Registration[];
+  manager: StudioManager;
+};
+
+export default function Dashboard({ competitions, registrations, manager }: Props) {
+  const [entries, setEntries] = useState(registrations);
+  const [editingEntry, setEditingEntry] = useState<Registration | null>(null);
+
+  async function handleSubmit(entry: DanceEntryInput, existingId?: string) {
+    const saved = await upsertDanceEntry(supabaseBrowserClient, manager.id, entry, existingId);
+
+    setEntries((current) =>
+      existingId ? current.map((e) => (e.id === existingId ? saved : e)) : [...current, saved]
+    );
+  }
+
   return (
     <>
       <Head>
@@ -17,8 +43,27 @@ export default function Dashboard({ competitions }: InferGetServerSidePropsType<
 
       <Nav competitions={competitions} />
 
-      <main style={{ padding: "60px 5%" }}>
-        <h1>לוח הבקרה בקרוב</h1>
+      <main className={styles.main}>
+        <ProfileCard manager={manager} />
+
+        <EarlyRegistrationStatus competitions={competitions} />
+
+        <section>
+          <h2 className={styles.title}>הרשמה סופית</h2>
+          <p className={styles.hint}>
+            כשיש לך מספרים סופיים לכל ריקוד — ניתן למלא ולשלוח כאן. השליחה עדיין אינה תשלום, וההרשמה תיחשב סופית רק
+            לאחר תשלום בפועל.
+          </p>
+
+          <DanceEntryForm
+            competitions={competitions}
+            editingEntry={editingEntry}
+            onSubmit={handleSubmit}
+            onCancelEdit={() => setEditingEntry(null)}
+          />
+
+          <DanceEntriesTable entries={entries} competitions={competitions} onEdit={setEditingEntry} />
+        </section>
       </main>
 
       <Footer />
@@ -26,10 +71,21 @@ export default function Dashboard({ competitions }: InferGetServerSidePropsType<
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
+export const getServerSideProps: GetServerSideProps<Props> = async (context) => {
   const guard = await requireApprovedManager(context);
   if (guard) return guard;
 
-  const competitions = await getAllCompetitions();
-  return { props: { competitions } };
+  const supabase = createSupabaseServerClient(context);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const studioManagerId = user!.id;
+
+  const [competitions, registrations, manager] = await Promise.all([
+    getCompetitionsWithPricing(supabase),
+    getOwnRegistrations(supabase, studioManagerId),
+    getOwnStudioManager(supabase, studioManagerId),
+  ]);
+
+  return { props: { competitions, registrations, manager: manager! } };
 };
