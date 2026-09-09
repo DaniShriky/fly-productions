@@ -22,6 +22,12 @@ import { useEffect, useRef } from "react";
  * Pausing the animation while the user's finger is down (so it doesn't
  * fight their drag) is the same `:active` rule as `:hover`, not JS.
  *
+ * Dragging is also infinite, without needing more than the two repeats
+ * already there for the animation's seamless wrap: a `scroll` listener
+ * silently snaps scrollLeft by exactly one repeated unit whenever a drag
+ * reaches either edge (see handleScroll below) — memory stays fixed at
+ * repeatCount copies no matter how far anyone drags.
+ *
 
  * This hook's job is just measuring: it sets `--marquee-distance` (one
  * unit's width — the content divided by how many times it's repeated in
@@ -89,6 +95,30 @@ export function useAutoScroll<T extends HTMLElement>(
     };
     window.addEventListener("resize", debouncedMeasure);
 
+    // Manual drag/swipe (native scrollLeft) is bounded by however much
+    // duplicated content actually exists in the DOM — drag far enough and
+    // you hit the real end, with nothing further to reveal, even though
+    // the animation itself loops forever. Rather than adding more repeats
+    // (unbounded memory for a still-finite drag distance), silently snap
+    // scrollLeft by exactly one repeated unit's width whenever a drag
+    // reaches either edge — since that unit is a duplicate of the next,
+    // landing on the equivalent scroll position in it is visually
+    // identical, so the jump isn't visible. This only reacts to real
+    // scrollLeft changes (manual drag), never to the CSS transform, so it
+    // can't fight the animation or need any touch/pointer tracking.
+    const handleScroll = () => {
+      if (repeatCount < 2) return;
+      const unitWidth = el.scrollWidth / repeatCount;
+      if (unitWidth <= 0) return;
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      if (el.scrollLeft <= 0) {
+        el.scrollLeft += unitWidth;
+      } else if (el.scrollLeft >= maxScroll - 1) {
+        el.scrollLeft -= unitWidth;
+      }
+    };
+    el.addEventListener("scroll", handleScroll, { passive: true });
+
     // A no-op touchstart is enough to make iOS Safari actually apply
     // :active on tap — with no touch listener present at all, it skips
     // :active on non-form elements entirely as part of its tap-vs-scroll
@@ -104,6 +134,7 @@ export function useAutoScroll<T extends HTMLElement>(
       window.removeEventListener("load", measure);
       window.removeEventListener("resize", debouncedMeasure);
       el.removeEventListener("touchstart", noop);
+      el.removeEventListener("scroll", handleScroll);
     };
   }, [speed, repeatCount, disabled]);
 
