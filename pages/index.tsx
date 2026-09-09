@@ -12,7 +12,7 @@ export default function Home(_props: InferGetStaticPropsType<typeof getStaticPro
   return (
     <>
       <Head>
-        <title>FLY Productions | פסטיבלים ותחרויות מחול</title>
+        <title>FLY Productions | תחרויות מחול ושירותי במה</title>
         <meta
           name="description"
           content="FLY Productions - הפקת תחרויות ריקוד מובילות בישראל"
