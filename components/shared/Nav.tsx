@@ -97,6 +97,10 @@ export default function Nav({ competitions }: { competitions: Competition[] }) {
               ))}
             </div>
           </div>
+
+          <Link href="/login" className={styles.loginLink} onClick={() => setMobileOpen(false)}>
+            כניסת מנהלים
+          </Link>
         </div>
       </div>
     </nav>

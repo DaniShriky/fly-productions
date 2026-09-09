@@ -1,0 +1,67 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 360px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  color: #d8d6cf;
+}
+
+.field input {
+  background: #101014;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 16px;
+  color: #f3f1ec;
+}
+
+.field input:focus {
+  outline: 2px solid #7fb8e6;
+  outline-offset: 1px;
+}
+
+.radioGroup {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.radioGroup legend {
+  font-size: 14px;
+  color: #d8d6cf;
+  padding: 0 4px;
+}
+
+.radio {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  color: #f3f1ec;
+}
+
+.submit {
+  background: linear-gradient(135deg, #f5c542, #e0a84a);
+  color: #050505;
+  padding: 12px 26px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+.submit:hover {
+  transform: scale(1.03);
+  filter: brightness(1.08);
+}

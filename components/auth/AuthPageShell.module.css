@@ -1,0 +1,37 @@
+.main {
+  min-height: calc(100vh - 200px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 5%;
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  background: #0a0a0c;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 32px;
+}
+
+.title {
+  font-size: 22px;
+  margin-bottom: 24px;
+}
+
+.error {
+  font-size: 14px;
+  color: #f28b82;
+  margin-top: 12px;
+}
+
+.hint {
+  font-size: 14px;
+  color: #d8d6cf;
+  margin-top: 16px;
+}
+
+.hint a {
+  text-decoration: underline;
+}

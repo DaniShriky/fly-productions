@@ -162,6 +162,20 @@
   color: #9c9a93;
 }
 
+.loginLink {
+  font-size: 14px;
+  color: #d8d6cf;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 8px 18px;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.loginLink:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
 .ctaPill {
   background: linear-gradient(135deg, #f5c542, #e0a84a);
   color: #050505;
