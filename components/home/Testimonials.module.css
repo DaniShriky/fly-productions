@@ -43,6 +43,14 @@
   animation: marquee var(--marquee-duration, 40s) linear infinite;
 }
 
+/* Starts paused — lib/useAutoScroll.ts lifts this ~350ms after mount, once
+   the page's initial layout/image-decode has had a moment to settle,
+   instead of the compositor animation joining that pile-up on the very
+   same frame the page transitions in. */
+.viewport:not(:global(.marquee-ready)) .track {
+  animation-play-state: paused;
+}
+
 @keyframes marquee {
   from {
     transform: translateX(0);
