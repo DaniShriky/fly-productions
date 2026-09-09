@@ -56,6 +56,23 @@ export function useAutoScroll<T extends HTMLElement>(
     }
 
     measure();
+
+    // The animation itself starts paused (see the .module.css ":not(.marquee-ready)"
+    // rule) and JS only lifts that shortly after mount. A page transition
+    // already has to lay out and decode every image in this carousel (and
+    // any autoplaying video) all at once; also asking the compositor to
+    // immediately start animating that many image layers in the very same
+    // instant is exactly the kind of pile-up that can make a phone browser
+    // flag the page as unresponsive and force-reload it (Safari's "a
+    // problem repeatedly occurred") — one real occurrence of that was
+    // caught navigating straight between two competition pages, not just
+    // via the homepage, which pointed at this shared piece rather than
+    // anything homepage-specific. Giving layout/decode a moment to settle
+    // before the animation joins in spreads the work out instead of
+    // stacking it all on the same frame.
+    const readyTimer = setTimeout(() => {
+      el.classList.add("marquee-ready");
+    }, 350);
     // Re-measure once images have their real box and webfonts have
     // swapped in — either can change the content's actual width after
     // this first pass.
@@ -82,6 +99,7 @@ export function useAutoScroll<T extends HTMLElement>(
 
     return () => {
       cancelled = true;
+      clearTimeout(readyTimer);
       if (resizeTimer) clearTimeout(resizeTimer);
       window.removeEventListener("load", measure);
       window.removeEventListener("resize", debouncedMeasure);

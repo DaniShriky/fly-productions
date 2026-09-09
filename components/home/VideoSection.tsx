@@ -51,8 +51,16 @@ export default function VideoSection() {
       },
       { threshold: 0.3 }
     );
-    observer.observe(section);
+    // Delayed observe(), not immediate: on mount this section is very
+    // likely already on screen, so an immediate observe() fires the
+    // callback (and starts decoding/playing the video) in the very same
+    // instant the page is also laying out and decoding every carousel
+    // image — see the matching comment in lib/useAutoScroll.ts about
+    // that pile-up being a plausible trigger for Safari's mobile
+    // unresponsive-page watchdog.
+    const observeTimer = setTimeout(() => observer.observe(section), 400);
     return () => {
+      clearTimeout(observeTimer);
       observer.disconnect();
       // See the matching comment in CompetitionDetail.tsx — iOS Safari
       // doesn't reliably free a <video>'s decode buffers just because the

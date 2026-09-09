@@ -39,8 +39,12 @@ export default function CompetitionDetail({ competition }: { competition: Compet
       },
       { threshold: 0.3 }
     );
-    observer.observe(wrap);
+    // Delayed observe(), not immediate — see the matching comment in
+    // VideoSection.tsx about spreading this out from the rest of the
+    // page's initial layout/image-decode work.
+    const observeTimer = setTimeout(() => observer.observe(wrap), 400);
     return () => {
+      clearTimeout(observeTimer);
       observer.disconnect();
       // iOS Safari doesn't reliably release a <video>'s decode buffers just
       // because the element got unmounted — across enough client-side page
