@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { Registration, RegistrationCategory } from "@/types/registration";
+import { DanceLevel, Registration, RegistrationCategory } from "@/types/registration";
 
 type RegistrationRow = {
   id: string;
@@ -9,7 +9,15 @@ type RegistrationRow = {
   category: RegistrationCategory;
   participant_count: number;
   step_division: string;
-  dance_style: string | null;
+  dance_style: string;
+  dancer_name: string | null;
+  choreographer_name: string;
+  dance_level: DanceLevel;
+  preferred_day: string | null;
+  song_file_path: string | null;
+  song_duration_seconds: number | null;
+  wants_video: boolean;
+  wants_stills: boolean;
   payment_status: Registration["paymentStatus"];
   payment_due_date: string | null;
   late_payment_exception: boolean;
@@ -25,7 +33,15 @@ function toRegistration(row: RegistrationRow): Registration {
     category: row.category,
     participantCount: row.participant_count,
     stepDivision: row.step_division,
-    ...(row.dance_style ? { danceStyle: row.dance_style } : {}),
+    danceStyle: row.dance_style,
+    ...(row.dancer_name ? { dancerName: row.dancer_name } : {}),
+    choreographerName: row.choreographer_name,
+    danceLevel: row.dance_level,
+    ...(row.preferred_day ? { preferredDay: row.preferred_day } : {}),
+    ...(row.song_file_path ? { songFilePath: row.song_file_path } : {}),
+    ...(row.song_duration_seconds != null ? { songDurationSeconds: row.song_duration_seconds } : {}),
+    wantsVideo: row.wants_video,
+    wantsStills: row.wants_stills,
     paymentStatus: row.payment_status,
     ...(row.payment_due_date ? { paymentDueDate: row.payment_due_date } : {}),
     latePaymentException: row.late_payment_exception,
@@ -51,6 +67,14 @@ export type DanceEntryInput = {
   participantCount: number;
   stepDivision: string;
   danceStyle: string;
+  dancerName?: string;
+  choreographerName: string;
+  danceLevel: DanceLevel;
+  preferredDay?: string;
+  songFilePath?: string;
+  songDurationSeconds?: number;
+  wantsVideo: boolean;
+  wantsStills: boolean;
 };
 
 // Insert if `existingId` is omitted, otherwise update — only reachable while
@@ -69,7 +93,15 @@ export async function upsertDanceEntry(
     category: entry.category,
     participant_count: entry.participantCount,
     step_division: entry.stepDivision,
-    dance_style: entry.danceStyle || null,
+    dance_style: entry.danceStyle,
+    dancer_name: entry.category === "solo" ? entry.dancerName || null : null,
+    choreographer_name: entry.choreographerName,
+    dance_level: entry.danceLevel,
+    preferred_day: entry.preferredDay || null,
+    song_file_path: entry.songFilePath || null,
+    song_duration_seconds: entry.songDurationSeconds ?? null,
+    wants_video: entry.wantsVideo,
+    wants_stills: entry.wantsStills,
   };
 
   const query = existingId
@@ -79,4 +111,20 @@ export async function upsertDanceEntry(
   const { data, error } = await query.select("*").single();
   if (error) throw error;
   return toRegistration(data as RegistrationRow);
+}
+
+export async function deleteDanceEntry(client: SupabaseClient, id: string): Promise<void> {
+  const { error } = await client.from("registrations").delete().eq("id", id);
+  if (error) throw error;
+}
+
+// Uploads to the private "dance-music" bucket under the manager's own folder
+// (RLS on storage.objects requires this exact path shape — see
+// supabase/schema.sql). Called on form submit, not on file selection, so
+// changing your mind before submitting doesn't leave orphaned uploads.
+export async function uploadDanceMusic(client: SupabaseClient, studioManagerId: string, file: File): Promise<string> {
+  const path = `${studioManagerId}/${crypto.randomUUID()}-${file.name}`;
+  const { error } = await client.storage.from("dance-music").upload(path, file);
+  if (error) throw error;
+  return path;
 }

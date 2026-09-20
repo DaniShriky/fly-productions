@@ -10,7 +10,7 @@ import DanceEntriesTable from "@/components/dashboard/DanceEntriesTable";
 import { requireApprovedManager } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabaseServerClient";
 import { CompetitionWithPricing, getCompetitionsWithPricing } from "@/lib/queries/competitionsWithPricing";
-import { DanceEntryInput, getOwnRegistrations, upsertDanceEntry } from "@/lib/queries/registrations";
+import { DanceEntryInput, deleteDanceEntry, getOwnRegistrations, upsertDanceEntry } from "@/lib/queries/registrations";
 import { getOwnStudioManager } from "@/lib/queries/studioManagers";
 import { supabaseBrowserClient } from "@/lib/supabaseBrowserClient";
 import { StudioManager } from "@/types/studioManager";
@@ -35,6 +35,12 @@ export default function Dashboard({ competitions, registrations, manager }: Prop
     );
   }
 
+  async function handleDelete(id: string) {
+    await deleteDanceEntry(supabaseBrowserClient, id);
+    setEntries((current) => current.filter((e) => e.id !== id));
+    if (editingEntry?.id === id) setEditingEntry(null);
+  }
+
   return (
     <>
       <Head>
@@ -44,11 +50,22 @@ export default function Dashboard({ competitions, registrations, manager }: Prop
       <Nav competitions={competitions} />
 
       <main className={styles.main}>
+        <header className={styles.pageHeader}>
+          <p className={styles.kicker}>לוח בקרה</p>
+          <h1 className={styles.pageTitle}>שלום, {manager.studioName}</h1>
+          <p className={styles.pageSubtitle}>כאן תוכלי לעקוב אחרי ההרשמה שלך ולנהל את הריקודים לתחרויות.</p>
+        </header>
+
         <ProfileCard manager={manager} />
+
+        <div className={styles.divider} />
 
         <EarlyRegistrationStatus competitions={competitions} />
 
+        <div className={styles.divider} />
+
         <section>
+          <p className={styles.kicker}>שלב 2</p>
           <h2 className={styles.title}>הרשמה סופית</h2>
           <p className={styles.hint}>
             כשיש לך מספרים סופיים לכל ריקוד — ניתן למלא ולשלוח כאן. השליחה עדיין אינה תשלום, וההרשמה תיחשב סופית רק
@@ -56,13 +73,20 @@ export default function Dashboard({ competitions, registrations, manager }: Prop
           </p>
 
           <DanceEntryForm
+            studioManagerId={manager.id}
             competitions={competitions}
+            entries={entries}
             editingEntry={editingEntry}
             onSubmit={handleSubmit}
             onCancelEdit={() => setEditingEntry(null)}
           />
 
-          <DanceEntriesTable entries={entries} competitions={competitions} onEdit={setEditingEntry} />
+          <DanceEntriesTable
+            entries={entries}
+            competitions={competitions}
+            onEdit={setEditingEntry}
+            onDelete={handleDelete}
+          />
         </section>
       </main>
 

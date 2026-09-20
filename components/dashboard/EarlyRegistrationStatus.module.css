@@ -2,8 +2,18 @@
   margin-bottom: 40px;
 }
 
+.kicker {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #f5c542;
+  margin-bottom: 6px;
+}
+
 .title {
-  font-size: 20px;
+  font-size: 22px;
+  font-weight: 700;
   margin-bottom: 4px;
 }
 

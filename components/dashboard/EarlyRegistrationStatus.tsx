@@ -13,6 +13,7 @@ import styles from "./EarlyRegistrationStatus.module.css";
 export default function EarlyRegistrationStatus({ competitions }: { competitions: Competition[] }) {
   return (
     <section className={styles.section}>
+      <p className={styles.kicker}>שלב 1</p>
       <h2 className={styles.title}>הרשמה מוקדמת</h2>
       <p className={styles.hint}>הרשמה מוקדמת היא הודעת עניין ראשונית ולא מחייבת — לשמירת מקום בלבד, ללא תשלום.</p>
 

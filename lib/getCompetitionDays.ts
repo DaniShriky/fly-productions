@@ -41,6 +41,29 @@ export function getCompetitionDateLabel(date: string): string {
   return `${days.join("-")} / ${month} / ${year}`;
 }
 
+// One option per calendar day in the competition's range, with a real ISO
+// date (for storing a manager's preferred day) and a Hebrew label like
+// "שישי 12.6". Real FLY registration is split per specific day within a
+// multi-day competition (see project_pricing_and_rules memory) — callers
+// should only show a day picker when this returns more than one option.
+export function getCompetitionDayOptions(date: string): { date: string; label: string }[] {
+  const match = date.match(DATE_PATTERN);
+  if (!match) return [];
+
+  const [, startDay, endDay, month, year] = match;
+  const fullYear = 2000 + Number(year);
+  const monthIndex = Number(month) - 1;
+  const last = Number(endDay ?? startDay);
+
+  const options: { date: string; label: string }[] = [];
+  for (let day = Number(startDay); day <= last; day++) {
+    const dayOfWeek = HEBREW_DAYS[new Date(Date.UTC(fullYear, monthIndex, day)).getUTCDay()];
+    const iso = `${fullYear}-${String(monthIndex + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    options.push({ date: iso, label: `${dayOfWeek} ${day}.${Number(month)}` });
+  }
+  return options;
+}
+
 // Parses the `date` field into actual Date objects for calendar integrations
 // (Google Calendar / .ics). `end` is the day *after* the last competition
 // day, matching the exclusive end-date convention both use for all-day

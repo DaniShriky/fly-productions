@@ -4,8 +4,40 @@
   margin: 0 auto;
 }
 
+.pageHeader {
+  margin-bottom: 32px;
+}
+
+.pageTitle {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  margin-bottom: 8px;
+}
+
+.pageSubtitle {
+  font-size: 15px;
+  color: #9c9a93;
+}
+
+.kicker {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #f5c542;
+  margin-bottom: 6px;
+}
+
+.divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 40px 0;
+}
+
 .title {
-  font-size: 20px;
+  font-size: 22px;
+  font-weight: 700;
   margin-bottom: 4px;
 }
 

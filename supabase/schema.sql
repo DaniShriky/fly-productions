@@ -181,7 +181,8 @@ create table registrations (
   category text not null check (category in ('solo', 'duet', 'trio_quartet', 'group_small', 'group_large')),
   participant_count integer not null check (participant_count > 0),
   step_division text not null, -- e.g. "STEP 3", "STAR 6", "STEP MIX 1" — see project_pricing_and_rules
-  dance_style text,
+  dance_style text not null,
+  dancer_name text, -- only filled/required in the UI when category = 'solo'
   payment_status text not null default 'unpaid' check (payment_status in ('unpaid', 'paid')),
   payment_due_date date,
   late_payment_exception boolean not null default false, -- admin override: let
@@ -213,7 +214,40 @@ grant select, insert on registrations to authenticated;
 -- Column-level grant: authenticated may only ever change the descriptive
 -- fields, never payment_status/payment_due_date/late_payment_exception
 -- (admin- and Phase-5-webhook-only, via service_role).
-grant update (dance_name, category, participant_count, step_division, dance_style) on registrations to authenticated;
+grant update (dance_name, category, participant_count, step_division, dance_style, dancer_name) on registrations to authenticated;
+
+-- Round 3 additions: choreographer/level/day/music-upload/video-stills fields
+-- (see project_pricing_and_rules memory) + delete, which registrations didn't
+-- have before (a manager can now remove an unpaid dance entry outright).
+alter table registrations add column choreographer_name text not null default '';
+alter table registrations add column dance_level text not null default 'A' check (dance_level in ('A', 'B', 'C'));
+alter table registrations add column preferred_day date;
+alter table registrations add column song_file_path text;
+alter table registrations add column song_duration_seconds integer;
+alter table registrations add column wants_video boolean not null default false;
+alter table registrations add column wants_stills boolean not null default false;
+
+grant update (choreographer_name, dance_level, preferred_day, song_file_path, song_duration_seconds, wants_video, wants_stills) on registrations to authenticated;
+
+create policy "Manager deletes own unpaid registration" on registrations
+  for delete using (studio_manager_id = auth.uid() and payment_status = 'unpaid');
+
+grant delete on registrations to authenticated;
+
+-- Storage bucket for uploaded dance music files. Private (not public) — only
+-- ever fetched through an authenticated Supabase client, same gating pattern
+-- as everything else here. Path convention:
+-- dance-music/{studio_manager_id}/{uuid-or-registration-id}-{original filename}
+insert into storage.buckets (id, name, public) values ('dance-music', 'dance-music', false);
+
+create policy "Manager uploads own music" on storage.objects
+  for insert with check (bucket_id = 'dance-music' and (storage.foldername(name))[1] = auth.uid()::text);
+
+create policy "Manager reads own music" on storage.objects
+  for select using (bucket_id = 'dance-music' and (storage.foldername(name))[1] = auth.uid()::text);
+
+create policy "Admin reads all music" on storage.objects
+  for select using (bucket_id = 'dance-music' and is_admin());
 
 -- Hides price_tiers from anyone who isn't an approved manager or admin,
 -- since RLS row policies can't vary visibility of a single column by caller

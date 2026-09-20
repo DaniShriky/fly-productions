@@ -1,0 +1,28 @@
+.notice {
+  background: rgba(245, 197, 66, 0.1);
+  border: 1px solid rgba(245, 197, 66, 0.35);
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  color: #f3f1ec;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.notice div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.icon {
+  flex: 0 0 auto;
+  color: #f5c542;
+  margin-top: 2px;
+}
+
+.notice strong {
+  color: #f5c542;
+}

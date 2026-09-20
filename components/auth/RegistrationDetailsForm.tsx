@@ -1,5 +1,8 @@
 import { FormEvent, useState } from "react";
+import { ISRAELI_CITIES } from "@/lib/cities";
 import styles from "./RegistrationDetailsForm.module.css";
+
+const OTHER_CITY = "אחר";
 
 export type RegistrationDetails = {
   studioName: string;
@@ -24,7 +27,8 @@ export default function RegistrationDetailsForm({ onSubmit }: Props) {
   const [studioName, setStudioName] = useState("");
   const [managerName, setManagerName] = useState("");
   const [phone, setPhone] = useState("");
-  const [city, setCity] = useState("");
+  const [city, setCity] = useState(ISRAELI_CITIES[0]);
+  const [customCity, setCustomCity] = useState("");
   const [danceStyles, setDanceStyles] = useState("");
   const [referralSource, setReferralSource] = useState("");
   const [preferredCompetitionType, setPreferredCompetitionType] = useState<"regular" | "religious">("regular");
@@ -36,7 +40,7 @@ export default function RegistrationDetailsForm({ onSubmit }: Props) {
       studioName,
       managerName,
       phone,
-      city,
+      city: city === OTHER_CITY ? customCity : city,
       danceStyles,
       referralSource,
       preferredCompetitionType,
@@ -71,8 +75,22 @@ export default function RegistrationDetailsForm({ onSubmit }: Props) {
 
       <label className={styles.field}>
         <span>יישוב</span>
-        <input required value={city} onChange={(e) => setCity(e.target.value)} />
+        <select value={city} onChange={(e) => setCity(e.target.value)}>
+          {ISRAELI_CITIES.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+          <option value={OTHER_CITY}>{OTHER_CITY}</option>
+        </select>
       </label>
+
+      {city === OTHER_CITY && (
+        <label className={styles.field}>
+          <span>איזה יישוב?</span>
+          <input required value={customCity} onChange={(e) => setCustomCity(e.target.value)} />
+        </label>
+      )}
 
       <label className={styles.field}>
         <span>סגנונות ריקוד (לא חובה)</span>

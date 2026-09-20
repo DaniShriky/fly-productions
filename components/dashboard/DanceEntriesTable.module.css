@@ -28,27 +28,36 @@
   color: #f5c542;
 }
 
-.wrap {
-  overflow-x: auto;
-}
-
 .table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .table th,
 .table td {
-  padding: 12px 14px;
+  padding: 10px 8px;
   text-align: right;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  white-space: nowrap;
+  overflow-wrap: break-word;
 }
 
 .table th {
   color: #9c9a93;
   font-weight: 600;
+  font-size: 12px;
+}
+
+.priceLine {
+  white-space: nowrap;
+}
+
+.priceTotalLine {
+  white-space: nowrap;
+  color: #f5c542;
+  font-weight: 600;
+  font-size: 12px;
 }
 
 .paid {
@@ -60,16 +69,173 @@
   color: #d8d6cf;
 }
 
-.editButton {
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.iconButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
   background: none;
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 999px;
-  padding: 6px 14px;
+  color: #d8d6cf;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.iconButton:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.payIconButton {
+  border-color: rgba(245, 197, 66, 0.4);
+  color: #f5c542;
+}
+
+.payIconButton:hover {
+  border-color: #f5c542;
+  background: rgba(245, 197, 66, 0.15);
+}
+
+.deleteIconButton {
+  border-color: rgba(242, 139, 130, 0.4);
+  color: #f28b82;
+}
+
+.deleteIconButton:hover {
+  color: #fff;
+  border-color: #f28b82;
+  background: rgba(242, 139, 130, 0.15);
+}
+
+.deleteIconButton:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.payPanel {
+  background: rgba(245, 197, 66, 0.08);
   font-size: 13px;
+  color: #d8d6cf;
+  white-space: normal;
+  padding: 16px 18px;
+}
+
+.payPanel a {
+  color: #f5c542;
+  text-decoration: underline;
+}
+
+.breakdown {
+  max-width: 360px;
+  margin-bottom: 14px;
+}
+
+.breakdownTitle {
+  font-weight: 600;
+  color: #f3f1ec;
+  margin-bottom: 8px;
+}
+
+.breakdownRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0;
+}
+
+.breakdownTotal {
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  margin-top: 6px;
+  padding-top: 8px;
+  font-weight: 700;
+  color: #f5c542;
+}
+
+.payInstructions {
   color: #d8d6cf;
 }
 
-.editButton:hover {
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.4);
+.grandTotalLabel {
+  color: #9c9a93;
+  font-weight: 600;
+}
+
+.grandTotalValue {
+  color: #f5c542;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+/* Below this width even the trimmed 7-column table gets cramped, so each row
+   reflows into a labeled card instead — no horizontal scrolling at any
+   viewport size. */
+@media (max-width: 720px) {
+  .table,
+  .table thead,
+  .table tbody,
+  .table tfoot,
+  .table tr,
+  .table th,
+  .table td {
+    display: block;
+    width: auto;
+  }
+
+  .table thead {
+    display: none;
+  }
+
+  .table tbody tr {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 4px 12px;
+    margin-bottom: 12px;
+  }
+
+  .table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 8px 0;
+  }
+
+  .table td:last-child {
+    border-bottom: none;
+  }
+
+  .table td[data-label]::before {
+    content: attr(data-label);
+    color: #9c9a93;
+    font-size: 12px;
+    flex: 0 0 auto;
+  }
+
+  .table td.actions {
+    justify-content: flex-end;
+  }
+
+  .table td.actions::before {
+    content: none;
+  }
+
+  .payPanelRow td {
+    display: block;
+  }
+
+  .table tfoot tr {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 4px;
+  }
 }

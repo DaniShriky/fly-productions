@@ -7,33 +7,116 @@
 }
 
 .title {
-  font-size: 17px;
+  font-size: 18px;
+  font-weight: 700;
   margin-bottom: 16px;
+}
+
+.groupTitle {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #9c9a93;
+  margin-bottom: 12px;
+}
+
+.groupTitle:not(:first-of-type) {
+  margin-top: 8px;
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px 20px;
   margin-bottom: 16px;
+}
+
+@media (max-width: 860px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .field {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
   font-size: 13px;
   color: #d8d6cf;
 }
 
+.competitionRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.competitionRow select {
+  flex: 1;
+  min-width: 0;
+}
+
+.competitionLogo {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 28px;
+  object-fit: contain;
+}
+
 .field input,
 .field select {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   background: #101014;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   padding: 10px 12px;
   font-size: 15px;
   color: #f3f1ec;
+}
+
+.durationHint {
+  font-size: 12px;
+  color: #9c9a93;
+}
+
+.checkboxField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  grid-column: 1 / -1;
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #d8d6cf;
+}
+
+.surchargeNote {
+  background: rgba(242, 139, 130, 0.12);
+  border: 1px solid rgba(242, 139, 130, 0.4);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #f3f1ec;
+  margin-bottom: 16px;
+}
+
+.surchargeNote strong {
+  color: #f28b82;
 }
 
 .footer {
@@ -54,6 +137,11 @@
 .price {
   color: #f5c542;
   font-weight: 700;
+}
+
+.priceExplain {
+  color: #9c9a93;
+  font-size: 12px;
 }
 
 .actions {
