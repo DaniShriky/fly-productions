@@ -11,9 +11,14 @@ export interface StudioManager {
   email: string;
   city?: string;
   danceStyles?: string;
+  profileImagePath?: string;
   status: StudioManagerStatus;
   referralSource?: string;
   preferredCompetitionType?: string;
+  // Set only while a request to change preferredCompetitionType is awaiting
+  // admin approval — see resolve_preferred_competition_type_request in
+  // supabase/schema.sql. Cleared once an admin approves or rejects it.
+  pendingPreferredCompetitionType?: string;
   additionalNotes?: string;
   wantsStageServicesInfo: boolean;
   createdAt: string;

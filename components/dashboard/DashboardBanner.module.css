@@ -1,0 +1,31 @@
+/* Full-bleed: sits directly under the sticky Nav with no gap and spans the
+   entire viewport width, unlike the rounded, inset PromoBanner on the
+   homepage — this one reads as a banner strip, not a card. */
+.banner {
+  display: block;
+  width: 100%;
+  line-height: 0;
+}
+
+.banner img {
+  width: 100%;
+  height: auto;
+}
+
+.desktop {
+  display: block;
+}
+
+.mobile {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .desktop {
+    display: none;
+  }
+
+  .mobile {
+    display: block;
+  }
+}
