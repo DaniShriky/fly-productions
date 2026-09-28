@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Head from "next/head";
 import type { GetServerSideProps } from "next";
 import Nav from "@/components/shared/Nav";
 import Footer from "@/components/shared/Footer";
-import ProfileCard from "@/components/dashboard/ProfileCard";
+import DashboardBanner from "@/components/dashboard/DashboardBanner";
+import RegistrationStepper, { RegistrationStep } from "@/components/dashboard/RegistrationStepper";
 import EarlyRegistrationStatus from "@/components/dashboard/EarlyRegistrationStatus";
-import DanceEntryForm from "@/components/dashboard/DanceEntryForm";
+import Step2FinalRegistration from "@/components/dashboard/Step2FinalRegistration";
+import StepHeader from "@/components/dashboard/StepHeader";
 import DanceEntriesTable from "@/components/dashboard/DanceEntriesTable";
 import { requireApprovedManager } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabaseServerClient";
@@ -25,7 +27,35 @@ type Props = {
 
 export default function Dashboard({ competitions, registrations, manager }: Props) {
   const [entries, setEntries] = useState(registrations);
-  const [editingEntry, setEditingEntry] = useState<Registration | null>(null);
+  // A returning manager who already has dances on file almost always came
+  // back to add more of them, not to re-read step 1's reminder — so she
+  // lands straight on step 2. A first-time visitor with nothing yet starts
+  // at step 1, where the actual entry point (the external form) lives.
+  const [activeStep, setActiveStep] = useState<RegistrationStep>(registrations.length === 0 ? 1 : 2);
+  const [pendingEditEntry, setPendingEditEntry] = useState<Registration | null>(null);
+
+  // Nav (components/shared/Nav.tsx) is itself position:sticky at top:0, so
+  // this bar has to stick just below it rather than at top:0 too — otherwise
+  // the two would overlap instead of stacking. Measuring Nav's real rendered
+  // height (instead of hardcoding it) keeps this correct across the mobile
+  // breakpoint where Nav's own padding/logo size shrink.
+  const [navHeight, setNavHeight] = useState(0);
+  useEffect(() => {
+    const navEl = document.querySelector("nav");
+    if (!navEl) return;
+
+    const updateHeight = () => setNavHeight(navEl.getBoundingClientRect().height);
+    updateHeight();
+
+    const resizeObserver = new ResizeObserver(updateHeight);
+    resizeObserver.observe(navEl);
+    return () => resizeObserver.disconnect();
+  }, []);
+
+  function handleEditFromSummary(entry: Registration) {
+    setPendingEditEntry(entry);
+    setActiveStep(2);
+  }
 
   async function handleSubmit(entry: DanceEntryInput, existingId?: string) {
     const saved = await upsertDanceEntry(supabaseBrowserClient, manager.id, entry, existingId);
@@ -38,56 +68,66 @@ export default function Dashboard({ competitions, registrations, manager }: Prop
   async function handleDelete(id: string) {
     await deleteDanceEntry(supabaseBrowserClient, id);
     setEntries((current) => current.filter((e) => e.id !== id));
-    if (editingEntry?.id === id) setEditingEntry(null);
   }
 
   return (
     <>
       <Head>
-        <title>לוח בקרה - FLY Productions</title>
+        <title>הרשמה לתחרויות - FLY Productions</title>
       </Head>
 
       <Nav competitions={competitions} />
 
-      <main className={styles.main}>
+      <DashboardBanner />
+
+      <div className={styles.stickyHeader} style={{ top: navHeight }}>
         <header className={styles.pageHeader}>
-          <p className={styles.kicker}>לוח בקרה</p>
-          <h1 className={styles.pageTitle}>שלום, {manager.studioName}</h1>
           <p className={styles.pageSubtitle}>כאן תוכלי לעקוב אחרי ההרשמה שלך ולנהל את הריקודים לתחרויות.</p>
         </header>
 
-        <ProfileCard manager={manager} />
+        <RegistrationStepper active={activeStep} onSelect={setActiveStep} />
+      </div>
 
-        <div className={styles.divider} />
+      <main className={styles.main}>
+        {activeStep === 1 && (
+          <div className={styles.narrow}>
+            <EarlyRegistrationStatus />
+          </div>
+        )}
 
-        <EarlyRegistrationStatus competitions={competitions} />
+        {activeStep === 2 && (
+          <div className={styles.narrow}>
+            <Step2FinalRegistration
+              studioManagerId={manager.id}
+              competitions={competitions}
+              entries={entries}
+              onSubmit={handleSubmit}
+              onDelete={handleDelete}
+              initialEditEntry={pendingEditEntry}
+              onInitialEditConsumed={() => setPendingEditEntry(null)}
+            />
+          </div>
+        )}
 
-        <div className={styles.divider} />
+        {activeStep === 3 && (
+          <>
+            <div className={styles.narrow}>
+              <StepHeader
+                kicker="שלב 3"
+                title="סיכום ותשלום"
+                hint='לפני התשלום, בדקו שכל פרטי הריקודים שהוספתם נכונים.'
+              />
+            </div>
 
-        <section>
-          <p className={styles.kicker}>שלב 2</p>
-          <h2 className={styles.title}>הרשמה סופית</h2>
-          <p className={styles.hint}>
-            כשיש לך מספרים סופיים לכל ריקוד — ניתן למלא ולשלוח כאן. השליחה עדיין אינה תשלום, וההרשמה תיחשב סופית רק
-            לאחר תשלום בפועל.
-          </p>
-
-          <DanceEntryForm
-            studioManagerId={manager.id}
-            competitions={competitions}
-            entries={entries}
-            editingEntry={editingEntry}
-            onSubmit={handleSubmit}
-            onCancelEdit={() => setEditingEntry(null)}
-          />
-
-          <DanceEntriesTable
-            entries={entries}
-            competitions={competitions}
-            onEdit={setEditingEntry}
-            onDelete={handleDelete}
-          />
-        </section>
+            {/* Outside .narrow deliberately — the entries table has a lot of
+                columns to show, so it uses the full page width instead of
+                being squeezed into the same reading-width column as the rest
+                of the dashboard. */}
+            <div className={styles.wideTable}>
+              <DanceEntriesTable entries={entries} competitions={competitions} onEdit={handleEditFromSummary} onDelete={handleDelete} />
+            </div>
+          </>
+        )}
       </main>
 
       <Footer />

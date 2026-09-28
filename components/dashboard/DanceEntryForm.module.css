@@ -1,15 +1,37 @@
 .form {
-  background: #0a0a0c;
+  background: linear-gradient(165deg, #101014, #0a0a0c 65%);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 24px;
   margin-bottom: 24px;
+  box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.7);
+}
+
+.formHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 .title {
   font-size: 18px;
   font-weight: 700;
-  margin-bottom: 16px;
+}
+
+.closeButton {
+  flex: 0 0 auto;
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: #9c9a93;
+  text-decoration: underline;
+}
+
+.closeButton:hover {
+  color: #fff;
 }
 
 .groupTitle {
@@ -27,18 +49,12 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px 20px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px 24px;
   margin-bottom: 16px;
 }
 
-@media (max-width: 860px) {
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 520px) {
+@media (max-width: 600px) {
   .grid {
     grid-template-columns: 1fr;
   }
@@ -53,25 +69,6 @@
   color: #d8d6cf;
 }
 
-.competitionRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-.competitionRow select {
-  flex: 1;
-  min-width: 0;
-}
-
-.competitionLogo {
-  flex: 0 0 auto;
-  width: 32px;
-  height: 28px;
-  object-fit: contain;
-}
-
 .field input,
 .field select {
   width: 100%;
@@ -83,6 +80,53 @@
   padding: 10px 12px;
   font-size: 15px;
   color: #f3f1ec;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.field input:focus,
+.field select:focus {
+  outline: none;
+  border-color: rgba(245, 197, 66, 0.6);
+  box-shadow: 0 0 0 3px rgba(245, 197, 66, 0.15);
+}
+
+/* Icon-in-field, checkout-style — plain flex alignment rather than an
+   absolutely-positioned icon + inline-start padding, per this codebase's own
+   RTL convention (see CLAUDE.md: avoid margin-inline-start tricks here, use
+   flex instead). The wrapper carries the border/background that .field
+   input normally would; the input itself goes bare inside it. */
+.fieldIconWrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  background: #101014;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 0 12px;
+  color: #9c9a93;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fieldIconWrap:focus-within {
+  border-color: rgba(245, 197, 66, 0.6);
+  box-shadow: 0 0 0 3px rgba(245, 197, 66, 0.15);
+}
+
+.fieldIconWrap svg {
+  flex: 0 0 auto;
+}
+
+.fieldIconWrap input {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: none;
+  outline: none;
+  padding: 10px 0;
+  font-size: 15px;
+  color: #f3f1ec;
 }
 
 .durationHint {
@@ -90,19 +134,130 @@
   color: #9c9a93;
 }
 
+.timeLimitHint {
+  font-size: 12px;
+  color: #7fb8e6;
+  margin-bottom: 12px;
+}
+
+.timeLimitHint strong {
+  color: #7fb8e6;
+}
+
+.mediaGrid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 640px) {
+  .mediaGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dropzoneField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: #d8d6cf;
+}
+
+.fieldLabel {
+  font-size: 13px;
+  color: #d8d6cf;
+}
+
+.dropzone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  padding: 28px 16px;
+  border: 1.5px dashed rgba(255, 255, 255, 0.22);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  color: #f5c542;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.dropzone:hover,
+.dropzone:focus-within {
+  border-color: rgba(245, 197, 66, 0.5);
+  background: rgba(245, 197, 66, 0.05);
+}
+
+.dropzoneInput {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.dropzoneText {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f3f1ec;
+}
+
+.dropzoneHint {
+  font-size: 12px;
+  color: #9c9a93;
+}
+
 .checkboxField {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  grid-column: 1 / -1;
+  gap: 10px;
 }
 
-.checkboxRow {
+.checkboxCard {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.checkboxCard:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.checkboxCard input {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: #f5c542;
+}
+
+.checkboxCard > span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.checkboxTitle {
   font-size: 13px;
-  color: #d8d6cf;
+  font-weight: 700;
+  color: #f3f1ec;
+}
+
+.checkboxSubtitle {
+  font-size: 12px;
+  color: #9c9a93;
 }
 
 .surchargeNote {
@@ -121,22 +276,43 @@
 
 .footer {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  flex-direction: column;
+  gap: 14px;
   padding-top: 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.priceLine {
-  font-size: 14px;
+.priceBreakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 13px;
   color: #d8d6cf;
 }
 
-.price {
-  color: #f5c542;
+.priceBreakdownRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.priceBreakdownTotal {
+  margin-top: 6px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: rgba(245, 197, 66, 0.12);
+  border: 1px solid rgba(245, 197, 66, 0.35);
   font-weight: 700;
+  font-size: 16px;
+}
+
+.priceBreakdownTotal span:first-child {
+  color: #f3f1ec;
+}
+
+.priceBreakdownTotal span:last-child {
+  color: #f5c542;
+  font-size: 20px;
 }
 
 .priceExplain {
@@ -157,6 +333,14 @@
   font-size: 14px;
   font-weight: 700;
   border: none;
+  box-shadow: 0 8px 22px -8px rgba(245, 197, 66, 0.55);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease, opacity 0.2s ease;
+}
+
+.submitButton:hover:not(:disabled) {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px -8px rgba(245, 197, 66, 0.7);
 }
 
 .submitButton:disabled {
@@ -171,9 +355,11 @@
   padding: 10px 20px;
   font-size: 13px;
   color: #d8d6cf;
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .cancelButton:hover {
   color: #fff;
   border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.04);
 }

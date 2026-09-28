@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { CompetitionWithPricing } from "@/lib/queries/competitionsWithPricing";
 import { DanceEntryInput, uploadDanceMusic } from "@/lib/queries/registrations";
@@ -11,7 +10,7 @@ import {
   STEP_DIVISIONS,
   UiCategory,
   computePrice,
-  computeRecordingFeePerDance,
+  computeRecordingFeeForType,
   computeSurcharge,
   computeTotalPrice,
   displayCategoryLabel,
@@ -19,16 +18,16 @@ import {
   resolveCategory,
   uiCategoryOf,
 } from "@/lib/pricing";
-import RegistrationNotice from "./RegistrationNotice";
+import { MusicNoteIcon, PersonIcon, UploadIcon } from "./icons";
 import styles from "./DanceEntryForm.module.css";
 
 type Props = {
   studioManagerId: string;
-  competitions: CompetitionWithPricing[];
+  competition: CompetitionWithPricing;
   entries: Registration[];
   editingEntry: Registration | null;
   onSubmit: (entry: DanceEntryInput, existingId?: string) => Promise<void>;
-  onCancelEdit: () => void;
+  onClose: () => void;
 };
 
 const UI_CATEGORIES: { value: UiCategory; label: string }[] = [
@@ -52,13 +51,12 @@ const FIXED_PARTICIPANT_COUNTS: Record<Exclude<UiCategory, "group">, number> = {
 
 export default function DanceEntryForm({
   studioManagerId,
-  competitions,
+  competition,
   entries,
   editingEntry,
   onSubmit,
-  onCancelEdit,
+  onClose,
 }: Props) {
-  const [competitionId, setCompetitionId] = useState(competitions[0]?.id ?? "");
   const [danceName, setDanceName] = useState("");
   const [choreographerName, setChoreographerName] = useState("");
   const [danceLevel, setDanceLevel] = useState<"A" | "B" | "C">("A");
@@ -79,7 +77,6 @@ export default function DanceEntryForm({
 
   useEffect(() => {
     if (!editingEntry) return;
-    setCompetitionId(editingEntry.competitionId);
     setDanceName(editingEntry.danceName);
     setChoreographerName(editingEntry.choreographerName);
     setDanceLevel(editingEntry.danceLevel);
@@ -104,26 +101,45 @@ export default function DanceEntryForm({
 
   const count = Number(participantCount) || 0;
   const resolvedCategory = resolveCategory(uiCategory, count);
-  const competition = competitions.find((c) => c.id === competitionId);
-  const dayOptions = competition ? getCompetitionDayOptions(competition.date) : [];
-  const perParticipantPrice = competition ? computePrice(competition.priceTiers, resolvedCategory) : null;
+  const dayOptions = getCompetitionDayOptions(competition.date);
+  const perParticipantPrice = computePrice(competition.priceTiers, resolvedCategory);
   const surcharge = computeSurcharge(resolvedCategory, songDurationSeconds, count);
   const resolvedDanceStyle = danceStyle === OTHER_STYLE ? customDanceStyle : danceStyle;
   const isSolo = uiCategory === "solo";
   const isGroup = uiCategory === "group";
+  const baseSubtotal = perParticipantPrice != null ? perParticipantPrice * (isGroup ? count : 1) : null;
   const wantsRecording = wantsVideo || wantsStills;
 
-  // 135₪ for a single dance ordering video/stills, 125₪ each once 2+ dances
-  // order it — counted across the manager's other existing dances plus this
-  // one, if it currently wants recording (see project_pricing_and_rules).
-  const otherRecordingOrders = entries.filter(
-    (e) => e.id !== editingEntry?.id && (e.wantsVideo || e.wantsStills)
-  ).length;
-  const recordingFee = wantsRecording ? computeRecordingFeePerDance(otherRecordingOrders + 1) : 0;
+  // Video and stills are two independent services, each 135₪ for a single
+  // dance or 125₪ once 2+ of THAT SAME type are ordered — counted across the
+  // manager's other existing dances plus this one, per type (see
+  // project_pricing_and_rules and computeRecordingFee's own comment).
+  const otherVideoOrders = entries.filter((e) => e.id !== editingEntry?.id && e.wantsVideo).length;
+  const otherStillsOrders = entries.filter((e) => e.id !== editingEntry?.id && e.wantsStills).length;
+  const videoFee = wantsVideo ? computeRecordingFeeForType(otherVideoOrders + 1) : 0;
+  const stillsFee = wantsStills ? computeRecordingFeeForType(otherStillsOrders + 1) : 0;
+  const recordingFee = videoFee + stillsFee;
 
-  const totalPrice = competition
-    ? computeTotalPrice(competition.priceTiers, resolvedCategory, count, songDurationSeconds, recordingFee)
-    : null;
+  const totalPrice = computeTotalPrice(competition.priceTiers, resolvedCategory, count, songDurationSeconds, recordingFee);
+
+  // Autocomplete suggestions drawn from this manager's OTHER dances (across
+  // every competition, not just this one — the same choreographer usually
+  // works across all of them) — with 15-20 dances being normal, re-typing
+  // the same choreographer/dancer name that many times is real, avoidable
+  // busywork. Dance name is deliberately excluded: it should always be
+  // unique per dance, so suggesting a past one would actively mislead.
+  const choreographerSuggestions = Array.from(new Set(entries.map((e) => e.choreographerName).filter(Boolean)));
+  const dancerNameSuggestions = Array.from(new Set(entries.map((e) => e.dancerName).filter((n): n is string => !!n)));
+  const customStyleSuggestions = Array.from(
+    new Set(entries.map((e) => e.danceStyle).filter((style) => !DANCE_STYLES.includes(style)))
+  );
+  const participantCountSuggestions = Array.from(
+    new Set(
+      entries
+        .filter((e) => e.category === "group_small" || e.category === "group_large")
+        .map((e) => String(e.participantCount))
+    )
+  );
 
   function handleCategoryChange(next: UiCategory) {
     if (next !== "group") {
@@ -132,6 +148,20 @@ export default function DanceEntryForm({
       setParticipantCount("");
     }
     setUiCategory(next);
+  }
+
+  // If what she typed under "אחר" turns out to exactly match a real style
+  // that's already in the list, snap back to that real option instead of
+  // saving a duplicate free-text copy of it — avoids the same style existing
+  // as two different-looking values in the data (one picked, one typed).
+  function handleCustomStyleChange(value: string) {
+    const matched = DANCE_STYLES.find((style) => style === value.trim());
+    if (matched) {
+      setDanceStyle(matched);
+      setCustomDanceStyle("");
+    } else {
+      setCustomDanceStyle(value);
+    }
   }
 
   function handleSongFileChange(file: File | null) {
@@ -174,7 +204,7 @@ export default function DanceEntryForm({
 
       await onSubmit(
         {
-          competitionId,
+          competitionId: competition.id,
           danceName,
           category: resolvedCategory,
           participantCount: count,
@@ -192,7 +222,7 @@ export default function DanceEntryForm({
         editingEntry?.id
       );
       resetForm();
-      onCancelEdit();
+      onClose();
     } finally {
       setSubmitting(false);
     }
@@ -200,28 +230,17 @@ export default function DanceEntryForm({
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
-      <h3 className={styles.title}>{editingEntry ? "עריכת ריקוד" : "הוספת ריקוד"}</h3>
-
-      <RegistrationNotice competition={competition} />
+      <div className={styles.formHeader}>
+        <h3 className={styles.title}>
+          {editingEntry ? "עריכת ריקוד" : "הוספת ריקוד"} — <span className="en" lang="en">{competition.name}</span>
+        </h3>
+        <button type="button" className={styles.closeButton} onClick={onClose} aria-label="סגירה וחזרה לרשימה">
+          חזרה לרשימה
+        </button>
+      </div>
 
       <p className={styles.groupTitle}>פרטי הריקוד</p>
       <div className={styles.grid}>
-        <label className={styles.field}>
-          <span>תחרות</span>
-          <div className={styles.competitionRow}>
-            {competition?.logo && (
-              <Image src={competition.logo} alt="" width={32} height={28} className={styles.competitionLogo} />
-            )}
-            <select value={competitionId} onChange={(e) => setCompetitionId(e.target.value)}>
-              {competitions.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </label>
-
         {dayOptions.length > 1 && (
           <label className={styles.field}>
             <span>יום מועדף</span>
@@ -240,12 +259,28 @@ export default function DanceEntryForm({
 
         <label className={styles.field}>
           <span>שם הריקוד</span>
-          <input required value={danceName} onChange={(e) => setDanceName(e.target.value)} />
+          <div className={styles.fieldIconWrap}>
+            <MusicNoteIcon size={15} />
+            <input required value={danceName} onChange={(e) => setDanceName(e.target.value)} />
+          </div>
         </label>
 
         <label className={styles.field}>
           <span>שם כוריאוגרף/ית</span>
-          <input required value={choreographerName} onChange={(e) => setChoreographerName(e.target.value)} />
+          <div className={styles.fieldIconWrap}>
+            <PersonIcon size={15} />
+            <input
+              required
+              list="choreographer-suggestions"
+              value={choreographerName}
+              onChange={(e) => setChoreographerName(e.target.value)}
+            />
+          </div>
+          <datalist id="choreographer-suggestions">
+            {choreographerSuggestions.map((name) => (
+              <option key={name} value={name} />
+            ))}
+          </datalist>
         </label>
 
         <label className={styles.field}>
@@ -262,7 +297,20 @@ export default function DanceEntryForm({
         {isSolo && (
           <label className={styles.field}>
             <span>שם הרקדנית (שם מלא)</span>
-            <input required value={dancerName} onChange={(e) => setDancerName(e.target.value)} />
+            <div className={styles.fieldIconWrap}>
+              <PersonIcon size={15} />
+              <input
+                required
+                list="dancer-name-suggestions"
+                value={dancerName}
+                onChange={(e) => setDancerName(e.target.value)}
+              />
+            </div>
+            <datalist id="dancer-name-suggestions">
+              {dancerNameSuggestions.map((name) => (
+                <option key={name} value={name} />
+              ))}
+            </datalist>
           </label>
         )}
 
@@ -273,9 +321,15 @@ export default function DanceEntryForm({
               type="number"
               min={5}
               required
+              list="participant-count-suggestions"
               value={participantCount}
               onChange={(e) => setParticipantCount(e.target.value)}
             />
+            <datalist id="participant-count-suggestions">
+              {participantCountSuggestions.map((n) => (
+                <option key={n} value={n} />
+              ))}
+            </datalist>
           </label>
         )}
 
@@ -316,45 +370,81 @@ export default function DanceEntryForm({
         {danceStyle === OTHER_STYLE && (
           <label className={styles.field}>
             <span>איזה סגנון?</span>
-            <input required value={customDanceStyle} onChange={(e) => setCustomDanceStyle(e.target.value)} />
+            <input
+              required
+              list="custom-style-suggestions"
+              value={customDanceStyle}
+              onChange={(e) => handleCustomStyleChange(e.target.value)}
+            />
+            <datalist id="custom-style-suggestions">
+              {customStyleSuggestions.map((style) => (
+                <option key={style} value={style} />
+              ))}
+            </datalist>
           </label>
         )}
       </div>
 
       <p className={styles.groupTitle}>מוזיקה והזמנות נלוות</p>
-      <div className={styles.grid}>
-        <label className={styles.field}>
-          <span>קובץ שיר הריקוד</span>
-          <input type="file" accept="audio/*" onChange={(e) => handleSongFileChange(e.target.files?.[0] ?? null)} />
+      <p className={styles.timeLimitHint}>
+        אורך מקסימלי לשיר: <strong>{isGroup ? "3 דקות" : "2 דקות"}</strong> — חריגה גוררת תוספת תשלום (ראו פירוט למטה
+        אם השיר שהועלה חורג), ואם לא שולמה מראש — הורדת ניקוד בתחרות במקום.
+      </p>
+      <div className={styles.mediaGrid}>
+        <div className={styles.dropzoneField}>
+          <span className={styles.fieldLabel}>קובץ שיר הריקוד *</span>
+          <label className={styles.dropzone}>
+            <input
+              type="file"
+              accept="audio/*"
+              className={styles.dropzoneInput}
+              onChange={(e) => handleSongFileChange(e.target.files?.[0] ?? null)}
+            />
+            <UploadIcon />
+            <span className={styles.dropzoneText}>לחצו להעלאת קובץ מוזיקה</span>
+            <span className={styles.dropzoneHint}>MP3/WAV עד 100MB</span>
+          </label>
           {/* Hidden — used only to read the file's real duration via the browser, no server processing. */}
           <audio
             ref={audioRef}
             hidden
             onLoadedMetadata={(e) => setSongDurationSeconds(e.currentTarget.duration)}
           />
+          {songFile && <span className={styles.durationHint}>{songFile.name}</span>}
           {songDurationSeconds != null && (
             <span className={styles.durationHint}>
               משך השיר: {Math.floor(songDurationSeconds / 60)}:{String(Math.round(songDurationSeconds % 60)).padStart(2, "0")}
             </span>
           )}
           {!songFile && existingSongFilePath && <span className={styles.durationHint}>קובץ קיים מועלה — ניתן להחליף</span>}
-        </label>
+        </div>
 
         <div className={styles.checkboxField}>
-          <label className={styles.checkboxRow}>
+          <label className={styles.checkboxCard}>
             <input type="checkbox" checked={wantsVideo} onChange={(e) => setWantsVideo(e.target.checked)} />
-            הזמנת צילום וידאו
+            <span>
+              <span className={styles.checkboxTitle}>הזמנת צילום וידאו</span>
+              <span className={styles.checkboxSubtitle}>הקלטת וידאו מקצועית של הריקוד</span>
+            </span>
           </label>
-          <label className={styles.checkboxRow}>
+          <label className={styles.checkboxCard}>
             <input type="checkbox" checked={wantsStills} onChange={(e) => setWantsStills(e.target.checked)} />
-            הזמנת צילום סטילס
+            <span>
+              <span className={styles.checkboxTitle}>הזמנת צילום סטילס</span>
+              <span className={styles.checkboxSubtitle}>תמונות סטילס מקצועיות מהריקוד</span>
+            </span>
           </label>
           <p className={styles.durationHint}>
-            135₪ לריקוד, או 125₪ לריקוד כשמזמינים 2 ריקודים או יותר (וידאו ו/או סטילס יחד, לא כל אחד בנפרד)
+            כל שירות מתומחר בנפרד: <strong>135₪ לריקוד</strong> (או <strong>125₪</strong> לריקוד כשמזמינים אותו שירות
+            ל-2 ריקודים או יותר) — אם מזמינים גם וידאו וגם סטילס לאותו ריקוד, זו עלות של כל אחד מהם בנפרד, לא מחיר
+            אחד משותף.
             {wantsRecording && (
               <>
                 {" "}
-                — <strong>העלות עבור הריקוד הזה: {recordingFee}₪</strong>
+                <strong>
+                  העלות עבור הריקוד הזה: {recordingFee}₪
+                  {wantsVideo && wantsStills && ` (וידאו ${videoFee}₪ + סטילס ${stillsFee}₪)`}
+                </strong>
               </>
             )}
           </p>
@@ -369,41 +459,54 @@ export default function DanceEntryForm({
       )}
 
       <div className={styles.footer}>
-        <p className={styles.priceLine}>
-          קטגוריה לתמחור: {displayCategoryLabel(resolvedCategory, count)}
-          {perParticipantPrice != null && (
-            <>
-              {" "}
-              · מחיר למשתתף/ת: <span className={styles.price}>{perParticipantPrice}₪</span>
-              {isGroup && competition?.priceTiers && (
-                <span className={styles.priceExplain}>
-                  {" "}
-                  ({isEarlyPricing(competition.priceTiers) ? "מחיר מוקדם" : "מחיר רגיל"}, ההרשמה המוקדמת{" "}
-                  {isEarlyPricing(competition.priceTiers) ? "בתוקף עד" : "הסתיימה ב"}{" "}
-                  <span dir="ltr">{competition.priceTiers.earlyUntil}</span>)
-                </span>
-              )}
-            </>
+        <div className={styles.priceBreakdown}>
+          <div className={styles.priceBreakdownRow}>
+            <span>קטגוריה לתמחור</span>
+            <span>{displayCategoryLabel(resolvedCategory, count)}</span>
+          </div>
+          {baseSubtotal != null && (
+            <div className={styles.priceBreakdownRow}>
+              <span>
+                מחיר בסיס{isGroup ? ` (${perParticipantPrice}₪ × ${count} משתתפים)` : ""}
+                {isGroup && competition.priceTiers && (
+                  <span className={styles.priceExplain}>
+                    {" "}
+                    · {isEarlyPricing(competition.priceTiers) ? "מחיר מוקדם" : "מחיר רגיל"}
+                  </span>
+                )}
+              </span>
+              <span>{baseSubtotal}₪</span>
+            </div>
           )}
-          {recordingFee > 0 && (
-            <>
-              {" "}
-              · צילום: <span className={styles.price}>{recordingFee}₪</span>
-            </>
+          {surcharge > 0 && (
+            <div className={styles.priceBreakdownRow}>
+              <span>תוספת חריגת זמן בשיר</span>
+              <span>{surcharge}₪</span>
+            </div>
+          )}
+          {videoFee > 0 && (
+            <div className={styles.priceBreakdownRow}>
+              <span>צילום וידאו</span>
+              <span>{videoFee}₪</span>
+            </div>
+          )}
+          {stillsFee > 0 && (
+            <div className={styles.priceBreakdownRow}>
+              <span>צילום סטילס</span>
+              <span>{stillsFee}₪</span>
+            </div>
           )}
           {totalPrice != null && (
-            <>
-              {" "}
-              · מחיר כולל: <span className={styles.price}>{totalPrice}₪</span>
-            </>
+            <div className={`${styles.priceBreakdownRow} ${styles.priceBreakdownTotal}`}>
+              <span>מחיר כולל</span>
+              <span>{totalPrice}₪</span>
+            </div>
           )}
-        </p>
+        </div>
         <div className={styles.actions}>
-          {editingEntry && (
-            <button type="button" className={styles.cancelButton} onClick={onCancelEdit}>
-              ביטול עריכה
-            </button>
-          )}
+          <button type="button" className={styles.cancelButton} onClick={onClose}>
+            ביטול
+          </button>
           <button type="submit" className={styles.submitButton} disabled={submitting}>
             {submitting ? "שולחת..." : editingEntry ? "שמירת שינויים" : "הוספה"}
           </button>

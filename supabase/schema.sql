@@ -270,4 +270,111 @@ as $$
   order by c.sort_order;
 $$;
 
+-- Manager-uploaded profile photo, shown on /profile and in Nav's account
+-- dropdown. At the time this was added there was still a blanket
+-- `grant update on studio_managers to authenticated`, so no extra grant was
+-- needed here — that blanket grant is narrowed to an explicit column list
+-- further below (see the preferred_competition_type approval flow), which
+-- does include this column.
+alter table studio_managers add column profile_image_path text;
+
+-- Public bucket (unlike dance-music) — profile photos aren't sensitive, and
+-- Nav needs to show one on every page load without an extra signed-URL
+-- round trip, so a plain public URL is simplest. Path convention:
+-- profile-photos/{studio_manager_id}/{uuid}-{original filename}
+insert into storage.buckets (id, name, public) values ('profile-photos', 'profile-photos', true);
+
+create policy "Manager uploads own profile photo" on storage.objects
+  for insert with check (bucket_id = 'profile-photos' and (storage.foldername(name))[1] = auth.uid()::text);
+
+create policy "Manager replaces own profile photo" on storage.objects
+  for update using (bucket_id = 'profile-photos' and (storage.foldername(name))[1] = auth.uid()::text);
+
+create policy "Manager deletes own profile photo" on storage.objects
+  for delete using (bucket_id = 'profile-photos' and (storage.foldername(name))[1] = auth.uid()::text);
+
 grant execute on function get_competitions_with_pricing() to authenticated;
+
+-- Changing "preferred_competition_type" (רגיל/דתי) now needs an admin's
+-- approval rather than applying instantly — Dani specifically asked for
+-- this, since religious competitions have different pricing/rules
+-- (project_pricing_and_rules memory) and this switch shouldn't be silently
+-- self-served. A manager's request lands in this staging column instead of
+-- the real one.
+alter table studio_managers add column pending_preferred_competition_type text;
+
+-- The blanket update grant from Phase 4 round 1 predates this rule and
+-- would let a manager write preferred_competition_type directly — a
+-- UI-only restriction wouldn't actually stop a direct API call, so this
+-- replaces it with an explicit column allow-list (same style already used
+-- for registrations' grants below), which is what actually enforces it.
+revoke update on studio_managers from authenticated;
+grant update (
+  studio_name, manager_name, phone, city, dance_styles,
+  wants_stage_services_info, profile_image_path,
+  pending_preferred_competition_type
+) on studio_managers to authenticated;
+
+-- SECURITY DEFINER so it can still write preferred_competition_type despite
+-- that column being excluded from the grant above — same technique as
+-- get_competitions_with_pricing(). Re-checks is_admin() itself rather than
+-- relying only on the admin UI never calling it with do_approve for someone
+-- else's request.
+create function resolve_preferred_competition_type_request(target_id uuid, do_approve boolean)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not is_admin() then
+    raise exception 'Only an admin can approve this change';
+  end if;
+
+  update studio_managers
+  set
+    preferred_competition_type = case
+      when do_approve then pending_preferred_competition_type
+      else preferred_competition_type
+    end,
+    pending_preferred_competition_type = null
+  where id = target_id;
+end;
+$$;
+
+grant execute on function resolve_preferred_competition_type_request(uuid, boolean) to authenticated;
+
+-- Phase 4c: admin reviews every studio's registrations and marks them
+-- paid/unpaid (with an optional late-payment exception) from /admin. Same
+-- SECURITY DEFINER pattern as resolve_preferred_competition_type_request
+-- above — the existing column grant on registrations deliberately excludes
+-- payment_status/late_payment_exception from ordinary (manager) writes, so
+-- this is the only way to change them until Phase 5's payment webhook exists.
+create function admin_update_registration_payment(
+  target_id uuid,
+  new_payment_status text,
+  new_late_payment_exception boolean
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not is_admin() then
+    raise exception 'Only an admin can update payment status';
+  end if;
+
+  if new_payment_status not in ('unpaid', 'paid') then
+    raise exception 'Invalid payment status';
+  end if;
+
+  update registrations
+  set
+    payment_status = new_payment_status,
+    late_payment_exception = new_late_payment_exception
+  where id = target_id;
+end;
+$$;
+
+grant execute on function admin_update_registration_payment(uuid, text, boolean) to authenticated;

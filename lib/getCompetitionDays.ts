@@ -79,3 +79,17 @@ export function getCompetitionDateRange(date: string): { start: Date; end: Date 
   const end = new Date(Date.UTC(fullYear, monthIndex, Number(endDay ?? startDay) + 1));
   return { start, end };
 }
+
+// The video/stills order-and-payment cutoff is 10 days before the
+// competition's FIRST day (see project_pricing_and_rules memory's general
+// date rule) — returned as an ISO date so callers can feed it straight into
+// lib/pricing.ts's daysUntil()/formatDateHe(). Falls back to null if the
+// `date` field doesn't match the expected format.
+export function getVideoOrderCutoffIso(date: string): string | null {
+  const range = getCompetitionDateRange(date);
+  if (!range) return null;
+
+  const cutoff = new Date(range.start);
+  cutoff.setUTCDate(cutoff.getUTCDate() - 10);
+  return cutoff.toISOString().slice(0, 10);
+}

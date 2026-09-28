@@ -47,11 +47,28 @@ export const DANCE_LEVELS: { value: "A" | "B" | "C"; label: string }[] = [
   { value: "C", label: "C - מקצועית (3 פעמים בשבוע ומעלה, מעל שנתיים)" },
 ];
 
-// Common styles seen across FLY competitions — placeholder list, adjust with
-// Dani if it doesn't match reality (same spirit as the placeholder pricing).
-// "אחר" (other) is handled in the form as a free-text fallback, not stored
-// literally — the form swaps it for whatever the manager types.
-export const DANCE_STYLES = ["ג'אז", "בלט", "היפ הופ", "מודרני", "עכשווי", "לירי", "אקרובטי", "ריקודי עם"];
+// The real options from FLY's existing Google Form (screenshot, 2026-09-21) —
+// not a placeholder list. "אחר" (other) is handled in the form as a free-text
+// fallback, not stored literally — the form swaps it for whatever the manager
+// types.
+export const DANCE_STYLES = [
+  "היפ הופ",
+  "מודרני",
+  "בלט",
+  "אקרודאנס",
+  "ג'אז",
+  "פיוז'ן",
+  "קומרשאל",
+  "לירי",
+  "שואו דאנס",
+  "פולקלור",
+  "סלוניים",
+  "מיוזיקל",
+  "חופשי",
+  "קיי פופ",
+  "נאו קלאסי",
+  "רגאטון",
+];
 
 // "group" resolves to group_small (5-10) / group_large (11+) from the actual
 // participant count, matching the flyer's own split; "trio" and "quartet"
@@ -75,6 +92,22 @@ export function uiCategoryOf(category: RegistrationCategory, participantCount: n
 export function isEarlyPricing(priceTiers: PriceTiers | undefined): boolean {
   if (!priceTiers) return false;
   return new Date() <= new Date(priceTiers.earlyUntil);
+}
+
+// Whole days remaining until (midnight of) the given date, rounded up so
+// "today" and "tomorrow" both read as at least 1 day rather than 0.
+export function daysUntil(dateStr: string): number {
+  const msPerDay = 1000 * 60 * 60 * 24;
+  return Math.ceil((new Date(dateStr).getTime() - Date.now()) / msPerDay);
+}
+
+// `earlyUntil` is stored as ISO (YYYY-MM-DD) since that's what sorts/parses
+// unambiguously, but reads "backwards" to an Israeli audience — this is
+// display-only formatting into the day.month.year order used everywhere
+// else on the site (e.g. getCompetitionDayOptions's labels).
+export function formatDateHe(dateStr: string): string {
+  const [year, month, day] = dateStr.split("-");
+  return `${day}.${month}.${year}`;
 }
 
 // Group categories are early/regular tiered by date; solo/duet/trio_quartet
@@ -123,14 +156,32 @@ export function computeSurcharge(
   return increments * perIncrement * (isGroupCategory(category) ? participantCount : 1);
 }
 
-// Video and/or stills recording (the flyer prices them together, not as two
-// separate line items: "צילום וידאו ו/או סטילס" at one price per dance) —
-// 135₪ for a single dance, 125₪ per dance once 2+ dances order it. The
-// threshold is evaluated across ALL of a manager's dances that requested
-// recording (in this competition or overall — see project_pricing_and_rules),
-// so callers must pass the total count including the entry being priced.
-export function computeRecordingFeePerDance(totalRecordingOrders: number): number {
-  return totalRecordingOrders >= 2 ? 125 : 135;
+// Video and stills are two independent add-on services, each priced 135₪ for
+// a single order or 125₪ per order once 2+ of THAT SAME type are ordered —
+// Dani corrected this 2026-09 (the flyer's "צילום וידאו ו/או סטילס" wording
+// first read as one shared line item, but ordering both is really two
+// separate charges). The two types' quantity discounts are independent of
+// each other: e.g. 1 video order + 1 stills order are each still priced at
+// the "single" 135₪ tier, not treated as "2 recording orders" together.
+export function computeRecordingFeeForType(totalOrdersOfThisType: number): number {
+  return totalOrdersOfThisType >= 2 ? 125 : 135;
+}
+
+// Combined recording add-on fee for one dance entry — the sum of whichever
+// of video/stills it ordered, each priced against its own type's total order
+// count (across all of a manager's dances, in this competition or overall —
+// see project_pricing_and_rules). Callers must pass counts that include the
+// entry being priced itself.
+export function computeRecordingFee(
+  wantsVideo: boolean,
+  wantsStills: boolean,
+  totalVideoOrders: number,
+  totalStillsOrders: number
+): number {
+  return (
+    (wantsVideo ? computeRecordingFeeForType(totalVideoOrders) : 0) +
+    (wantsStills ? computeRecordingFeeForType(totalStillsOrders) : 0)
+  );
 }
 
 // Total price for one dance entry: per-participant price × participant count
@@ -138,8 +189,8 @@ export function computeRecordingFeePerDance(totalRecordingOrders: number): numbe
 // fees in the real pricing, not multiplied by a "quantity"), plus any
 // over-time surcharge, plus the recording fee if this entry ordered video
 // and/or stills (0 if not — caller resolves the actual fee via
-// computeRecordingFeePerDance and passes it in, since it depends on sibling
-// entries, not just this one).
+// computeRecordingFee and passes it in, since it depends on sibling entries,
+// not just this one).
 export function computeTotalPrice(
   priceTiers: PriceTiers | undefined,
   category: RegistrationCategory,

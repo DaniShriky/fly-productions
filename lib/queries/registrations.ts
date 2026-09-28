@@ -128,3 +128,14 @@ export async function uploadDanceMusic(client: SupabaseClient, studioManagerId: 
   if (error) throw error;
   return path;
 }
+
+// The bucket is private, so playback needs a signed URL rather than a public
+// one — RLS on storage.objects ("Manager reads own music") only allows this
+// for the manager's own path. One hour is plenty for a single listening
+// session in the dashboard; it's fetched fresh each time playback starts
+// rather than stored, so it never needs refreshing mid-use.
+export async function getDanceMusicUrl(client: SupabaseClient, path: string): Promise<string> {
+  const { data, error } = await client.storage.from("dance-music").createSignedUrl(path, 3600);
+  if (error) throw error;
+  return data.signedUrl;
+}

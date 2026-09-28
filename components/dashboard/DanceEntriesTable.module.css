@@ -3,6 +3,15 @@
   color: #9c9a93;
 }
 
+.panel {
+  background: linear-gradient(165deg, #101014, #0a0a0c 70%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.7);
+  overflow-x: auto;
+}
+
 .filters {
   display: flex;
   gap: 8px;
@@ -16,37 +25,180 @@
   padding: 6px 16px;
   font-size: 13px;
   color: #d8d6cf;
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .filterButton:hover {
   color: #fff;
+  border-color: rgba(255, 255, 255, 0.35);
 }
 
 .filterActive {
   background: rgba(245, 197, 66, 0.15);
   border-color: #f5c542;
   color: #f5c542;
+  box-shadow: 0 0 14px rgba(245, 197, 66, 0.15);
 }
 
 .table {
   width: 100%;
-  table-layout: fixed;
+  table-layout: auto;
   border-collapse: collapse;
   font-size: 13px;
 }
 
 .table th,
 .table td {
-  padding: 10px 8px;
+  padding: 13px 10px;
   text-align: right;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   overflow-wrap: break-word;
+}
+
+.table thead tr {
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .table th {
   color: #9c9a93;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.table tbody tr:not(.groupHeaderRow):hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Marks the first row of each new competition group with a slightly
+   stronger top edge, so scanning down a long multi-competition list makes
+   it obvious where one competition ends and the next begins. */
+.groupStartRow > td {
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+/* Hidden on desktop — the real, merged "תחרות" table column below already
+   shows the competition name once per group there. Revealed again inside
+   the mobile media query, where that merge can't carry across the
+   block-layout cards. */
+.groupHeaderRow {
+  display: none;
+}
+
+.groupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 12px 8px !important;
+}
+
+.groupHeaderName {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  /* Same blue used sitewide (styles/globals.css .hl) to highlight brand/
+     competition names inline in copy. */
+  color: #7fb8e6;
+}
+
+.groupHeaderLogo {
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+.groupHeaderMeta {
   font-size: 12px;
+  color: #9c9a93;
+  white-space: nowrap;
+}
+
+/* Styled to match CompetitionPicker's own card (same gradient/border/radius)
+   so a competition reads the same way here as it does on the "בחירת תחרות"
+   buttons in step 2 — one consistent visual language for "this is a
+   competition" everywhere it appears. */
+.competitionCell {
+  vertical-align: middle;
+  text-align: center;
+  padding: 10px !important;
+}
+
+.competitionCellCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(165deg, #131317, #101014 70%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 14px 10px;
+  box-shadow: 0 12px 24px -18px rgba(0, 0, 0, 0.8);
+}
+
+.competitionCellLogo {
+  display: block;
+  object-fit: contain;
+}
+
+.competitionCellName {
+  font-size: 13px;
+  font-weight: 600;
+  color: #d8d6cf;
+}
+
+.subLine {
+  font-size: 11px;
+  color: #9c9a93;
+  font-weight: 400;
+  margin-top: 2px;
+}
+
+.audioRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.playButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  color: #d8d6cf;
+}
+
+.playButton:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.playButton:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.audioPlayer {
+  display: block;
+  height: 32px;
+  max-width: 220px;
+  margin-top: 6px;
+}
+
+.noSong {
+  color: #9c9a93;
+  font-style: italic;
+  white-space: nowrap;
 }
 
 .priceLine {
@@ -60,13 +212,35 @@
   font-size: 12px;
 }
 
+.statusBadge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
 .paid {
+  background: rgba(63, 174, 100, 0.15);
   color: #3fae64;
-  font-weight: 600;
+  box-shadow: 0 0 10px rgba(63, 174, 100, 0.15);
 }
 
 .unpaid {
-  color: #d8d6cf;
+  background: rgba(255, 255, 255, 0.06);
+  color: #9c9a93;
+}
+
+.orderedBadge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(245, 197, 66, 0.15);
+  color: #f5c542;
+  white-space: nowrap;
 }
 
 .actions {
@@ -95,16 +269,6 @@
   background: rgba(255, 255, 255, 0.06);
 }
 
-.payIconButton {
-  border-color: rgba(245, 197, 66, 0.4);
-  color: #f5c542;
-}
-
-.payIconButton:hover {
-  border-color: #f5c542;
-  background: rgba(245, 197, 66, 0.15);
-}
-
 .deleteIconButton {
   border-color: rgba(242, 139, 130, 0.4);
   color: #f28b82;
@@ -121,22 +285,12 @@
   cursor: default;
 }
 
-.payPanel {
-  background: rgba(245, 197, 66, 0.08);
-  font-size: 13px;
-  color: #d8d6cf;
-  white-space: normal;
-  padding: 16px 18px;
-}
-
-.payPanel a {
-  color: #f5c542;
-  text-decoration: underline;
-}
-
-.breakdown {
-  max-width: 360px;
+.globalBreakdown {
   margin-bottom: 14px;
+}
+
+.globalBreakdown .breakdownTotal {
+  color: #3fae64;
 }
 
 .breakdownTitle {
@@ -175,6 +329,79 @@
   font-size: 15px;
 }
 
+/* Green, not gold — this bar's whole purpose is "go complete the payment",
+   so it gets the same green the rest of the app already uses for "paid"
+   (below, .paid), the common checkout convention for a final pay action. */
+.stickyBar {
+  position: sticky;
+  bottom: 12px;
+  margin-top: 24px;
+  background: rgba(10, 10, 12, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(63, 174, 100, 0.4);
+  border-radius: 16px;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.35), 0 20px 40px -20px rgba(0, 0, 0, 0.6), 0 0 30px -10px rgba(63, 174, 100, 0.2);
+  overflow: hidden;
+}
+
+.stickyBarBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+}
+
+.stickyBarInfo {
+  font-size: 14px;
+  color: #d8d6cf;
+}
+
+.stickyBarButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  background: linear-gradient(135deg, #4bc179, #2e9456);
+  color: #052b14;
+  padding: 10px 22px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 8px 22px -8px rgba(63, 174, 100, 0.6);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.stickyBarButton:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px -8px rgba(63, 174, 100, 0.75);
+}
+
+.globalPayPanel {
+  background: rgba(63, 174, 100, 0.08);
+  border-top: 1px solid rgba(63, 174, 100, 0.25);
+  padding: 16px 20px;
+  font-size: 13px;
+  color: #d8d6cf;
+}
+
+.globalPayPanel a {
+  color: #3fae64;
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .stickyBarBar {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+}
+
 /* Below this width even the trimmed 7-column table gets cramped, so each row
    reflows into a labeled card instead — no horizontal scrolling at any
    viewport size. */
@@ -199,6 +426,27 @@
     border-radius: 10px;
     padding: 4px 12px;
     margin-bottom: 12px;
+  }
+
+  .table tbody tr.groupHeaderRow {
+    border: none;
+    padding: 0;
+    margin-bottom: 6px;
+  }
+
+  .table tbody tr.groupHeaderRow td {
+    border-bottom: none;
+  }
+
+  .table td.competitionCell {
+    display: none;
+  }
+
+  /* The card border on tbody tr already separates each dance visually on
+     mobile — the extra top edge from .groupStartRow is a desktop-only cue
+     for scanning down a plain table, so cancel it out here. */
+  .groupStartRow > td {
+    border-top: none;
   }
 
   .table td {
@@ -227,10 +475,6 @@
 
   .table td.actions::before {
     content: none;
-  }
-
-  .payPanelRow td {
-    display: block;
   }
 
   .table tfoot tr {

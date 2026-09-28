@@ -1,7 +1,10 @@
+/* Blue, not gold — this is a status/deadline reminder (informational), not a
+   money amount or a selection, so it uses the same blue as the stepper's
+   process indicator rather than the site's gold "selection/primary" accent. */
 .notice {
-  background: rgba(245, 197, 66, 0.1);
-  border: 1px solid rgba(245, 197, 66, 0.35);
-  border-radius: 10px;
+  background: linear-gradient(120deg, rgba(127, 184, 230, 0.14), rgba(127, 184, 230, 0.04));
+  border: 1px solid rgba(127, 184, 230, 0.35);
+  border-radius: 12px;
   padding: 14px 18px;
   margin-bottom: 20px;
   font-size: 13px;
@@ -9,6 +12,7 @@
   display: flex;
   align-items: flex-start;
   gap: 12px;
+  box-shadow: 0 12px 30px -20px rgba(127, 184, 230, 0.4);
 }
 
 .notice div {
@@ -19,10 +23,20 @@
 
 .icon {
   flex: 0 0 auto;
-  color: #f5c542;
+  color: #7fb8e6;
   margin-top: 2px;
 }
 
 .notice strong {
-  color: #f5c542;
+  color: #7fb8e6;
+}
+
+/* A cutoff that already passed is no longer just informational — it's
+   something the manager may have missed, so it breaks from the blue tone. */
+.warning {
+  color: #f28b82;
+}
+
+.warning strong {
+  color: #f28b82;
 }

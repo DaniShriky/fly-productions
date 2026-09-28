@@ -1,0 +1,90 @@
+.groupTitle {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #9c9a93;
+  margin-bottom: 12px;
+}
+
+/* Capped at 4 per row by default (7 competitions today read as 4+3, matching
+   the reference design) — the min-width below is tuned so a 5th column
+   can't fit within this section's own max width (see .narrow in
+   pages/dashboard/index.module.css). On a wide-enough viewport there's slack
+   to spare even inside that cap, so the last breakpoint relaxes the minimum
+   until every competition fits on one row instead of wrapping unnecessarily. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+}
+
+@media (min-width: 1440px) {
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(165deg, #131317, #101014 70%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 18px 12px;
+  box-shadow: 0 12px 24px -18px rgba(0, 0, 0, 0.8);
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px -18px rgba(0, 0, 0, 0.9);
+}
+
+.cardActive {
+  background: linear-gradient(165deg, rgba(245, 197, 66, 0.16), rgba(245, 197, 66, 0.04));
+  border-color: #f5c542;
+  box-shadow: 0 0 0 1px rgba(245, 197, 66, 0.3), 0 16px 32px -16px rgba(245, 197, 66, 0.25);
+}
+
+.logo {
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+.name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #d8d6cf;
+  text-align: center;
+}
+
+.cardActive .name {
+  color: #f5c542;
+}
+
+.check {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f5c542, #e0a84a);
+  color: #050505;
+  box-shadow: 0 0 0 3px #050505, 0 0 12px rgba(245, 197, 66, 0.6);
+}

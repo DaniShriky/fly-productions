@@ -1,0 +1,161 @@
+.wrap {
+  margin-top: 20px;
+}
+
+.headerRow {
+  margin-bottom: 14px;
+}
+
+.count {
+  font-size: 15px;
+  font-weight: 700;
+  color: #f3f1ec;
+}
+
+.addButtonRow {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 24px;
+}
+
+.addButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #f5c542, #e0a84a);
+  color: #050505;
+  padding: 15px 36px;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 10px 26px -8px rgba(245, 197, 66, 0.55);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.addButton:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 14px 32px -8px rgba(245, 197, 66, 0.7);
+}
+
+.empty {
+  background: #0a0a0c;
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 28px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: #9c9a93;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(165deg, #0d0d10, #0a0a0c 70%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 16px;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.row:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px -18px rgba(0, 0, 0, 0.8);
+}
+
+.rowMain {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.danceName {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f3f1ec;
+}
+
+.subLine {
+  font-size: 12px;
+  color: #9c9a93;
+  margin-top: 2px;
+}
+
+.price {
+  flex: 0 0 auto;
+  font-size: 14px;
+  font-weight: 700;
+  color: #f5c542;
+  white-space: nowrap;
+}
+
+.badge {
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.badgePaid {
+  background: rgba(63, 174, 100, 0.15);
+  color: #3fae64;
+  box-shadow: 0 0 10px rgba(63, 174, 100, 0.15);
+}
+
+.badgeUnpaid {
+  background: rgba(255, 255, 255, 0.06);
+  color: #9c9a93;
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.iconButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  color: #d8d6cf;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.iconButton:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.deleteIconButton {
+  border-color: rgba(242, 139, 130, 0.4);
+  color: #f28b82;
+}
+
+.deleteIconButton:hover {
+  color: #fff;
+  border-color: #f28b82;
+  background: rgba(242, 139, 130, 0.15);
+}
+
+.deleteIconButton:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

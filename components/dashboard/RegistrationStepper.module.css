@@ -1,0 +1,127 @@
+.stepper {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+}
+
+.circle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.02);
+  color: #9c9a93;
+  font-size: 12px;
+  font-weight: 700;
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease, box-shadow 0.25s ease, transform 0.2s ease;
+}
+
+.step:hover .circle {
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #d8d6cf;
+  transform: translateY(-1px);
+}
+
+/* Blue, not the site's gold — gold stays reserved for "this is your
+   selection/primary action" (competition cards, submit buttons); this is
+   just process/navigation state, so it gets the same blue already used
+   sitewide for competition names (styles/globals.css .hl, #7fb8e6). */
+.circleActive {
+  background: linear-gradient(135deg, #7fb8e6, #4f8fc7);
+  border-color: #7fb8e6;
+  color: #050505;
+  box-shadow: 0 0 0 4px rgba(127, 184, 230, 0.16), 0 0 16px rgba(127, 184, 230, 0.5);
+}
+
+.circleActive::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: inherit;
+  border: 1px solid rgba(127, 184, 230, 0.35);
+  animation: pulse 2.4s ease-out infinite;
+}
+
+.step:hover .circleActive {
+  border-color: #7fb8e6;
+  color: #050505;
+  transform: translateY(-1px);
+}
+
+.circleDone {
+  background: rgba(127, 184, 230, 0.1);
+  border-color: rgba(127, 184, 230, 0.7);
+  color: #7fb8e6;
+  box-shadow: 0 0 12px rgba(127, 184, 230, 0.15);
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9c9a93;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.labelActive {
+  color: #f3f1ec;
+  text-shadow: 0 0 18px rgba(127, 184, 230, 0.3);
+}
+
+.connector {
+  flex: 1 1 80px;
+  max-width: 120px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.12);
+  margin-top: 14px;
+  transition: background 0.3s ease;
+}
+
+.connectorDone {
+  background: linear-gradient(90deg, #7fb8e6, rgba(127, 184, 230, 0.4));
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .circleActive::after {
+    animation: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .label {
+    display: none;
+  }
+
+  .connector {
+    flex-basis: 32px;
+  }
+}
