@@ -3,7 +3,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Competition } from "@/types/competition";
-import { REGISTRATION_URL } from "@/data/registration";
 import { getCompetitionDateLabel } from "@/lib/getCompetitionDays";
 import { getOwnStudioManager, getProfilePhotoUrl } from "@/lib/queries/studioManagers";
 import { PROFILE_UPDATED_EVENT, ProfileUpdateDetail } from "@/lib/profileUpdateEvent";
@@ -233,15 +232,9 @@ export default function Nav({ competitions }: { competitions: Competition[] }) {
           </div>
         </div>
 
-        <a
-          href={REGISTRATION_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={styles.ctaPill}
-          onClick={() => setMobileOpen(false)}
-        >
-          שמירת מקום
-        </a>
+        <Link href="/dashboard" className={styles.ctaPill} onClick={() => setMobileOpen(false)}>
+          הרשמה לתחרויות
+        </Link>
 
         <button
           className={styles.menuButton}
