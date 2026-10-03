@@ -18,6 +18,14 @@ export function PlusIcon({ size = 16 }: { size?: number }) {
   );
 }
 
+export function MinusIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 12h14" />
+    </svg>
+  );
+}
+
 export function EditIcon({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -57,12 +65,79 @@ export function PersonIcon({ size = 16 }: { size?: number }) {
   );
 }
 
-export function MusicNoteIcon({ size = 16 }: { size?: number }) {
+// Two hand-drawn attempts at a ballerina silhouette both read as unclear —
+// this uses Dani's own reference image directly instead of a third guess at
+// SVG path data. The original (public/images/icons/ballerina.png) is a
+// solid BLACK shape on an OPAQUE WHITE background (no transparency at all —
+// confirmed by reading its actual pixels, not assumed). CSS mask-image
+// defaults to *luminance* masking (bright pixels show the element, dark
+// ones hide it) — using that original directly would have shown a gold
+// square with a dancer-shaped hole in it, the exact opposite of what's
+// wanted. public/images/icons/ballerina-mask.png is a one-time preprocessed
+// copy (see no script kept — it inverted black⇄white AND made the
+// background fully transparent) so the shape is opaque WHITE and the
+// background alpha=0: correct under luminance masking (white = visible)
+// and also under alpha masking (opaque = visible), so it renders correctly
+// regardless of which mode a given browser treats as the default. Recolors
+// to `currentColor` via `backgroundColor`, same as every other icon here.
+export function DancerIcon({ size = 16 }: { size?: number }) {
+  return (
+    <span
+      aria-hidden="true"
+      style={{
+        display: "inline-block",
+        flex: "0 0 auto",
+        width: size,
+        height: size,
+        backgroundColor: "currentColor",
+        WebkitMaskImage: "url(/images/icons/ballerina-mask.png)",
+        maskImage: "url(/images/icons/ballerina-mask.png)",
+        WebkitMaskSize: "contain",
+        maskSize: "contain",
+        WebkitMaskRepeat: "no-repeat",
+        maskRepeat: "no-repeat",
+        WebkitMaskPosition: "center",
+        maskPosition: "center",
+      }}
+    />
+  );
+}
+
+export function CloseIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 6L6 18M6 6l12 12" />
+    </svg>
+  );
+}
+
+export function ClockIcon({ size = 14 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M9 18V5l12-2v13" />
-      <circle cx="6" cy="18" r="3" />
-      <circle cx="18" cy="16" r="3" />
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 3" />
+    </svg>
+  );
+}
+
+// Points left, not right — in this RTL dashboard the stepper runs right
+// (step 1) to left (step 2), so "forward"/"next" visually points left too.
+export function ArrowForwardIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M19 12H5" />
+      <path d="M11 6l-6 6 6 6" />
+    </svg>
+  );
+}
+
+// Mirror of ArrowForwardIcon — points right, toward step 1's position in the
+// stepper, for the step-2 "back" button.
+export function ArrowBackIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 12h14" />
+      <path d="M13 6l6 6-6 6" />
     </svg>
   );
 }
@@ -76,12 +151,40 @@ export function CalendarIcon({ size = 18 }: { size?: number }) {
   );
 }
 
+// Points down by default; rotated 180deg via CSS by callers (e.g. the
+// accordion step cards in DanceEntryForm) to indicate "open"/"expanded".
+export function ChevronDownIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 9l6 6 6-6" />
+    </svg>
+  );
+}
+
 export function PayIcon({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="2" y="6" width="20" height="12" rx="2" />
       <circle cx="12" cy="12" r="2.5" />
       <path d="M6 6v0M18 18v0" />
+    </svg>
+  );
+}
+
+export function VideoCameraIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="1" y="5" width="15" height="14" rx="2" />
+      <path d="M23 7l-7 5 7 5V7z" />
+    </svg>
+  );
+}
+
+export function CameraIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+      <circle cx="12" cy="13" r="4" />
     </svg>
   );
 }

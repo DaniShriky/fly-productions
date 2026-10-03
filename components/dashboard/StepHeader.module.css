@@ -1,5 +1,33 @@
+/* Sized to match the scale of the "שלב הבא" button it pairs with (see
+   Step2FinalRegistration.module.css's .nextStepButton) — was noticeably
+   smaller (6px/14px vs 13px/26px padding), which read as two buttons from
+   different systems rather than a matched forward/back pair. Still outlined
+   rather than gold-filled on purpose: this is the secondary action, and the
+   DanceEntryForm cancel/submit pair uses the same "close in size, distinct
+   in fill" convention. */
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #d8d6cf;
+  margin-bottom: 14px;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.backButton:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.06);
+}
+
 .kicker {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   letter-spacing: 1.5px;
   text-transform: uppercase;
@@ -8,13 +36,13 @@
 }
 
 .title {
-  font-size: 22px;
+  font-size: 23px;
   font-weight: 700;
   margin-bottom: 4px;
 }
 
 .hint {
-  font-size: 13px;
+  font-size: 14px;
   color: #9c9a93;
   margin-bottom: 16px;
   max-width: 640px;

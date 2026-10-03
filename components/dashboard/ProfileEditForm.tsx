@@ -40,19 +40,22 @@ export default function ProfileEditForm({
   const [studioName, setStudioName] = useState(manager.studioName);
   const [managerName, setManagerName] = useState(manager.managerName ?? "");
   const [phone, setPhone] = useState(manager.phone);
-  const [city, setCity] = useState(manager.city && ISRAELI_CITIES.includes(manager.city) ? manager.city : ISRAELI_CITIES[0]);
+  // Empty, not ISRAELI_CITIES[0], when there's no real city on the profile
+  // yet — same reasoning as RegistrationDetailsForm: an alphabetical default
+  // silently submitted as "correct" is worse than forcing an explicit pick.
+  const [city, setCity] = useState(manager.city && ISRAELI_CITIES.includes(manager.city) ? manager.city : "");
   const [customCity, setCustomCity] = useState(manager.city && !ISRAELI_CITIES.includes(manager.city) ? manager.city : "");
   const [isOtherCity, setIsOtherCity] = useState(!!manager.city && !ISRAELI_CITIES.includes(manager.city));
-  const [danceStyles, setDanceStyles] = useState(manager.danceStyles ?? "");
   const approvedCompetitionType = manager.preferredCompetitionType ?? "רגיל";
   const [selectedCompetitionType, setSelectedCompetitionType] = useState(
     manager.pendingPreferredCompetitionType ?? approvedCompetitionType
   );
-  const [wantsStageServicesInfo, setWantsStageServicesInfo] = useState(manager.wantsStageServicesInfo);
   const [profileImagePath, setProfileImagePath] = useState(manager.profileImagePath);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState<string | null>(null);
 
   const photoUrl = profileImagePath ? getProfilePhotoUrl(supabaseBrowserClient, profileImagePath) : null;
 
@@ -61,11 +64,18 @@ export default function ProfileEditForm({
     if (!file) return;
 
     setUploadingPhoto(true);
+    setPhotoError(null);
     try {
       const path = await uploadProfilePhoto(supabaseBrowserClient, manager.id, file);
       await updateOwnProfilePhoto(supabaseBrowserClient, manager.id, path);
       setProfileImagePath(path);
       emitProfileUpdated({ profileImageUrl: getProfilePhotoUrl(supabaseBrowserClient, path) });
+    } catch (err) {
+      // Same previously-silent gap as handleSubmit below had — an upload
+      // failure (file too large, network, storage RLS) showed nothing at
+      // all, the hint text just quietly reverting to normal.
+      console.error("Profile photo upload failed:", err);
+      setPhotoError("העלאת התמונה נכשלה - נסו שוב.");
     } finally {
       setUploadingPhoto(false);
       e.target.value = "";
@@ -76,22 +86,29 @@ export default function ProfileEditForm({
     e.preventDefault();
     setSaving(true);
     setSaved(false);
+    setError(null);
     try {
       const updated = await updateOwnStudioManager(supabaseBrowserClient, manager.id, {
         studioName,
         managerName: managerName || undefined,
         phone,
         city: isOtherCity ? customCity : city,
-        danceStyles: danceStyles || undefined,
         // Only actually a "request" if it differs from what's already
         // approved — picking the same value again just clears any pending
         // request instead of re-submitting a no-op one.
         requestedCompetitionType: selectedCompetitionType === approvedCompetitionType ? null : selectedCompetitionType,
-        wantsStageServicesInfo,
       });
       onSaved(updated);
       emitProfileUpdated({ studioName: updated.studioName });
       setSaved(true);
+    } catch (err) {
+      // Previously unhandled — a failed save (RLS, validation, network) threw
+      // silently here with no catch, so the manager saw no success message
+      // and no error either, just nothing happening. Surfacing it now, even
+      // generically, beats leaving her unsure whether anything was saved.
+      // Logged (not shown to her) so the real cause is still diagnosable.
+      console.error("Profile save failed:", err);
+      setError("השמירה נכשלה - נסו שוב, ואם זה ממשיך לקרות צרו איתנו קשר.");
     } finally {
       setSaving(false);
     }
@@ -116,15 +133,22 @@ export default function ProfileEditForm({
           <p className={styles.avatarHint}>
             {uploadingPhoto ? "מעלה תמונה..." : "לחצו על התמונה כדי להחליף אותה"}
           </p>
+          {photoError && <p className={styles.errorNote}>{photoError}</p>}
           <p className={styles.email} dir="ltr">
             {manager.email}
           </p>
         </div>
       </div>
 
+      <p className={styles.requiredHint}>
+        <span className={styles.required}>*</span> שדה חובה
+      </p>
+
       <div className={styles.grid}>
         <label className={styles.field}>
-          <span>שם הסטודיו/הלהקה</span>
+          <span>
+            שם הסטודיו/הלהקה <span className={styles.required}>*</span>
+          </span>
           <input required value={studioName} onChange={(e) => setStudioName(e.target.value)} />
         </label>
 
@@ -134,13 +158,18 @@ export default function ProfileEditForm({
         </label>
 
         <label className={styles.field}>
-          <span>טלפון נייד</span>
+          <span>
+            טלפון נייד <span className={styles.required}>*</span>
+          </span>
           <input type="tel" dir="ltr" className="en" required value={phone} onChange={(e) => setPhone(e.target.value)} />
         </label>
 
         <label className={styles.field}>
-          <span>יישוב</span>
+          <span>
+            יישוב <span className={styles.required}>*</span>
+          </span>
           <select
+            required
             value={isOtherCity ? OTHER_CITY : city}
             onChange={(e) => {
               if (e.target.value === OTHER_CITY) {
@@ -151,6 +180,9 @@ export default function ProfileEditForm({
               }
             }}
           >
+            <option value="" disabled>
+              בחרי יישוב
+            </option>
             {ISRAELI_CITIES.map((c) => (
               <option key={c} value={c}>
                 {c}
@@ -162,15 +194,12 @@ export default function ProfileEditForm({
 
         {isOtherCity && (
           <label className={styles.field}>
-            <span>איזה יישוב?</span>
+            <span>
+              איזה יישוב? <span className={styles.required}>*</span>
+            </span>
             <input required value={customCity} onChange={(e) => setCustomCity(e.target.value)} />
           </label>
         )}
-
-        <label className={styles.field}>
-          <span>סגנונות ריקוד</span>
-          <input value={danceStyles} onChange={(e) => setDanceStyles(e.target.value)} />
-        </label>
       </div>
 
       <fieldset className={styles.radioGroup}>
@@ -204,17 +233,9 @@ export default function ProfileEditForm({
         )}
       </fieldset>
 
-      <label className={styles.radio}>
-        <input
-          type="checkbox"
-          checked={wantsStageServicesInfo}
-          onChange={(e) => setWantsStageServicesInfo(e.target.checked)}
-        />
-        מעוניינת לקבל מידע על שירותי במה מקצועיים
-      </label>
-
       <div className={styles.footer}>
         {saved && <span className={styles.savedNote}>הפרטים נשמרו</span>}
+        {error && <span className={styles.errorNote}>{error}</span>}
         <button type="submit" className={styles.submit} disabled={saving}>
           {saving ? "שומרת..." : "שמירת שינויים"}
         </button>

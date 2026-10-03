@@ -7,15 +7,21 @@
 }
 
 .count {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: #f3f1ec;
+}
+
+.deleteError {
+  font-size: 13px;
+  color: #f28b82;
+  margin-bottom: 12px;
 }
 
 .addButtonRow {
   display: flex;
   justify-content: flex-start;
-  margin-top: 24px;
+  margin-bottom: 20px;
 }
 
 .addButton {
@@ -26,7 +32,7 @@
   color: #050505;
   padding: 15px 36px;
   border-radius: 999px;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
   white-space: nowrap;
   box-shadow: 0 10px 26px -8px rgba(245, 197, 66, 0.55);
@@ -45,7 +51,7 @@
   border-radius: 12px;
   padding: 28px 16px;
   text-align: center;
-  font-size: 13px;
+  font-size: 14px;
   color: #9c9a93;
 }
 
@@ -55,12 +61,20 @@
   gap: 8px;
 }
 
+/* Ambient glow in this competition's accent color, as an extra
+   background-image layer on each dance row itself (moved here from the
+   outer .wrap, which looked wrong — the rows are the actual visible boxes,
+   so the glow needs to live on them, not on the container around them).
+   --list-rgb holds bare "r, g, b" tokens (see CompetitionDanceList.tsx) so
+   this doesn't depend on CSS color-mix() support. */
 .row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 12px;
-  background: linear-gradient(165deg, #0d0d10, #0a0a0c 70%);
+  background:
+    radial-gradient(circle at top right, rgba(var(--list-rgb, 245, 197, 66), 0.16) 0%, transparent 70%),
+    linear-gradient(165deg, #0d0d10, #0a0a0c 70%);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   padding: 12px 16px;
@@ -79,28 +93,28 @@
 }
 
 .danceName {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: #f3f1ec;
 }
 
 .subLine {
-  font-size: 12px;
+  font-size: 13px;
   color: #9c9a93;
   margin-top: 2px;
 }
 
 .price {
   flex: 0 0 auto;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
-  color: #f5c542;
+  color: var(--list-accent, #f5c542);
   white-space: nowrap;
 }
 
 .badge {
   flex: 0 0 auto;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 700;
   padding: 3px 10px;
   border-radius: 999px;
@@ -128,8 +142,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;
   flex: 0 0 auto;
   background: none;
   border: 1px solid rgba(255, 255, 255, 0.18);
@@ -155,7 +169,7 @@
   background: rgba(242, 139, 130, 0.15);
 }
 
-.deleteIconButton:disabled {
+.iconButton:disabled {
   opacity: 0.5;
   cursor: default;
 }

@@ -21,5 +21,9 @@ export interface StudioManager {
   pendingPreferredCompetitionType?: string;
   additionalNotes?: string;
   wantsStageServicesInfo: boolean;
+  // Persists "already filled the external שמירת מקום form" per account
+  // (not just per browser/device, unlike the sessionStorage "just logged
+  // in" flag the popup is also gated on) — see ReservationNotice.tsx.
+  reservationNoticeDismissed: boolean;
   createdAt: string;
 }

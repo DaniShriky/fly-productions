@@ -1,5 +1,5 @@
 .empty {
-  font-size: 14px;
+  font-size: 15px;
   color: #9c9a93;
 }
 
@@ -23,7 +23,7 @@
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 999px;
   padding: 6px 16px;
-  font-size: 13px;
+  font-size: 14px;
   color: #d8d6cf;
   transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -44,7 +44,7 @@
   width: 100%;
   table-layout: auto;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .table th,
@@ -62,7 +62,7 @@
 .table th {
   color: #9c9a93;
   font-weight: 700;
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 0.4px;
   text-transform: uppercase;
   border-bottom: 1px solid rgba(255, 255, 255, 0.14);
@@ -101,7 +101,7 @@
   align-items: center;
   gap: 8px;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 15px;
   /* Same blue used sitewide (styles/globals.css .hl) to highlight brand/
      competition names inline in copy. */
   color: #7fb8e6;
@@ -113,7 +113,7 @@
 }
 
 .groupHeaderMeta {
-  font-size: 12px;
+  font-size: 13px;
   color: #9c9a93;
   white-space: nowrap;
 }
@@ -146,16 +146,49 @@
 }
 
 .competitionCellName {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: #d8d6cf;
 }
 
+.danceName {
+  font-weight: 700;
+  color: #f3f1ec;
+}
+
 .subLine {
-  font-size: 11px;
+  font-size: 14px;
   color: #9c9a93;
   font-weight: 400;
   margin-top: 2px;
+}
+
+/* Style + STEP division as small muted tags under the dance name — folded
+   in from what used to be two separate table columns, so the same info
+   reads as "detail about this dance" rather than two more columns to scan
+   across. */
+.tagRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.tag {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #9c9a93;
+  white-space: nowrap;
+}
+
+.mediaOrderRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
 }
 
 .audioRow {
@@ -195,9 +228,16 @@
   margin-top: 6px;
 }
 
-.noSong {
-  color: #9c9a93;
-  font-style: italic;
+/* A real warning, not just a neutral "no song yet" note — Dani asked for it
+   to be clear when a dance is missing something it'll need before payment. */
+.missingBadge {
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(242, 139, 130, 0.15);
+  color: #f28b82;
   white-space: nowrap;
 }
 
@@ -209,12 +249,12 @@
   white-space: nowrap;
   color: #f5c542;
   font-weight: 600;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .statusBadge {
   display: inline-block;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 700;
   padding: 4px 12px;
   border-radius: 999px;
@@ -234,7 +274,7 @@
 
 .orderedBadge {
   display: inline-block;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 700;
   padding: 3px 10px;
   border-radius: 999px;
@@ -290,7 +330,67 @@
 }
 
 .globalBreakdown .breakdownTotal {
-  color: #3fae64;
+  color: #f5c542;
+}
+
+/* One "receipt section" per dance — a bold dance-name header, its own
+   itemized charges indented underneath, and a per-dance subtotal — before
+   the single grand total at the very bottom (.breakdownTotal). */
+.breakdownGroup {
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.breakdownGroup:first-child {
+  padding-top: 0;
+}
+
+.breakdownDanceHeader {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-weight: 700;
+  color: #f3f1ec;
+  margin-bottom: 4px;
+}
+
+.breakdownLineRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  /* Indented from the reading-start (right) edge — this is an RTL layout —
+     so each charge visibly nests under its dance name above it. */
+  padding: 2px 14px 2px 0;
+  font-size: 13px;
+  color: #9c9a93;
+}
+
+.breakdownSubtotal {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.14);
+  font-weight: 700;
+  color: #f3f1ec;
+}
+
+/* Shown at the top of the pay panel only when a still-unpaid dance has no
+   song uploaded — the moment a manager opens this panel to pay is exactly
+   when that still matters. Same warning red used elsewhere (.missingBadge,
+   .deleteIconButton), so it reads consistently as "needs attention." */
+.missingWarning {
+  background: rgba(242, 139, 130, 0.12);
+  border: 1px solid rgba(242, 139, 130, 0.4);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  color: #f3f1ec;
+}
+
+.missingWarning strong {
+  color: #f28b82;
 }
 
 .breakdownTitle {
@@ -326,12 +426,13 @@
 .grandTotalValue {
   color: #f5c542;
   font-weight: 700;
-  font-size: 15px;
+  font-size: 16px;
 }
 
-/* Green, not gold — this bar's whole purpose is "go complete the payment",
-   so it gets the same green the rest of the app already uses for "paid"
-   (below, .paid), the common checkout convention for a final pay action. */
+/* Was green (the "paid"/checkout-convention color) — Dani said that shade
+   didn't work for her, so this switched to the site's one consistent
+   primary-action gold (same as .submitButton/.addButton elsewhere) instead
+   of picking a second accent color just for this bar. */
 .stickyBar {
   position: sticky;
   bottom: 12px;
@@ -339,9 +440,9 @@
   background: rgba(10, 10, 12, 0.82);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(63, 174, 100, 0.4);
+  border: 1px solid rgba(245, 197, 66, 0.35);
   border-radius: 16px;
-  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.35), 0 20px 40px -20px rgba(0, 0, 0, 0.6), 0 0 30px -10px rgba(63, 174, 100, 0.2);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.35), 0 20px 40px -20px rgba(0, 0, 0, 0.6), 0 0 30px -10px rgba(245, 197, 66, 0.18);
   overflow: hidden;
 }
 
@@ -355,7 +456,7 @@
 }
 
 .stickyBarInfo {
-  font-size: 14px;
+  font-size: 15px;
   color: #d8d6cf;
 }
 
@@ -364,33 +465,33 @@
   align-items: center;
   gap: 8px;
   flex: 0 0 auto;
-  background: linear-gradient(135deg, #4bc179, #2e9456);
-  color: #052b14;
+  background: linear-gradient(135deg, #f5c542, #e0a84a);
+  color: #050505;
   padding: 10px 22px;
   border-radius: 999px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   white-space: nowrap;
-  box-shadow: 0 8px 22px -8px rgba(63, 174, 100, 0.6);
+  box-shadow: 0 8px 22px -8px rgba(245, 197, 66, 0.55);
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
 
 .stickyBarButton:hover {
   filter: brightness(1.05);
   transform: translateY(-1px);
-  box-shadow: 0 12px 28px -8px rgba(63, 174, 100, 0.75);
+  box-shadow: 0 12px 28px -8px rgba(245, 197, 66, 0.7);
 }
 
 .globalPayPanel {
-  background: rgba(63, 174, 100, 0.08);
-  border-top: 1px solid rgba(63, 174, 100, 0.25);
+  background: rgba(245, 197, 66, 0.06);
+  border-top: 1px solid rgba(245, 197, 66, 0.2);
   padding: 16px 20px;
-  font-size: 13px;
+  font-size: 14px;
   color: #d8d6cf;
 }
 
 .globalPayPanel a {
-  color: #3fae64;
+  color: #f5c542;
   text-decoration: underline;
 }
 
@@ -465,7 +566,7 @@
   .table td[data-label]::before {
     content: attr(data-label);
     color: #9c9a93;
-    font-size: 12px;
+    font-size: 13px;
     flex: 0 0 auto;
   }
 

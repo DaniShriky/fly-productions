@@ -9,30 +9,42 @@ export type RegistrationDetails = {
   managerName: string;
   phone: string;
   city: string;
-  danceStyles: string;
   referralSource: string;
   preferredCompetitionType: "regular" | "religious";
-  wantsStageServicesInfo: boolean;
 };
 
 type Props = {
   onSubmit: (details: RegistrationDetails) => void;
+  // Re-shown after going "back" from the email-verification step — without
+  // this, going back to fix a typo meant losing everything already typed.
+  initialValues?: RegistrationDetails;
 };
 
 // Fields match the site's real, already-live registration Google Form
 // (fetched directly from forms.gle/XyvWwyQ5KM2crzueA) — studioName/phone were
-// already here from the original Phase 3 draft; managerName/city/danceStyles/
-// wantsStageServicesInfo were added once the real form's fields were checked.
-export default function RegistrationDetailsForm({ onSubmit }: Props) {
-  const [studioName, setStudioName] = useState("");
-  const [managerName, setManagerName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [city, setCity] = useState(ISRAELI_CITIES[0]);
-  const [customCity, setCustomCity] = useState("");
-  const [danceStyles, setDanceStyles] = useState("");
-  const [referralSource, setReferralSource] = useState("");
-  const [preferredCompetitionType, setPreferredCompetitionType] = useState<"regular" | "religious">("regular");
-  const [wantsStageServicesInfo, setWantsStageServicesInfo] = useState(false);
+// already here from the original Phase 3 draft; managerName/city were added
+// once the real form's fields were checked. danceStyles and
+// wantsStageServicesInfo were dropped from registration (2026-10-02, Dani) —
+// still collectible later from /profile if she wants them back here too.
+export default function RegistrationDetailsForm({ onSubmit, initialValues }: Props) {
+  const [studioName, setStudioName] = useState(initialValues?.studioName ?? "");
+  const [managerName, setManagerName] = useState(initialValues?.managerName ?? "");
+  const [phone, setPhone] = useState(initialValues?.phone ?? "");
+  // Starts genuinely empty, not defaulted to ISRAELI_CITIES[0] — a manager
+  // who didn't notice the dropdown had already picked something for her
+  // (alphabetically first) would otherwise submit the wrong city without
+  // ever touching the field. `required` below forces a real, deliberate
+  // choice instead.
+  const [city, setCity] = useState(
+    initialValues && !ISRAELI_CITIES.includes(initialValues.city) ? OTHER_CITY : initialValues?.city ?? ""
+  );
+  const [customCity, setCustomCity] = useState(
+    initialValues && !ISRAELI_CITIES.includes(initialValues.city) ? initialValues.city : ""
+  );
+  const [referralSource, setReferralSource] = useState(initialValues?.referralSource ?? "");
+  const [preferredCompetitionType, setPreferredCompetitionType] = useState<"regular" | "religious">(
+    initialValues?.preferredCompetitionType ?? "regular"
+  );
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -41,27 +53,35 @@ export default function RegistrationDetailsForm({ onSubmit }: Props) {
       managerName,
       phone,
       city: city === OTHER_CITY ? customCity : city,
-      danceStyles,
       referralSource,
       preferredCompetitionType,
-      wantsStageServicesInfo,
     });
   }
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
+      <p className={styles.optionalHint}>
+        <span className={styles.required}>*</span> שדה חובה
+      </p>
+
       <label className={styles.field}>
-        <span>שם הסטודיו/הלהקה</span>
+        <span>
+          שם הסטודיו/הלהקה <span className={styles.required}>*</span>
+        </span>
         <input required value={studioName} onChange={(e) => setStudioName(e.target.value)} />
       </label>
 
       <label className={styles.field}>
-        <span>שם מנהל/ת הלהקה</span>
+        <span>
+          שם מנהל/ת הלהקה <span className={styles.required}>*</span>
+        </span>
         <input required value={managerName} onChange={(e) => setManagerName(e.target.value)} />
       </label>
 
       <label className={styles.field}>
-        <span>טלפון נייד</span>
+        <span>
+          טלפון נייד <span className={styles.required}>*</span>
+        </span>
         <input
           type="tel"
           dir="ltr"
@@ -74,8 +94,13 @@ export default function RegistrationDetailsForm({ onSubmit }: Props) {
       </label>
 
       <label className={styles.field}>
-        <span>יישוב</span>
-        <select value={city} onChange={(e) => setCity(e.target.value)}>
+        <span>
+          יישוב <span className={styles.required}>*</span>
+        </span>
+        <select required value={city} onChange={(e) => setCity(e.target.value)}>
+          <option value="" disabled>
+            בחרי יישוב
+          </option>
           {ISRAELI_CITIES.map((c) => (
             <option key={c} value={c}>
               {c}
@@ -87,18 +112,15 @@ export default function RegistrationDetailsForm({ onSubmit }: Props) {
 
       {city === OTHER_CITY && (
         <label className={styles.field}>
-          <span>איזה יישוב?</span>
+          <span>
+            איזה יישוב? <span className={styles.required}>*</span>
+          </span>
           <input required value={customCity} onChange={(e) => setCustomCity(e.target.value)} />
         </label>
       )}
 
       <label className={styles.field}>
-        <span>סגנונות ריקוד (לא חובה)</span>
-        <input value={danceStyles} onChange={(e) => setDanceStyles(e.target.value)} />
-      </label>
-
-      <label className={styles.field}>
-        <span>מאיפה שמעת עלינו? (לא חובה)</span>
+        <span>מאיפה שמעת עלינו?</span>
         <input value={referralSource} onChange={(e) => setReferralSource(e.target.value)} />
       </label>
 
@@ -123,15 +145,6 @@ export default function RegistrationDetailsForm({ onSubmit }: Props) {
           דתי
         </label>
       </fieldset>
-
-      <label className={styles.radio}>
-        <input
-          type="checkbox"
-          checked={wantsStageServicesInfo}
-          onChange={(e) => setWantsStageServicesInfo(e.target.checked)}
-        />
-        מעוניינת לקבל מידע על שירותי במה מקצועיים
-      </label>
 
       <button type="submit" className={styles.submit}>
         המשך

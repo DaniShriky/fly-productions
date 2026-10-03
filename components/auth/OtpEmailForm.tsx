@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { supabaseBrowserClient } from "@/lib/supabaseBrowserClient";
 import styles from "./OtpEmailForm.module.css";
 
@@ -17,11 +17,57 @@ export default function OtpEmailForm({ mode, onVerified }: Props) {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
+  const [resent, setResent] = useState(false);
+  // Nothing previously stopped repeated fast clicks on "שליחת קוד מחדש" —
+  // past a few, Supabase just starts throttling and the error shown
+  // ("לא הצלחנו לשלוח קוד חדש") doesn't explain why. A plain 30s client-side
+  // cooldown after any send (the first one included) avoids hitting that
+  // wall in normal use.
+  const [resendAvailableAt, setResendAvailableAt] = useState<number | null>(null);
+  const [cooldownLeft, setCooldownLeft] = useState(0);
+
+  // Fades the "קוד חדש נשלח" confirmation on its own rather than leaving it
+  // sitting there indefinitely, or relying on the next form action to clear it.
+  useEffect(() => {
+    if (!resent) return;
+    const id = setTimeout(() => setResent(false), 5000);
+    return () => clearTimeout(id);
+  }, [resent]);
+
+  useEffect(() => {
+    if (!resendAvailableAt) return;
+    function tick() {
+      const left = Math.max(0, Math.ceil(((resendAvailableAt ?? 0) - Date.now()) / 1000));
+      setCooldownLeft(left);
+      if (left <= 0) setResendAvailableAt(null);
+    }
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [resendAvailableAt]);
 
   async function handleSendCode(e: FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    // Register mode only — catches an already-registered email before
+    // sending a code and walking her through the whole verification flow,
+    // instead of only after (register.tsx's insert-time 23505 check is still
+    // there as a fallback, for the rare race where two tabs register the
+    // same email at once). email_is_registered is a security-definer RPC
+    // that returns only a boolean, safe to call before she has a session.
+    if (mode === "register") {
+      const { data: alreadyRegistered } = await supabaseBrowserClient.rpc("email_is_registered", {
+        check_email: email,
+      });
+      if (alreadyRegistered) {
+        setLoading(false);
+        setError("כבר נרשמת בעבר עם אימייל זה - אפשר להתחבר דרך ‘כניסת מנהלים’ בתפריט.");
+        return;
+      }
+    }
 
     const { error } = await supabaseBrowserClient.auth.signInWithOtp({
       email,
@@ -40,6 +86,31 @@ export default function OtpEmailForm({ mode, onVerified }: Props) {
     }
 
     setStep("code");
+    setResendAvailableAt(Date.now() + 30000);
+  }
+
+  // Not a different code path from the initial send — signInWithOtp just
+  // sends another code to the same email. Previously the only way to get a
+  // fresh code was "שינוי כתובת אימייל", which also wiped the entered code
+  // and (misleadingly) read as if you were meant to type a different email.
+  async function handleResend() {
+    setResending(true);
+    setError(null);
+    setResent(false);
+
+    const { error } = await supabaseBrowserClient.auth.signInWithOtp({
+      email,
+      options: { shouldCreateUser: mode === "register" },
+    });
+
+    setResending(false);
+
+    if (error) {
+      setError("לא הצלחנו לשלוח קוד חדש. נסי שוב בעוד רגע.");
+      return;
+    }
+    setResent(true);
+    setResendAvailableAt(Date.now() + 30000);
   }
 
   async function handleVerifyCode(e: FormEvent) {
@@ -108,6 +179,12 @@ export default function OtpEmailForm({ mode, onVerified }: Props) {
       <button type="submit" className={styles.submit} disabled={loading}>
         {loading ? "מאמתת..." : "אישור"}
       </button>
+      <div className={styles.secondaryRow}>
+        <button type="button" className={styles.secondary} onClick={handleResend} disabled={resending || cooldownLeft > 0}>
+          {resending ? "שולחת..." : cooldownLeft > 0 ? `שליחה חוזרת בעוד ${cooldownLeft} שניות` : "שליחת קוד מחדש"}
+        </button>
+        {resent && <span className={styles.resentNote}>✓ קוד חדש נשלח</span>}
+      </div>
       <button
         type="button"
         className={styles.secondary}

@@ -13,7 +13,10 @@ type RegistrationRow = {
   dancer_name: string | null;
   choreographer_name: string;
   dance_level: DanceLevel;
-  preferred_day: string | null;
+  manager_name: string;
+  studio_name: string;
+  city: string;
+  preferred_days: string[] | null;
   song_file_path: string | null;
   song_duration_seconds: number | null;
   wants_video: boolean;
@@ -37,7 +40,10 @@ function toRegistration(row: RegistrationRow): Registration {
     ...(row.dancer_name ? { dancerName: row.dancer_name } : {}),
     choreographerName: row.choreographer_name,
     danceLevel: row.dance_level,
-    ...(row.preferred_day ? { preferredDay: row.preferred_day } : {}),
+    managerName: row.manager_name,
+    studioName: row.studio_name,
+    city: row.city,
+    ...(row.preferred_days?.length ? { preferredDays: row.preferred_days } : {}),
     ...(row.song_file_path ? { songFilePath: row.song_file_path } : {}),
     ...(row.song_duration_seconds != null ? { songDurationSeconds: row.song_duration_seconds } : {}),
     wantsVideo: row.wants_video,
@@ -70,7 +76,10 @@ export type DanceEntryInput = {
   dancerName?: string;
   choreographerName: string;
   danceLevel: DanceLevel;
-  preferredDay?: string;
+  managerName: string;
+  studioName: string;
+  city: string;
+  preferredDays?: string[];
   songFilePath?: string;
   songDurationSeconds?: number;
   wantsVideo: boolean;
@@ -88,7 +97,6 @@ export async function upsertDanceEntry(
   existingId?: string
 ): Promise<Registration> {
   const row = {
-    competition_id: entry.competitionId,
     dance_name: entry.danceName,
     category: entry.category,
     participant_count: entry.participantCount,
@@ -97,16 +105,27 @@ export async function upsertDanceEntry(
     dancer_name: entry.category === "solo" ? entry.dancerName || null : null,
     choreographer_name: entry.choreographerName,
     dance_level: entry.danceLevel,
-    preferred_day: entry.preferredDay || null,
+    manager_name: entry.managerName,
+    studio_name: entry.studioName,
+    city: entry.city,
+    preferred_days: entry.preferredDays?.length ? entry.preferredDays : null,
     song_file_path: entry.songFilePath || null,
     song_duration_seconds: entry.songDurationSeconds ?? null,
     wants_video: entry.wantsVideo,
     wants_stills: entry.wantsStills,
   };
 
+  // `competition_id` is deliberately excluded from `row` above and only ever
+  // set on insert — the schema's column-level UPDATE grant (schema.sql) never
+  // includes it (a manager can't move an existing dance to a different
+  // competition), so sending it on an update's SET list at all makes Postgres
+  // reject the whole statement with "permission denied for column
+  // competition_id", regardless of whether the value actually changed. That
+  // was the real cause behind "editing a dance" failing with the generic
+  // save-error toast (found 2026-10-03).
   const query = existingId
     ? client.from("registrations").update(row).eq("id", existingId)
-    : client.from("registrations").insert({ ...row, studio_manager_id: studioManagerId });
+    : client.from("registrations").insert({ ...row, competition_id: entry.competitionId, studio_manager_id: studioManagerId });
 
   const { data, error } = await query.select("*").single();
   if (error) throw error;

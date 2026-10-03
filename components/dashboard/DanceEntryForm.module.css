@@ -1,5 +1,16 @@
+/* Ambient glow in this competition's accent color, as a second layer of the
+   same `background` property (sized relative to the box itself, not a fixed
+   px box) — same technique as CompetitionDanceList.module.css's `.row`, so
+   the two visually match. A detour through a fixed-size `::before`
+   pseudo-element (tried in between) looked like a separate glued-on "dot"
+   instead of blending into the corner — this single-property version is
+   simpler and reads right. --form-rgb holds bare "r, g, b" tokens (see
+   DanceEntryForm.tsx) so rgba(var(--form-rgb), alpha) can build this without
+   CSS color-mix() support. */
 .form {
-  background: linear-gradient(165deg, #101014, #0a0a0c 65%);
+  background:
+    radial-gradient(circle at top right, rgba(var(--form-rgb, 245, 197, 66), 0.18) 0%, transparent 65%),
+    linear-gradient(165deg, #101014, #0a0a0c 65%);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   padding: 24px;
@@ -17,7 +28,7 @@
 }
 
 .title {
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 700;
 }
 
@@ -25,7 +36,7 @@
   flex: 0 0 auto;
   background: none;
   border: none;
-  font-size: 13px;
+  font-size: 14px;
   color: #9c9a93;
   text-decoration: underline;
 }
@@ -34,17 +45,167 @@
   color: #fff;
 }
 
+.required {
+  color: #f28b82;
+}
+
+.fieldErrorText,
+.submitError {
+  font-size: 13px;
+  color: #f28b82;
+}
+
+.submitError {
+  margin: 0;
+}
+
 .groupTitle {
-  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
   color: #9c9a93;
-  margin-bottom: 12px;
 }
 
-.groupTitle:not(:first-of-type) {
+/* The numbered badge in front of each step's title (see SectionTitle in
+   DanceEntryForm.tsx) — 1→3, matching the accordion steps below it. */
+.sectionNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--form-accent, #f5c542);
+  color: #050505;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* Per Dani's reference (reg.artor.org.il, 2026-10-03): each step is its own
+   bordered, rounded card — collapsed ones show just the header + a one-line
+   summary, only the current one shows its full fields. */
+.stepCard {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.015);
+  transition: border-color 0.25s ease, opacity 0.25s ease;
+}
+
+/* The open step is visually emphasized with the competition's accent color
+   so it's unmistakable which one you're filling in right now. */
+.stepCardOpen {
+  border-color: rgba(var(--form-rgb, 245, 197, 66), 0.45);
+}
+
+/* A step that hasn't been reached yet (can't be jumped to — only opens once
+   the step before it is confirmed) is muted rather than hidden entirely, so
+   managers can see how many steps remain. */
+.stepCardFuture {
+  opacity: 0.45;
+}
+
+/* The entire header is one button (see StepCardHead in DanceEntryForm.tsx) —
+   not just the small chevron circle — so reopening or collapsing an
+   already-reached step is a single easy click anywhere on the row, not a
+   precise click on a tiny target. Reset to look like the plain flex row it
+   replaced; disabled (a not-yet-reached "future" step) just removes the
+   pointer affordance, matching its muted .stepCardFuture look. */
+.stepCardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+
+.stepCardHead:disabled {
+  cursor: default;
+}
+
+/* The round chevron indicator — purely decorative now (aria-hidden), since
+   the whole header button above it carries the click/hover/disabled
+   behavior. The chevron points down by default and flips to point up
+   (.stepToggleOpen) when that step is expanded, per Dani (2026-10-03) —
+   replacing a plain "+"/"–" character with a proper up/down arrow. */
+.stepToggle {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  background: transparent;
+  color: #d8d6cf;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.stepToggle svg {
+  transition: transform 0.25s ease;
+}
+
+.stepCardHead:not(:disabled):hover .stepToggle {
+  border-color: var(--form-accent, #f5c542);
+  color: var(--form-accent, #f5c542);
+  transform: translateY(-1px);
+}
+
+.stepToggleOpen {
+  background: var(--form-accent, #f5c542);
+  border-color: transparent;
+  color: #050505;
+}
+
+.stepToggleOpen svg {
+  transform: rotate(180deg);
+}
+
+.stepToggleFuture {
+  border-color: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.managerSummary {
+  font-size: 15px;
+  color: #d8d6cf;
   margin-top: 8px;
+}
+
+/* The CSS-grid 0fr/1fr trick: animates a block's height to/from its real
+   content height without JS measuring the content first. The step's fields
+   stay mounted at all times (just visually collapsed to zero height) so
+   their state is never lost when a step closes. */
+.stepBody {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s ease;
+}
+
+.stepBodyOpen {
+  grid-template-rows: 1fr;
+}
+
+.stepBodyInner {
+  overflow: hidden;
+  min-height: 0;
+  padding-top: 14px;
 }
 
 .grid {
@@ -60,12 +221,55 @@
   }
 }
 
+/* A row of toggle buttons instead of a <select> dropdown, used for both the
+   single-select "preferred day" and "alternate day" questions — stays
+   visually consistent with the rest of the dashboard's button-row pickers
+   rather than switching to a native dropdown just because it's single-choice. */
+.dayPicker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.dayButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dayButton {
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: #101014;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #d8d6cf;
+  font-size: 14px;
+  font-weight: 600;
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.dayButton:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.dayButtonActive {
+  background: linear-gradient(135deg, #f5c542, #e0a84a);
+  border-color: transparent;
+  color: #050505;
+}
+
+.dayButtonActive:hover {
+  transform: translateY(-1px);
+}
+
 .field {
   display: flex;
   flex-direction: column;
   gap: 6px;
   min-width: 0;
-  font-size: 13px;
+  font-size: 14px;
   color: #d8d6cf;
 }
 
@@ -78,16 +282,55 @@
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   padding: 10px 12px;
-  font-size: 15px;
+  font-size: 16px;
   color: #f3f1ec;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Chrome ignores autocomplete="off" on name-shaped fields often enough that
+   it's not a reliable fix alone (per Dani, 2026-10-03: it suggested her own
+   saved name on "שם הרקדנית") — when it DOES autofill anyway, it forces its
+   own white/yellow background + dark text via this pseudo-class in a way
+   that normal `background`/`color` can't override directly. The huge inset
+   box-shadow is the standard trick: it paints over Chrome's forced
+   background with our own dark color instead, and -webkit-text-fill-color
+   is the one property Chrome lets through for the text itself. The absurdly
+   long transition-delay is what stops Chrome's own fill-color flash from
+   even being visible for an instant before this applies. */
+.field input:-webkit-autofill,
+.field input:-webkit-autofill:hover,
+.field input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #f3f1ec;
+  -webkit-box-shadow: 0 0 0 1000px #101014 inset;
+  box-shadow: 0 0 0 1000px #101014 inset;
+  transition: background-color 600000s ease-in-out 0s;
+}
+
+/* The "בחרו..." placeholder option (per Dani, 2026-10-03: no pre-picked
+   default — she has to actually choose) reads as light gray instead of the
+   normal field color; `required` + an empty `value=""` option is what makes
+   the select :invalid while that placeholder is still showing, so this
+   reverts to the normal color the moment a real option is picked. This only
+   covers the CLOSED select's own displayed text — the open dropdown list
+   renders each row in its own <option>'s color (inherited from the select,
+   i.e. also gray) unless overridden per-option below, which is what made
+   every real choice look just as grayed-out as the placeholder itself. */
+.field select:invalid {
+  color: #6b6964;
+}
+
+.field select option {
+  color: #f3f1ec;
+}
+
+.field select option[value=""] {
+  color: #6b6964;
 }
 
 .field input:focus,
 .field select:focus {
   outline: none;
-  border-color: rgba(245, 197, 66, 0.6);
-  box-shadow: 0 0 0 3px rgba(245, 197, 66, 0.15);
+  border-color: rgba(var(--form-rgb, 245, 197, 66), 0.8);
 }
 
 /* Icon-in-field, checkout-style — plain flex alignment rather than an
@@ -110,8 +353,7 @@
 }
 
 .fieldIconWrap:focus-within {
-  border-color: rgba(245, 197, 66, 0.6);
-  box-shadow: 0 0 0 3px rgba(245, 197, 66, 0.15);
+  border-color: rgba(var(--form-rgb, 245, 197, 66), 0.8);
 }
 
 .fieldIconWrap svg {
@@ -125,17 +367,97 @@
   border: none;
   outline: none;
   padding: 10px 0;
-  font-size: 15px;
+  font-size: 16px;
   color: #f3f1ec;
 }
 
 .durationHint {
-  font-size: 12px;
+  font-size: 13px;
   color: #9c9a93;
 }
 
+/* +/- participant-count stepper (per Dani's reference, reg.artor.org.il,
+   2026-10-03) — same bordered-wrapper-with-bare-input technique as
+   .fieldIconWrap above, just with a button on each side instead of one icon.
+   A vertical divider (not a full border) separates each button from the
+   number so the three segments read as one connected control, not three
+   separate boxes glued together. */
+.stepper {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  box-sizing: border-box;
+  background: #101014;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.stepper:focus-within {
+  border-color: rgba(var(--form-rgb, 245, 197, 66), 0.8);
+}
+
+.stepperButton {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  background: none;
+  border: none;
+  color: #d8d6cf;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.stepperButton:first-child {
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.stepperButton:last-child {
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.stepperButton:hover:not(:disabled) {
+  background: rgba(var(--form-rgb, 245, 197, 66), 0.12);
+  color: var(--form-accent, #f5c542);
+}
+
+.stepperButton:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* .field input (above) sets its own border/background/padding on every
+   input inside a .field, including this one — matching it in specificity
+   (one class + one element) meant that rule won the cascade and left a
+   second, redundant rounded border floating inside .stepper's own border.
+   ".field .stepperInput" (two classes) is deliberately more specific so
+   this override always wins instead of depending on source-order luck. */
+.field .stepperInput {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: none;
+  border-radius: 0;
+  outline: none;
+  padding: 10px 0;
+  font-size: 16px;
+  text-align: center;
+  color: #f3f1ec;
+  -webkit-appearance: none;
+  appearance: none;
+  -moz-appearance: textfield;
+}
+
+.stepperInput::-webkit-outer-spin-button,
+.stepperInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 .timeLimitHint {
-  font-size: 12px;
+  font-size: 13px;
   color: #7fb8e6;
   margin-bottom: 12px;
 }
@@ -161,12 +483,12 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-size: 13px;
+  font-size: 14px;
   color: #d8d6cf;
 }
 
 .fieldLabel {
-  font-size: 13px;
+  font-size: 14px;
   color: #d8d6cf;
 }
 
@@ -182,15 +504,15 @@
   border: 1.5px dashed rgba(255, 255, 255, 0.22);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.02);
-  color: #f5c542;
+  color: var(--form-accent, #f5c542);
   cursor: pointer;
   transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .dropzone:hover,
 .dropzone:focus-within {
-  border-color: rgba(245, 197, 66, 0.5);
-  background: rgba(245, 197, 66, 0.05);
+  border-color: rgba(var(--form-rgb, 245, 197, 66), 0.5);
+  background: rgba(var(--form-rgb, 245, 197, 66), 0.05);
 }
 
 .dropzoneInput {
@@ -203,13 +525,13 @@
 }
 
 .dropzoneText {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: #f3f1ec;
 }
 
 .dropzoneHint {
-  font-size: 12px;
+  font-size: 13px;
   color: #9c9a93;
 }
 
@@ -221,7 +543,8 @@
 
 .checkboxCard {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: space-between;
   gap: 12px;
   padding: 12px 14px;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -235,29 +558,54 @@
   border-color: rgba(255, 255, 255, 0.28);
 }
 
+/* Groups the checkbox + icon + title/subtitle on one side, leaving
+   .checkboxPrice free to sit at the row's other end (via the card's own
+   justify-content: space-between) instead of being squeezed in right after
+   the subtitle text. */
+.checkboxMain {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
 .checkboxCard input {
   flex: 0 0 auto;
   width: 18px;
   height: 18px;
   margin-top: 2px;
-  accent-color: #f5c542;
+  accent-color: var(--form-accent, #f5c542);
 }
 
-.checkboxCard > span {
+.checkboxMain svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: #9c9a93;
+}
+
+.checkboxMain > span {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .checkboxTitle {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: #f3f1ec;
 }
 
 .checkboxSubtitle {
-  font-size: 12px;
+  font-size: 13px;
   color: #9c9a93;
+}
+
+.checkboxPrice {
+  flex: 0 0 auto;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--form-accent, #f5c542);
 }
 
 .surchargeNote {
@@ -265,7 +613,7 @@
   border: 1px solid rgba(242, 139, 130, 0.4);
   border-radius: 8px;
   padding: 10px 14px;
-  font-size: 13px;
+  font-size: 14px;
   color: #f3f1ec;
   margin-bottom: 16px;
 }
@@ -286,7 +634,7 @@
   display: flex;
   flex-direction: column;
   gap: 5px;
-  font-size: 13px;
+  font-size: 14px;
   color: #d8d6cf;
 }
 
@@ -300,10 +648,10 @@
   margin-top: 6px;
   padding: 12px 16px;
   border-radius: 10px;
-  background: rgba(245, 197, 66, 0.12);
-  border: 1px solid rgba(245, 197, 66, 0.35);
+  background: rgba(var(--form-rgb, 245, 197, 66), 0.12);
+  border: 1px solid rgba(var(--form-rgb, 245, 197, 66), 0.35);
   font-weight: 700;
-  font-size: 16px;
+  font-size: 17px;
 }
 
 .priceBreakdownTotal span:first-child {
@@ -311,13 +659,13 @@
 }
 
 .priceBreakdownTotal span:last-child {
-  color: #f5c542;
-  font-size: 20px;
+  color: var(--form-accent, #f5c542);
+  font-size: 21px;
 }
 
 .priceExplain {
   color: #9c9a93;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .actions {
@@ -330,7 +678,7 @@
   color: #050505;
   padding: 10px 24px;
   border-radius: 999px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   border: none;
   box-shadow: 0 8px 22px -8px rgba(245, 197, 66, 0.55);
@@ -353,7 +701,7 @@
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 999px;
   padding: 10px 20px;
-  font-size: 13px;
+  font-size: 14px;
   color: #d8d6cf;
   transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
 }
@@ -362,4 +710,32 @@
   color: #fff;
   border-color: rgba(255, 255, 255, 0.4);
   background: rgba(255, 255, 255, 0.04);
+}
+
+/* Per-step "continue" button — closes the current accordion step and opens
+   the next one. Same gold CTA as .submitButton (the dashboard's established
+   "move forward" look) rather than a muted secondary style, since this is
+   also a forward-progress action, just a local one instead of the final save. */
+.stepActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.stepConfirmButton {
+  background: linear-gradient(135deg, #f5c542, #e0a84a);
+  color: #050505;
+  padding: 10px 24px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  box-shadow: 0 8px 22px -8px rgba(245, 197, 66, 0.55);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.stepConfirmButton:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px -8px rgba(245, 197, 66, 0.7);
 }

@@ -33,23 +33,7 @@ export default function RegistrationsPaymentsTable({ initialRegistrations, compe
   const [filter, setFilter] = useState<Filter>("all");
   const [savingId, setSavingId] = useState<string | null>(null);
 
-  // Video and stills are priced independently, and each quantity discount is
-  // evaluated per studio manager (see project_pricing_and_rules) — across ALL
-  // her dances in this full, cross-competition list, not just the ones in
-  // the current filter/tab.
-  const videoOrdersByManager = new Map<string, number>();
-  const stillsOrdersByManager = new Map<string, number>();
-  for (const r of registrations) {
-    if (r.wantsVideo) videoOrdersByManager.set(r.studioManagerId, (videoOrdersByManager.get(r.studioManagerId) ?? 0) + 1);
-    if (r.wantsStills) stillsOrdersByManager.set(r.studioManagerId, (stillsOrdersByManager.get(r.studioManagerId) ?? 0) + 1);
-  }
-  const recordingFeeOf = (r: AdminRegistration) =>
-    computeRecordingFee(
-      r.wantsVideo,
-      r.wantsStills,
-      videoOrdersByManager.get(r.studioManagerId) ?? 0,
-      stillsOrdersByManager.get(r.studioManagerId) ?? 0
-    );
+  const recordingFeeOf = (r: AdminRegistration) => computeRecordingFee(r.wantsVideo, r.wantsStills);
 
   const priceOf = (r: AdminRegistration) => {
     const competition = competitions.find((c) => c.id === r.competitionId);

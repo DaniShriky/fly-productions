@@ -2,7 +2,14 @@ import { Fragment, useState } from "react";
 import Image from "next/image";
 import { CompetitionWithPricing } from "@/lib/queries/competitionsWithPricing";
 import { Registration } from "@/types/registration";
-import { computePrice, computeRecordingFee, computeTotalPrice, displayCategoryLabel } from "@/lib/pricing";
+import {
+  computePrice,
+  computeRecordingFee,
+  computeRecordingFeeForType,
+  computeSurcharge,
+  computeTotalPrice,
+  displayCategoryLabel,
+} from "@/lib/pricing";
 import { getDanceMusicUrl } from "@/lib/queries/registrations";
 import { supabaseBrowserClient } from "@/lib/supabaseBrowserClient";
 import { PHONE, PHONE_TEL_URL, WHATSAPP_URL } from "@/lib/contact";
@@ -18,7 +25,7 @@ type Props = {
   onDelete: (id: string) => Promise<void>;
 };
 
-const COLUMN_COUNT = 10;
+const COLUMN_COUNT = 7;
 
 function isGroup(category: Registration["category"]): boolean {
   return category === "group_small" || category === "group_large";
@@ -63,14 +70,24 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [loadingAudioId, setLoadingAudioId] = useState<string | null>(null);
+  // Both handlers below used to have try/finally with no catch — a failed
+  // delete or a failed signed-URL fetch (network, RLS, a since-deleted file)
+  // threw silently with nothing shown, the loading state just reverting to
+  // normal as if nothing had happened. Same bug class as the profile-save
+  // fix; see project_dance_form_silent_failures memory.
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const filtered = entries.filter((e) => filter === "all" || e.paymentStatus === filter);
 
   async function handleDelete(id: string) {
     if (!confirm("למחוק את הריקוד הזה? הפעולה לא הפיכה.")) return;
     setDeletingId(id);
+    setActionError(null);
     try {
       await onDelete(id);
+    } catch (err) {
+      console.error("Dance delete failed:", err);
+      setActionError("המחיקה נכשלה - נסו שוב, ואם זה ממשיך לקרות צרו איתנו קשר.");
     } finally {
       setDeletingId(null);
     }
@@ -89,10 +106,14 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
     if (!entry.songFilePath) return;
 
     setLoadingAudioId(entry.id);
+    setActionError(null);
     try {
       const url = await getDanceMusicUrl(supabaseBrowserClient, entry.songFilePath);
       setAudioUrl(url);
       setPlayingId(entry.id);
+    } catch (err) {
+      console.error("Song playback failed:", err);
+      setActionError("לא הצלחנו לטעון את השיר - נסו שוב.");
     } finally {
       setLoadingAudioId(null);
     }
@@ -102,14 +123,7 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
     return <p className={styles.empty}>עדיין לא נוספו ריקודים.</p>;
   }
 
-  // Video and stills are priced independently (135₪ for one dance ordering
-  // that type, 125₪ each for 2+) — each quantity discount is evaluated
-  // across ALL of the manager's dances that ordered THAT type, not affected
-  // by which payment-status filter is currently showing.
-  const totalVideoOrders = entries.filter((e) => e.wantsVideo).length;
-  const totalStillsOrders = entries.filter((e) => e.wantsStills).length;
-  const recordingFeeOf = (entry: Registration) =>
-    computeRecordingFee(entry.wantsVideo, entry.wantsStills, totalVideoOrders, totalStillsOrders);
+  const recordingFeeOf = (entry: Registration) => computeRecordingFee(entry.wantsVideo, entry.wantsStills);
 
   const perParticipantPriceOf = (entry: Registration) => {
     const competition = competitions.find((c) => c.id === entry.competitionId);
@@ -138,6 +152,11 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
   const unpaidEntries = entries.filter((e) => e.paymentStatus === "unpaid");
   const unpaidTotal = unpaidEntries.reduce((sum, entry) => sum + (priceOf(entry) ?? 0), 0);
 
+  // Every other field is required at submission time (see DanceEntryForm) —
+  // the song file is the one thing a manager can genuinely leave for later,
+  // so it's the one thing worth flagging as "still missing" here.
+  const incompleteUnpaid = unpaidEntries.filter((e) => !e.songFilePath);
+
   // Groups consecutive-by-first-appearance entries under their competition,
   // so a manager who registered dances for several competitions sees each
   // competition's dances clustered together with its name shown once,
@@ -156,6 +175,8 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
   return (
     <div>
       <div className={styles.panel}>
+        {actionError && <div className={styles.missingWarning}>{actionError}</div>}
+
         <div className={styles.filters}>
           {(["all", "unpaid", "paid"] as Filter[]).map((f) => (
             <button
@@ -174,11 +195,8 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
           <tr>
             <th>תחרות</th>
             <th>ריקוד</th>
-            <th>סגנון</th>
             <th>קטגוריה</th>
-            <th>חלוקת גיל</th>
-            <th>מדיה</th>
-            <th>הזמנת צילום</th>
+            <th>מוזיקה והזמנות</th>
             <th>מחיר</th>
             <th>סטטוס תשלום</th>
             <th></th>
@@ -239,27 +257,43 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
                           </td>
                         )}
                         <td data-label="ריקוד">
-                          <div>{entry.danceName}</div>
+                          <div className={styles.danceName}>{entry.danceName}</div>
                           <div className={styles.subLine}>כוריאוגרף/ית: {entry.choreographerName}</div>
                           {entry.dancerName && <div className={styles.subLine}>רקדנית: {entry.dancerName}</div>}
-                          {entry.preferredDay && (
+                          {entry.preferredDays && entry.preferredDays.length > 0 && (
                             <div className={styles.subLine}>
-                              יום:{" "}
-                              {new Date(entry.preferredDay).toLocaleDateString("he-IL", {
+                              {/* First entry = preferred day, second (if any) = the backup day picked
+                                  in case the preferred one is full — distinct meanings, so labeled
+                                  separately rather than listed as an undifferentiated set. */}
+                              יום מועדף:{" "}
+                              {new Date(entry.preferredDays[0]).toLocaleDateString("he-IL", {
                                 weekday: "short",
                                 day: "numeric",
                                 month: "numeric",
                               })}
+                              {entry.preferredDays[1] && (
+                                <>
+                                  {" "}
+                                  · יום חלופי:{" "}
+                                  {new Date(entry.preferredDays[1]).toLocaleDateString("he-IL", {
+                                    weekday: "short",
+                                    day: "numeric",
+                                    month: "numeric",
+                                  })}
+                                </>
+                              )}
                             </div>
                           )}
+                          <div className={styles.tagRow}>
+                            <span className={styles.tag}>{entry.danceStyle}</span>
+                            <span className={styles.tag}>{shortLabel(entry.stepDivision)}</span>
+                          </div>
                         </td>
-                        <td data-label="סגנון">{entry.danceStyle}</td>
                         <td data-label="קטגוריה">
                           {shortLabel(displayCategoryLabel(entry.category, entry.participantCount))} · {entry.participantCount} ·{" "}
                           רמה {entry.danceLevel}
                         </td>
-                        <td data-label="חלוקת גיל">{shortLabel(entry.stepDivision)}</td>
-                        <td data-label="מדיה">
+                        <td data-label="מוזיקה והזמנות">
                           {entry.songFilePath ? (
                             <div className={styles.audioRow}>
                               <button
@@ -277,7 +311,7 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
                               )}
                             </div>
                           ) : (
-                            <div className={styles.noSong}>לא הועלה שיר</div>
+                            <div className={styles.missingBadge}>⚠ חסר שיר</div>
                           )}
                           {playingId === entry.id && audioUrl && (
                             <audio
@@ -291,15 +325,11 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
                               }}
                             />
                           )}
-                        </td>
-                        <td data-label="הזמנת צילום">
-                          {mediaOrdersLabel(entry) ? (
-                            <>
+                          {mediaOrdersLabel(entry) && (
+                            <div className={styles.mediaOrderRow}>
                               <span className={styles.orderedBadge}>הוזמן</span>
-                              <div className={styles.subLine}>{mediaOrdersLabel(entry)}</div>
-                            </>
-                          ) : (
-                            <div className={styles.noSong}>לא הוזמן</div>
+                              <span className={styles.subLine}>{mediaOrdersLabel(entry)}</span>
+                            </div>
                           )}
                         </td>
                         <td data-label="מחיר">
@@ -354,7 +384,7 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
         </tbody>
         <tfoot>
           <tr>
-            <td colSpan={7} className={styles.grandTotalLabel}>
+            <td colSpan={4} className={styles.grandTotalLabel}>
               סה"כ ({filtered.length} ריקודים)
             </td>
             <td className={styles.grandTotalValue}>{grandTotal}₪</td>
@@ -379,19 +409,75 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
 
           {showGlobalPay && (
             <div className={styles.globalPayPanel}>
+              {/* Shown immediately on opening this panel — the moment a
+                  manager is actually about to pay is exactly when a missing
+                  song still matters, not buried further down. */}
+              {incompleteUnpaid.length > 0 && (
+                <div className={styles.missingWarning}>
+                  <strong>
+                    ⚠ {incompleteUnpaid.length} {incompleteUnpaid.length === 1 ? "ריקוד" : "ריקודים"} עדיין חסר
+                    {incompleteUnpaid.length === 1 ? " לו" : " להם"} שיר
+                  </strong>{" "}
+                  — יש להשלים לפני התשלום: {incompleteUnpaid.map((e) => e.danceName).join(", ")}.
+                </div>
+              )}
+
               <p className={styles.breakdownTitle}>כל הריקודים הלא משולמים</p>
+              {/* A full itemized breakdown per dance — not just one total
+                  per row — so it reads like a real receipt: what each
+                  charge actually is, not just the final number. */}
               <div className={styles.globalBreakdown}>
                 {unpaidEntries.map((entry) => {
                   const competition = competitions.find((c) => c.id === entry.competitionId);
+                  const perParticipantPrice = perParticipantPriceOf(entry);
+                  const groupDance = isGroup(entry.category);
+                  const base = perParticipantPrice != null ? perParticipantPrice * (groupDance ? entry.participantCount : 1) : null;
+                  const surcharge = computeSurcharge(entry.category, entry.songDurationSeconds, entry.participantCount);
+                  const videoFee = entry.wantsVideo ? computeRecordingFeeForType() : 0;
+                  const stillsFee = entry.wantsStills ? computeRecordingFeeForType() : 0;
+                  const total = priceOf(entry);
+
                   return (
-                    <div key={entry.id} className={styles.breakdownRow}>
-                      <span>
-                        {entry.danceName}{" "}
+                    <div key={entry.id} className={styles.breakdownGroup}>
+                      <div className={styles.breakdownDanceHeader}>
+                        <span>{entry.danceName}</span>
                         <span className={styles.subLine}>
                           (<span className="en" lang="en">{competition?.name ?? "—"}</span>)
                         </span>
-                      </span>
-                      <span>{priceOf(entry)}₪</span>
+                      </div>
+
+                      {base != null && (
+                        <div className={styles.breakdownLineRow}>
+                          <span>
+                            {displayCategoryLabel(entry.category, entry.participantCount)}
+                            {groupDance && ` · ${perParticipantPrice}₪ × ${entry.participantCount}`}
+                          </span>
+                          <span>{base}₪</span>
+                        </div>
+                      )}
+                      {surcharge > 0 && (
+                        <div className={styles.breakdownLineRow}>
+                          <span>תוספת חריגת זמן בשיר</span>
+                          <span>{surcharge}₪</span>
+                        </div>
+                      )}
+                      {videoFee > 0 && (
+                        <div className={styles.breakdownLineRow}>
+                          <span>צילום וידאו</span>
+                          <span>{videoFee}₪</span>
+                        </div>
+                      )}
+                      {stillsFee > 0 && (
+                        <div className={styles.breakdownLineRow}>
+                          <span>צילום סטילס</span>
+                          <span>{stillsFee}₪</span>
+                        </div>
+                      )}
+
+                      <div className={styles.breakdownSubtotal}>
+                        <span>סה&quot;כ לריקוד</span>
+                        <span>{total}₪</span>
+                      </div>
                     </div>
                   );
                 })}
@@ -401,7 +487,7 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
                 </div>
               </div>
               <p className={styles.payInstructions}>
-                התשלום עדיין מתבצע ידנית — העברה בנקאית, המחאה, או מזומן. לתיאום תשלום עבור כל הריקודים יחד, צרו קשר עם
+                התשלום עדיין מתבצע ידנית - העברה בנקאית, המחאה, או מזומן. לתיאום תשלום עבור כל הריקודים יחד, צרו קשר עם
                 המשרד: <a href={PHONE_TEL_URL}>{PHONE}</a> או ב-
                 <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
                   WhatsApp

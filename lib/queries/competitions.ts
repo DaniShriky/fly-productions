@@ -1,6 +1,7 @@
 import DOMPurify from "isomorphic-dompurify";
 import { supabase } from "@/lib/supabase";
 import { Competition } from "@/types/competition";
+import { COMPETITION_ACCENT_COLORS } from "@/lib/competitionAccentColors";
 
 export type CompetitionRow = {
   id: string;
@@ -21,6 +22,8 @@ export type CompetitionRow = {
 // is rendered via dangerouslySetInnerHTML in CompetitionDetail — sanitizing
 // here, once, covers every render site instead of each one remembering to.
 export function toCompetition(row: CompetitionRow): Competition {
+  const accentColor = COMPETITION_ACCENT_COLORS[row.slug];
+
   return {
     id: row.id,
     slug: row.slug,
@@ -36,6 +39,7 @@ export function toCompetition(row: CompetitionRow): Competition {
     ...(row.hero_image_position ? { heroImagePosition: row.hero_image_position } : {}),
     ...(row.logo ? { logo: row.logo } : {}),
     ...(row.video_file ? { videoFile: row.video_file } : {}),
+    ...(accentColor ? { accentColor } : {}),
     descriptionParagraphs: row.description_paragraphs.map((p) => DOMPurify.sanitize(p)),
     gallery: row.gallery,
   };

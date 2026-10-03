@@ -1,78 +1,171 @@
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { CSSProperties, FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import { CompetitionWithPricing } from "@/lib/queries/competitionsWithPricing";
+import { hexToRgbParts } from "@/lib/hexToRgbParts";
 import { DanceEntryInput, uploadDanceMusic } from "@/lib/queries/registrations";
 import { supabaseBrowserClient } from "@/lib/supabaseBrowserClient";
 import { Registration } from "@/types/registration";
+import { StudioManager } from "@/types/studioManager";
 import { getCompetitionDayOptions } from "@/lib/getCompetitionDays";
 import {
   DANCE_LEVELS,
   DANCE_STYLES,
   STEP_DIVISIONS,
-  UiCategory,
+  categoryFromParticipantCount,
   computePrice,
   computeRecordingFeeForType,
   computeSurcharge,
   computeTotalPrice,
   displayCategoryLabel,
   isEarlyPricing,
-  resolveCategory,
-  uiCategoryOf,
 } from "@/lib/pricing";
-import { MusicNoteIcon, PersonIcon, UploadIcon } from "./icons";
+import {
+  CameraIcon,
+  ChevronDownIcon,
+  DancerIcon,
+  MinusIcon,
+  PersonIcon,
+  PlusIcon,
+  UploadIcon,
+  VideoCameraIcon,
+} from "./icons";
 import styles from "./DanceEntryForm.module.css";
 
 type Props = {
   studioManagerId: string;
+  manager: StudioManager;
   competition: CompetitionWithPricing;
   entries: Registration[];
   editingEntry: Registration | null;
   onSubmit: (entry: DanceEntryInput, existingId?: string) => Promise<void>;
   onClose: () => void;
+  // Reports live whether the form currently holds data that would be lost
+  // if it were torn down right now (switching competitions, navigating to
+  // step 2, etc. all unmount this component, wiping its local state with
+  // nothing saved) — see Step2FinalRegistration, which uses this to block
+  // navigating away from step 1 until she confirms.
+  onDirtyChange?: (dirty: boolean) => void;
 };
-
-const UI_CATEGORIES: { value: UiCategory; label: string }[] = [
-  { value: "solo", label: "סולו" },
-  { value: "duet", label: "דואט" },
-  { value: "trio", label: "טריו" },
-  { value: "quartet", label: "קוורטט" },
-  { value: "group", label: "קבוצה" },
-];
 
 const OTHER_STYLE = "אחר";
 
-// Only "group" needs a real headcount — the flyer's other categories are
-// fixed by definition (per Dani: solo=1, duet=2, trio=3, quartet=4).
-const FIXED_PARTICIPANT_COUNTS: Record<Exclude<UiCategory, "group">, number> = {
-  solo: 1,
-  duet: 2,
-  trio: 3,
-  quartet: 4,
-};
+// Eilat's two competitions don't split registration by day the way every
+// other multi-day competition does — per Dani (2026-10-03), the day
+// question simply isn't relevant there, regardless of how many calendar
+// days the competition's `date` field happens to span.
+const NO_DAY_SELECTION_SLUGS = new Set(["eilat-dance-international", "super-star-eilat"]);
+
+// A numbered badge in front of each step's title — matches the accordion
+// below it (only one step open at a time; see `openStep`), 1→3.
+function SectionTitle({ n, children }: { n: number; children: string }) {
+  return (
+    <p className={styles.groupTitle}>
+      <span className={styles.sectionNumber}>{n}</span>
+      {children}
+    </p>
+  );
+}
+
+type StepToggleState = "open" | "closed" | "future";
+
+// Each step card's whole header is one button (per Dani, 2026-10-03: once
+// you've gone back to a filled-in step, opening/closing it should be a
+// single easy click, not just a tiny icon target). "open"/"closed" are both
+// freely clickable — clicking toggles that step open or collapses it back
+// to its summary. "future" (not reached yet) is muted and inert — you can't
+// skip ahead to a step before confirming the one before it.
+function StepCardHead({
+  n,
+  title,
+  state,
+  onClick,
+}: {
+  n: number;
+  title: string;
+  state: StepToggleState;
+  onClick?: () => void;
+}) {
+  return (
+    <button type="button" className={styles.stepCardHead} onClick={onClick} disabled={!onClick}>
+      <SectionTitle n={n}>{title}</SectionTitle>
+      <span
+        className={`${styles.stepToggle} ${state === "open" ? styles.stepToggleOpen : ""} ${
+          state === "future" ? styles.stepToggleFuture : ""
+        }`}
+        aria-hidden="true"
+      >
+        <ChevronDownIcon size={14} />
+      </span>
+    </button>
+  );
+}
 
 export default function DanceEntryForm({
   studioManagerId,
+  manager,
   competition,
   entries,
   editingEntry,
   onSubmit,
   onClose,
+  onDirtyChange,
 }: Props) {
   const [danceName, setDanceName] = useState("");
   const [choreographerName, setChoreographerName] = useState("");
-  const [danceLevel, setDanceLevel] = useState<"A" | "B" | "C">("A");
-  const [uiCategory, setUiCategory] = useState<UiCategory>("group");
+  // No pre-picked default for any of these three (per Dani, 2026-10-03: she
+  // wants an explicit "בחרו..." placeholder, not a silently auto-filled
+  // first option that's easy to submit without ever actually looking at) —
+  // each starts empty and is validated as required, same as the text fields.
+  const [danceLevel, setDanceLevel] = useState<"A" | "B" | "C" | "">("");
   const [participantCount, setParticipantCount] = useState("");
-  const [stepDivision, setStepDivision] = useState(STEP_DIVISIONS[0]);
-  const [danceStyle, setDanceStyle] = useState(DANCE_STYLES[0]);
+  const [stepDivision, setStepDivision] = useState("");
+  const [danceStyle, setDanceStyle] = useState("");
   const [customDanceStyle, setCustomDanceStyle] = useState("");
   const [dancerName, setDancerName] = useState("");
+  // Pre-filled from the manager's own profile (editable — see
+  // StepHeader/groupTitle "פרטי המנהלת" below), not read-only: Dani wants
+  // these changeable per dance (e.g. a guest choreographer entering under a
+  // different studio name), so they're plain controlled inputs, not derived.
+  const [managerName, setManagerName] = useState(manager.managerName ?? "");
+  const [studioName, setStudioName] = useState(manager.studioName);
+  const [city, setCity] = useState(manager.city ?? "");
+  // Real accordion: only one step is ever expanded at a time (0 = all
+  // collapsed). Confirming a step opens the next one and collapses this one
+  // into a summary line. Separately, `furthestStep` tracks how far she's
+  // actually progressed — any already-reached step's header can be clicked
+  // to freely open/close it again (per Dani, 2026-10-03: going back to a
+  // filled-in step to peek at it shouldn't cost more than one click each
+  // way), without that re-opening counting as "going backward" in progress.
+  // Starts on step 2 (skipping the manager step entirely) when the profile
+  // already has all three manager fields filled in — the common case, since
+  // they're auto-filled — so a busy manager entering her 10th dance doesn't
+  // have to click through a step that's already correct.
+  const initialStep = !manager.managerName || !manager.studioName || !manager.city ? 1 : 2;
+  const [openStep, setOpenStep] = useState<0 | 1 | 2 | 3>(initialStep);
+  const [furthestStep, setFurthestStep] = useState<1 | 2 | 3>(initialStep);
+  const [stepError, setStepError] = useState<string | null>(null);
+  // Split into a single required "preferred" day and a single optional
+  // "alternate" day (per Dani, 2026-10-03: a backup in case the preferred
+  // one is already full) rather than the old free multi-select — still
+  // saved as the same preferredDays[] (first = preferred, second =
+  // alternate) so the DB/admin side needs no schema change.
   const [preferredDay, setPreferredDay] = useState("");
+  const [alternateDay, setAlternateDay] = useState("");
   const [wantsVideo, setWantsVideo] = useState(false);
   const [wantsStills, setWantsStills] = useState(false);
   const [songFile, setSongFile] = useState<File | null>(null);
   const [songDurationSeconds, setSongDurationSeconds] = useState<number | undefined>(undefined);
   const [existingSongFilePath, setExistingSongFilePath] = useState<string | undefined>(undefined);
   const [submitting, setSubmitting] = useState(false);
+  // dayError: the day picker is a row of plain buttons, not a native form
+  // control, so the browser's own required-field validation (which already
+  // covers every other required field below) never sees it — without this,
+  // forgetting to pick a day meant clicking "הוספה" silently did nothing.
+  // submitError: onSubmit (Supabase insert/upload) had no catch at all until
+  // now — a failed save looked identical to a successful one, just with the
+  // button reverting to normal. Same bug class already fixed once in
+  // ProfileEditForm; see project_dance_form_silent_failures memory.
+  const [dayError, setDayError] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
@@ -80,7 +173,6 @@ export default function DanceEntryForm({
     setDanceName(editingEntry.danceName);
     setChoreographerName(editingEntry.choreographerName);
     setDanceLevel(editingEntry.danceLevel);
-    setUiCategory(uiCategoryOf(editingEntry.category, editingEntry.participantCount));
     setParticipantCount(String(editingEntry.participantCount));
     setStepDivision(editingEntry.stepDivision);
     if (DANCE_STYLES.includes(editingEntry.danceStyle)) {
@@ -91,7 +183,20 @@ export default function DanceEntryForm({
       setCustomDanceStyle(editingEntry.danceStyle);
     }
     setDancerName(editingEntry.dancerName ?? "");
-    setPreferredDay(editingEntry.preferredDay ?? "");
+    setManagerName(editingEntry.managerName);
+    setStudioName(editingEntry.studioName);
+    setCity(editingEntry.city);
+    const existingDays = editingEntry.preferredDays ?? [];
+    setPreferredDay(existingDays[0] ?? "");
+    setAlternateDay(existingDays[1] ?? "");
+    // An existing entry always has every required field already filled in
+    // (they couldn't have been saved otherwise) — land on the last step,
+    // the one most likely to actually change on a re-edit, rather than
+    // forcing a click back through steps that are already correct.
+    setOpenStep(3);
+    setFurthestStep(3);
+    setStepError(null);
+    setDayError(false);
     setWantsVideo(editingEntry.wantsVideo);
     setWantsStills(editingEntry.wantsStills);
     setSongFile(null);
@@ -100,24 +205,62 @@ export default function DanceEntryForm({
   }, [editingEntry]);
 
   const count = Number(participantCount) || 0;
-  const resolvedCategory = resolveCategory(uiCategory, count);
+  // The category dropdown was removed (per Dani, 2026-10-03) — participant
+  // count alone now drives it, so there's nothing left that could disagree.
+  const resolvedCategory = categoryFromParticipantCount(count);
   const dayOptions = getCompetitionDayOptions(competition.date);
+  const showDayQuestion = dayOptions.length > 1 && !NO_DAY_SELECTION_SLUGS.has(competition.slug);
+  const alternateDayOptions = dayOptions.filter((d) => d.date !== preferredDay);
   const perParticipantPrice = computePrice(competition.priceTiers, resolvedCategory);
   const surcharge = computeSurcharge(resolvedCategory, songDurationSeconds, count);
   const resolvedDanceStyle = danceStyle === OTHER_STYLE ? customDanceStyle : danceStyle;
-  const isSolo = uiCategory === "solo";
-  const isGroup = uiCategory === "group";
+
+  // Whether tearing this form down right now would silently throw away real
+  // data (per Dani, 2026-10-03: switching to step 2 mid-entry used to do
+  // exactly that, with no warning). Editing an existing entry compares
+  // against its saved values, since merely opening the edit form isn't
+  // itself a change; adding a new one just checks whether anything's been
+  // typed/picked yet.
+  const hasUnsavedChanges = editingEntry
+    ? danceName !== editingEntry.danceName ||
+      choreographerName !== editingEntry.choreographerName ||
+      participantCount !== String(editingEntry.participantCount) ||
+      danceLevel !== editingEntry.danceLevel ||
+      stepDivision !== editingEntry.stepDivision ||
+      resolvedDanceStyle !== editingEntry.danceStyle ||
+      dancerName !== (editingEntry.dancerName ?? "") ||
+      managerName !== editingEntry.managerName ||
+      studioName !== editingEntry.studioName ||
+      city !== editingEntry.city ||
+      preferredDay !== (editingEntry.preferredDays?.[0] ?? "") ||
+      alternateDay !== (editingEntry.preferredDays?.[1] ?? "") ||
+      wantsVideo !== editingEntry.wantsVideo ||
+      wantsStills !== editingEntry.wantsStills ||
+      songFile !== null
+    : danceName !== "" ||
+      choreographerName !== "" ||
+      participantCount !== "" ||
+      danceLevel !== "" ||
+      stepDivision !== "" ||
+      danceStyle !== "" ||
+      dancerName !== "" ||
+      preferredDay !== "" ||
+      wantsVideo ||
+      wantsStills ||
+      songFile !== null;
+
+  useEffect(() => {
+    onDirtyChange?.(hasUnsavedChanges);
+  }, [hasUnsavedChanges, onDirtyChange]);
+  const isSolo = count === 1;
+  const isGroup = count >= 5;
   const baseSubtotal = perParticipantPrice != null ? perParticipantPrice * (isGroup ? count : 1) : null;
   const wantsRecording = wantsVideo || wantsStills;
 
-  // Video and stills are two independent services, each 135₪ for a single
-  // dance or 125₪ once 2+ of THAT SAME type are ordered — counted across the
-  // manager's other existing dances plus this one, per type (see
-  // project_pricing_and_rules and computeRecordingFee's own comment).
-  const otherVideoOrders = entries.filter((e) => e.id !== editingEntry?.id && e.wantsVideo).length;
-  const otherStillsOrders = entries.filter((e) => e.id !== editingEntry?.id && e.wantsStills).length;
-  const videoFee = wantsVideo ? computeRecordingFeeForType(otherVideoOrders + 1) : 0;
-  const stillsFee = wantsStills ? computeRecordingFeeForType(otherStillsOrders + 1) : 0;
+  // Video and stills are two independent services, flat 150₪ each regardless
+  // of how many dances order them (see computeRecordingFeeForType's comment).
+  const videoFee = wantsVideo ? computeRecordingFeeForType() : 0;
+  const stillsFee = wantsStills ? computeRecordingFeeForType() : 0;
   const recordingFee = videoFee + stillsFee;
 
   const totalPrice = computeTotalPrice(competition.priceTiers, resolvedCategory, count, songDurationSeconds, recordingFee);
@@ -133,21 +276,11 @@ export default function DanceEntryForm({
   const customStyleSuggestions = Array.from(
     new Set(entries.map((e) => e.danceStyle).filter((style) => !DANCE_STYLES.includes(style)))
   );
-  const participantCountSuggestions = Array.from(
-    new Set(
-      entries
-        .filter((e) => e.category === "group_small" || e.category === "group_large")
-        .map((e) => String(e.participantCount))
-    )
-  );
-
-  function handleCategoryChange(next: UiCategory) {
-    if (next !== "group") {
-      setParticipantCount(String(FIXED_PARTICIPANT_COUNTS[next]));
-    } else if (uiCategory !== "group") {
-      setParticipantCount("");
-    }
-    setUiCategory(next);
+  // +/- stepper (per Dani's reference, 2026-10-03) — floors at 1 either way,
+  // so repeatedly clicking "-" can't walk it down to 0 or negative, and the
+  // first click of either button from an empty field lands on 1.
+  function adjustParticipantCount(delta: number) {
+    setParticipantCount((prev) => String(Math.max(1, (Number(prev) || 0) + delta)));
   }
 
   // If what she typed under "אחר" turns out to exactly match a real style
@@ -164,6 +297,78 @@ export default function DanceEntryForm({
     }
   }
 
+  function selectPreferredDay(date: string) {
+    setPreferredDay(date);
+    setDayError(false);
+    // Primary and alternate must be different days — clear a now-redundant
+    // alternate rather than leaving it silently pointing at the same day.
+    if (alternateDay === date) setAlternateDay("");
+  }
+
+  // Optional, so unlike the preferred day this one toggles off on a second
+  // click of the same button.
+  function selectAlternateDay(date: string) {
+    setAlternateDay((prev) => (prev === date ? "" : date));
+  }
+
+  function confirmStep1() {
+    if (!managerName || !studioName || !city) {
+      setStepError("נא למלא את כל השדות המסומנים בכוכבית");
+      return;
+    }
+    setStepError(null);
+    setFurthestStep((prev) => Math.max(prev, 2) as 1 | 2 | 3);
+    setOpenStep(2);
+  }
+
+  function confirmStep2() {
+    const dayMissing = showDayQuestion && !preferredDay;
+    setDayError(dayMissing);
+    if (dayMissing) {
+      setStepError(null);
+      return;
+    }
+    if (
+      !danceName ||
+      !choreographerName ||
+      count < 1 ||
+      !danceLevel ||
+      !stepDivision ||
+      !resolvedDanceStyle ||
+      (isSolo && !dancerName)
+    ) {
+      setStepError("נא למלא את כל השדות המסומנים בכוכבית");
+      return;
+    }
+    setStepError(null);
+    setFurthestStep((prev) => Math.max(prev, 3) as 1 | 2 | 3);
+    setOpenStep(3);
+  }
+
+  // Toggles a reached step open/closed — clicking its header again collapses
+  // it back to the summary; clicking a different reached step's header opens
+  // that one instead (closing whichever was open), same as a classic
+  // single-expand accordion.
+  function toggleStep(n: 1 | 2 | 3) {
+    setOpenStep((prev) => (prev === n ? 0 : n));
+  }
+
+  // Lets Enter in a text field advance the current step instead of
+  // submitting the whole form early (there's only one <form>, so a native
+  // Enter-to-submit would otherwise fire handleSubmit while steps 2/3
+  // haven't been filled in yet). On the last step (or with nothing open),
+  // Enter is left to behave normally.
+  function handleFormKeyDown(e: KeyboardEvent<HTMLFormElement>) {
+    if (e.key !== "Enter") return;
+    if (openStep === 1) {
+      e.preventDefault();
+      confirmStep1();
+    } else if (openStep === 2) {
+      e.preventDefault();
+      confirmStep2();
+    }
+  }
+
   function handleSongFileChange(file: File | null) {
     setSongFile(file);
     setSongDurationSeconds(undefined);
@@ -175,14 +380,22 @@ export default function DanceEntryForm({
   function resetForm() {
     setDanceName("");
     setChoreographerName("");
-    setDanceLevel("A");
-    setUiCategory("group");
+    setDanceLevel("");
     setParticipantCount("");
-    setStepDivision(STEP_DIVISIONS[0]);
-    setDanceStyle(DANCE_STYLES[0]);
+    setStepDivision("");
+    setDanceStyle("");
     setCustomDanceStyle("");
     setDancerName("");
+    setManagerName(manager.managerName ?? "");
+    setStudioName(manager.studioName);
+    setCity(manager.city ?? "");
+    const resetStep = !manager.managerName || !manager.studioName || !manager.city ? 1 : 2;
+    setOpenStep(resetStep);
+    setFurthestStep(resetStep);
+    setStepError(null);
+    setDayError(false);
     setPreferredDay("");
+    setAlternateDay("");
     setWantsVideo(false);
     setWantsStills(false);
     setSongFile(null);
@@ -192,9 +405,19 @@ export default function DanceEntryForm({
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!danceName || !choreographerName || count < 1 || !resolvedDanceStyle) return;
+    setSubmitError(null);
+
+    const dayMissing = showDayQuestion && !preferredDay;
+    setDayError(dayMissing);
+    if (dayMissing) return;
+
+    const preferredDaysToSave = showDayQuestion
+      ? [preferredDay, ...(alternateDay ? [alternateDay] : [])].filter(Boolean)
+      : [];
+
+    if (!danceName || !choreographerName || count < 1 || !danceLevel || !stepDivision || !resolvedDanceStyle) return;
+    if (!managerName || !studioName || !city) return;
     if (isSolo && !dancerName) return;
-    if (dayOptions.length > 1 && !preferredDay) return;
 
     setSubmitting(true);
     try {
@@ -213,7 +436,10 @@ export default function DanceEntryForm({
           ...(isSolo ? { dancerName } : {}),
           choreographerName,
           danceLevel,
-          ...(preferredDay ? { preferredDay } : {}),
+          managerName,
+          studioName,
+          city,
+          ...(preferredDaysToSave.length > 0 ? { preferredDays: preferredDaysToSave } : {}),
           ...(songFilePath ? { songFilePath } : {}),
           ...(songDurationSeconds ? { songDurationSeconds: Math.round(songDurationSeconds) } : {}),
           wantsVideo,
@@ -223,293 +449,533 @@ export default function DanceEntryForm({
       );
       resetForm();
       onClose();
+    } catch (err) {
+      console.error("Dance entry save failed:", err);
+      setSubmitError("השמירה נכשלה - נסו שוב, ואם זה ממשיך לקרות צרו איתנו קשר.");
     } finally {
       setSubmitting(false);
     }
   }
 
+  // Tints the form (focus rings, dropzone, checkboxes, price total, and a
+  // background glow) to this competition's accent color — see
+  // lib/competitionAccentColors.ts — so the form visibly belongs to whichever
+  // competition is selected in CompetitionPicker above it. The CSS module
+  // builds its own translucent shades via rgba(var(--form-rgb), alpha) —
+  // --form-rgb holds bare "r, g, b" tokens — rather than CSS color-mix(),
+  // which isn't supported in older browsers/webviews (a first attempt using
+  // color-mix() silently rendered as nothing there).
+  const rgb = competition.accentColor ? hexToRgbParts(competition.accentColor) : null;
+  const formStyle = rgb
+    ? ({
+        "--form-accent": competition.accentColor,
+        "--form-rgb": `${rgb.r}, ${rgb.g}, ${rgb.b}`,
+      } as CSSProperties)
+    : undefined;
+
+  const step1Open = openStep === 1;
+  const step2Open = openStep === 2;
+  const step3Open = openStep === 3;
+  const step2Reached = furthestStep >= 2;
+  const step3Reached = furthestStep >= 3;
+
   return (
-    <form className={styles.form} onSubmit={handleSubmit}>
+    <form className={styles.form} onSubmit={handleSubmit} onKeyDown={handleFormKeyDown} style={formStyle}>
       <div className={styles.formHeader}>
         <h3 className={styles.title}>
-          {editingEntry ? "עריכת ריקוד" : "הוספת ריקוד"} — <span className="en" lang="en">{competition.name}</span>
+          {editingEntry ? "עריכת ריקוד" : "הוספת ריקוד"} - <span className="en" lang="en">{competition.name}</span>
         </h3>
         <button type="button" className={styles.closeButton} onClick={onClose} aria-label="סגירה וחזרה לרשימה">
           חזרה לרשימה
         </button>
       </div>
 
-      <p className={styles.groupTitle}>פרטי הריקוד</p>
-      <div className={styles.grid}>
-        {dayOptions.length > 1 && (
-          <label className={styles.field}>
-            <span>יום מועדף</span>
-            <select required value={preferredDay} onChange={(e) => setPreferredDay(e.target.value)}>
-              <option value="" disabled>
-                בחרו יום
-              </option>
-              {dayOptions.map((day) => (
-                <option key={day.date} value={day.date}>
-                  {day.label}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
+      {/* Step 1: פרטי מנהל/ת סטודיו — always reached (it's first), so only ever
+          "open" or "closed", never "future". */}
+      <div className={styles.stepCard + (step1Open ? ` ${styles.stepCardOpen}` : "")}>
+        <StepCardHead
+          n={1}
+          title="פרטי מנהל/ת סטודיו"
+          state={step1Open ? "open" : "closed"}
+          onClick={() => toggleStep(1)}
+        />
 
-        <label className={styles.field}>
-          <span>שם הריקוד</span>
-          <div className={styles.fieldIconWrap}>
-            <MusicNoteIcon size={15} />
-            <input required value={danceName} onChange={(e) => setDanceName(e.target.value)} />
-          </div>
-        </label>
-
-        <label className={styles.field}>
-          <span>שם כוריאוגרף/ית</span>
-          <div className={styles.fieldIconWrap}>
-            <PersonIcon size={15} />
-            <input
-              required
-              list="choreographer-suggestions"
-              value={choreographerName}
-              onChange={(e) => setChoreographerName(e.target.value)}
-            />
-          </div>
-          <datalist id="choreographer-suggestions">
-            {choreographerSuggestions.map((name) => (
-              <option key={name} value={name} />
-            ))}
-          </datalist>
-        </label>
-
-        <label className={styles.field}>
-          <span>קטגוריה</span>
-          <select value={uiCategory} onChange={(e) => handleCategoryChange(e.target.value as UiCategory)}>
-            {UI_CATEGORIES.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        {isSolo && (
-          <label className={styles.field}>
-            <span>שם הרקדנית (שם מלא)</span>
-            <div className={styles.fieldIconWrap}>
-              <PersonIcon size={15} />
-              <input
-                required
-                list="dancer-name-suggestions"
-                value={dancerName}
-                onChange={(e) => setDancerName(e.target.value)}
-              />
-            </div>
-            <datalist id="dancer-name-suggestions">
-              {dancerNameSuggestions.map((name) => (
-                <option key={name} value={name} />
-              ))}
-            </datalist>
-          </label>
-        )}
-
-        {isGroup && (
-          <label className={styles.field}>
-            <span>מספר משתתפים</span>
-            <input
-              type="number"
-              min={5}
-              required
-              list="participant-count-suggestions"
-              value={participantCount}
-              onChange={(e) => setParticipantCount(e.target.value)}
-            />
-            <datalist id="participant-count-suggestions">
-              {participantCountSuggestions.map((n) => (
-                <option key={n} value={n} />
-              ))}
-            </datalist>
-          </label>
-        )}
-
-        <label className={styles.field}>
-          <span>רמת הרקדנים</span>
-          <select value={danceLevel} onChange={(e) => setDanceLevel(e.target.value as "A" | "B" | "C")}>
-            {DANCE_LEVELS.map((level) => (
-              <option key={level.value} value={level.value}>
-                {level.label}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className={styles.field}>
-          <span>חלוקת גיל (STEP)</span>
-          <select value={stepDivision} onChange={(e) => setStepDivision(e.target.value)}>
-            {STEP_DIVISIONS.map((division) => (
-              <option key={division} value={division}>
-                {division}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className={styles.field}>
-          <span>סגנון ריקוד</span>
-          <select value={danceStyle} onChange={(e) => setDanceStyle(e.target.value)}>
-            {DANCE_STYLES.map((style) => (
-              <option key={style} value={style}>
-                {style}
-              </option>
-            ))}
-            <option value={OTHER_STYLE}>{OTHER_STYLE}</option>
-          </select>
-        </label>
-
-        {danceStyle === OTHER_STYLE && (
-          <label className={styles.field}>
-            <span>איזה סגנון?</span>
-            <input
-              required
-              list="custom-style-suggestions"
-              value={customDanceStyle}
-              onChange={(e) => handleCustomStyleChange(e.target.value)}
-            />
-            <datalist id="custom-style-suggestions">
-              {customStyleSuggestions.map((style) => (
-                <option key={style} value={style} />
-              ))}
-            </datalist>
-          </label>
-        )}
-      </div>
-
-      <p className={styles.groupTitle}>מוזיקה והזמנות נלוות</p>
-      <p className={styles.timeLimitHint}>
-        אורך מקסימלי לשיר: <strong>{isGroup ? "3 דקות" : "2 דקות"}</strong> — חריגה גוררת תוספת תשלום (ראו פירוט למטה
-        אם השיר שהועלה חורג), ואם לא שולמה מראש — הורדת ניקוד בתחרות במקום.
-      </p>
-      <div className={styles.mediaGrid}>
-        <div className={styles.dropzoneField}>
-          <span className={styles.fieldLabel}>קובץ שיר הריקוד *</span>
-          <label className={styles.dropzone}>
-            <input
-              type="file"
-              accept="audio/*"
-              className={styles.dropzoneInput}
-              onChange={(e) => handleSongFileChange(e.target.files?.[0] ?? null)}
-            />
-            <UploadIcon />
-            <span className={styles.dropzoneText}>לחצו להעלאת קובץ מוזיקה</span>
-            <span className={styles.dropzoneHint}>MP3/WAV עד 100MB</span>
-          </label>
-          {/* Hidden — used only to read the file's real duration via the browser, no server processing. */}
-          <audio
-            ref={audioRef}
-            hidden
-            onLoadedMetadata={(e) => setSongDurationSeconds(e.currentTarget.duration)}
-          />
-          {songFile && <span className={styles.durationHint}>{songFile.name}</span>}
-          {songDurationSeconds != null && (
-            <span className={styles.durationHint}>
-              משך השיר: {Math.floor(songDurationSeconds / 60)}:{String(Math.round(songDurationSeconds % 60)).padStart(2, "0")}
-            </span>
-          )}
-          {!songFile && existingSongFilePath && <span className={styles.durationHint}>קובץ קיים מועלה — ניתן להחליף</span>}
-        </div>
-
-        <div className={styles.checkboxField}>
-          <label className={styles.checkboxCard}>
-            <input type="checkbox" checked={wantsVideo} onChange={(e) => setWantsVideo(e.target.checked)} />
-            <span>
-              <span className={styles.checkboxTitle}>הזמנת צילום וידאו</span>
-              <span className={styles.checkboxSubtitle}>הקלטת וידאו מקצועית של הריקוד</span>
-            </span>
-          </label>
-          <label className={styles.checkboxCard}>
-            <input type="checkbox" checked={wantsStills} onChange={(e) => setWantsStills(e.target.checked)} />
-            <span>
-              <span className={styles.checkboxTitle}>הזמנת צילום סטילס</span>
-              <span className={styles.checkboxSubtitle}>תמונות סטילס מקצועיות מהריקוד</span>
-            </span>
-          </label>
-          <p className={styles.durationHint}>
-            כל שירות מתומחר בנפרד: <strong>135₪ לריקוד</strong> (או <strong>125₪</strong> לריקוד כשמזמינים אותו שירות
-            ל-2 ריקודים או יותר) — אם מזמינים גם וידאו וגם סטילס לאותו ריקוד, זו עלות של כל אחד מהם בנפרד, לא מחיר
-            אחד משותף.
-            {wantsRecording && (
-              <>
-                {" "}
-                <strong>
-                  העלות עבור הריקוד הזה: {recordingFee}₪
-                  {wantsVideo && wantsStills && ` (וידאו ${videoFee}₪ + סטילס ${stillsFee}₪)`}
-                </strong>
-              </>
-            )}
+        {!step1Open && (
+          // Pre-filled from the profile and rarely touched — collapsed to
+          // one line by default so the form opens on what actually changes
+          // every time (the dance itself), not three fields that are almost
+          // always already correct.
+          <p className={styles.managerSummary}>
+            {managerName} · <span className="en" lang="en">{studioName}</span> · {city}
           </p>
+        )}
+
+        <div className={`${styles.stepBody} ${step1Open ? styles.stepBodyOpen : ""}`}>
+          <div className={styles.stepBodyInner}>
+            <div className={styles.grid}>
+              <label className={styles.field}>
+                <span>
+                  שם מנהלת סטודיו <span className={styles.required}>*</span>
+                </span>
+                <input required autoComplete="off" value={managerName} onChange={(e) => setManagerName(e.target.value)} />
+              </label>
+
+              <label className={styles.field}>
+                <span>
+                  שם סטודיו <span className={styles.required}>*</span>
+                </span>
+                <input required autoComplete="off" value={studioName} onChange={(e) => setStudioName(e.target.value)} />
+              </label>
+
+              <label className={styles.field}>
+                <span>
+                  יישוב <span className={styles.required}>*</span>
+                </span>
+                <input required autoComplete="off" value={city} onChange={(e) => setCity(e.target.value)} />
+              </label>
+            </div>
+            {stepError && step1Open && <p className={styles.fieldErrorText}>{stepError}</p>}
+            <div className={styles.stepActions}>
+              <button type="button" className={styles.stepConfirmButton} onClick={confirmStep1}>
+                שלב הבא: פרטי הריקוד
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      {surcharge > 0 && (
-        <p className={styles.surchargeNote}>
-          שימו לב: משך השיר חורג ממגבלת הזמן ({isGroup ? "3" : "2"}{" "}
-          דקות) — נוספה תוספת תשלום של <strong>{surcharge}₪</strong> בהתאם לתקנון (אחרת יש הורדת ניקוד במקום).
-        </p>
-      )}
+      {/* Step 2: פרטי הריקוד — the day question(s) come first, per Dani
+          (2026-10-03), ahead of the dance's own details. */}
+      <div
+        className={
+          styles.stepCard + (step2Open ? ` ${styles.stepCardOpen}` : !step2Reached ? ` ${styles.stepCardFuture}` : "")
+        }
+      >
+        <StepCardHead
+          n={2}
+          title="פרטי הריקוד"
+          state={step2Open ? "open" : step2Reached ? "closed" : "future"}
+          onClick={step2Reached ? () => toggleStep(2) : undefined}
+        />
 
-      <div className={styles.footer}>
-        <div className={styles.priceBreakdown}>
-          <div className={styles.priceBreakdownRow}>
-            <span>קטגוריה לתמחור</span>
-            <span>{displayCategoryLabel(resolvedCategory, count)}</span>
+        {step2Reached && !step2Open && (
+          <p className={styles.managerSummary}>
+            <span className="en" lang="en">{danceName}</span> · {displayCategoryLabel(resolvedCategory, count)} ·{" "}
+            {resolvedDanceStyle}
+            {preferredDay && <> · יום מועדף: {dayOptions.find((d) => d.date === preferredDay)?.label}</>}
+          </p>
+        )}
+
+        <div className={`${styles.stepBody} ${step2Open ? styles.stepBodyOpen : ""}`}>
+          <div className={styles.stepBodyInner}>
+            {showDayQuestion && (
+              <div className={styles.dayPicker}>
+                <span className={styles.fieldLabel}>
+                  יום מועדף <span className={styles.required}>*</span>
+                </span>
+                <div className={styles.dayButtons}>
+                  {dayOptions.map((day) => {
+                    const active = preferredDay === day.date;
+                    return (
+                      <button
+                        key={day.date}
+                        type="button"
+                        className={`${styles.dayButton} ${active ? styles.dayButtonActive : ""}`}
+                        onClick={() => selectPreferredDay(day.date)}
+                        aria-pressed={active}
+                      >
+                        {day.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                {/* The day picker is plain buttons, not a native form control, so
+                    the browser's own required-field validation never catches a
+                    missed selection the way it does for every other required
+                    field here — this is the only thing that will. */}
+                {dayError && <p className={styles.fieldErrorText}>נא לבחור יום מועדף</p>}
+              </div>
+            )}
+
+            {showDayQuestion && preferredDay && alternateDayOptions.length > 0 && (
+              <div className={styles.dayPicker}>
+                <span className={styles.fieldLabel}>יום חלופי (למקרה שהיום המועדף יהיה תפוס)</span>
+                <div className={styles.dayButtons}>
+                  {alternateDayOptions.map((day) => {
+                    const active = alternateDay === day.date;
+                    return (
+                      <button
+                        key={day.date}
+                        type="button"
+                        className={`${styles.dayButton} ${active ? styles.dayButtonActive : ""}`}
+                        onClick={() => selectAlternateDay(day.date)}
+                        aria-pressed={active}
+                      >
+                        {day.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <div className={styles.grid}>
+              <label className={styles.field}>
+                <span>
+                  שם הריקוד <span className={styles.required}>*</span>
+                </span>
+                <div className={styles.fieldIconWrap}>
+                  <DancerIcon size={22} />
+                  <input required autoComplete="off" value={danceName} onChange={(e) => setDanceName(e.target.value)} />
+                </div>
+              </label>
+
+              <label className={styles.field}>
+                <span>
+                  מספר משתתפים <span className={styles.required}>*</span>
+                </span>
+                {/* A +/- stepper instead of a bare number input — per Dani's
+                    reference (reg.artor.org.il), 2026-10-03. Still a real
+                    <input type="number">, so typing a count directly still
+                    works too; the buttons are just a faster alternative. */}
+                <div className={styles.stepper}>
+                  <button
+                    type="button"
+                    className={styles.stepperButton}
+                    onClick={() => adjustParticipantCount(-1)}
+                    disabled={count <= 1}
+                    aria-label="הפחתת משתתף"
+                  >
+                    <MinusIcon size={16} />
+                  </button>
+                  <input
+                    type="number"
+                    min={1}
+                    required
+                    className={styles.stepperInput}
+                    value={participantCount}
+                    onChange={(e) => setParticipantCount(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className={styles.stepperButton}
+                    onClick={() => adjustParticipantCount(1)}
+                    aria-label="הוספת משתתף"
+                  >
+                    <PlusIcon size={16} />
+                  </button>
+                </div>
+                {/* The category (סולו/דואט/טריו/קוורטט/קבוצה) is no longer a
+                    separate field — per Dani, 2026-10-03, it's derived
+                    automatically from this count alone (see
+                    categoryFromParticipantCount in lib/pricing.ts), so there's
+                    nothing left to type that could disagree with it. */}
+                {count > 0 && <span className={styles.durationHint}>קטגוריה: {displayCategoryLabel(resolvedCategory, count)}</span>}
+              </label>
+
+              {isSolo && (
+                <label className={styles.field}>
+                  <span>
+                    שם הרקדנית (שם מלא) <span className={styles.required}>*</span>
+                  </span>
+                  <div className={styles.fieldIconWrap}>
+                    <PersonIcon size={15} />
+                    <input
+                      required
+                      autoComplete="off"
+                      list="dancer-name-suggestions"
+                      value={dancerName}
+                      onChange={(e) => setDancerName(e.target.value)}
+                    />
+                  </div>
+                  <datalist id="dancer-name-suggestions">
+                    {dancerNameSuggestions.map((name) => (
+                      <option key={name} value={name} />
+                    ))}
+                  </datalist>
+                </label>
+              )}
+
+              <label className={styles.field}>
+                <span>
+                  שם כוריאוגרף/ית <span className={styles.required}>*</span>
+                </span>
+                <div className={styles.fieldIconWrap}>
+                  <PersonIcon size={15} />
+                  <input
+                    required
+                    autoComplete="off"
+                    list="choreographer-suggestions"
+                    value={choreographerName}
+                    onChange={(e) => setChoreographerName(e.target.value)}
+                  />
+                </div>
+                <datalist id="choreographer-suggestions">
+                  {choreographerSuggestions.map((name) => (
+                    <option key={name} value={name} />
+                  ))}
+                </datalist>
+              </label>
+            </div>
+
+            <div className={styles.grid}>
+              <label className={styles.field}>
+                <span>
+                  רמת הרקדנים <span className={styles.required}>*</span>
+                </span>
+                <select
+                  required
+                  value={danceLevel}
+                  onChange={(e) => setDanceLevel(e.target.value as "A" | "B" | "C")}
+                >
+                  <option value="" disabled hidden>
+                    בחרו רמת רקדנים
+                  </option>
+                  {DANCE_LEVELS.map((level) => (
+                    <option key={level.value} value={level.value}>
+                      {level.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className={styles.field}>
+                <span>
+                  חלוקת גיל (STEP) <span className={styles.required}>*</span>
+                </span>
+                <select required value={stepDivision} onChange={(e) => setStepDivision(e.target.value)}>
+                  <option value="" disabled hidden>
+                    בחרו חלוקת גיל
+                  </option>
+                  {STEP_DIVISIONS.map((division) => (
+                    <option key={division} value={division}>
+                      {division}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className={styles.field}>
+                <span>
+                  סגנון ריקוד <span className={styles.required}>*</span>
+                </span>
+                <select required value={danceStyle} onChange={(e) => setDanceStyle(e.target.value)}>
+                  <option value="" disabled hidden>
+                    בחרו סגנון ריקוד
+                  </option>
+                  {DANCE_STYLES.map((style) => (
+                    <option key={style} value={style}>
+                      {style}
+                    </option>
+                  ))}
+                  <option value={OTHER_STYLE}>{OTHER_STYLE}</option>
+                </select>
+              </label>
+
+              {danceStyle === OTHER_STYLE && (
+                <label className={styles.field}>
+                  <span>
+                    איזה סגנון? <span className={styles.required}>*</span>
+                  </span>
+                  <input
+                    required
+                    autoComplete="off"
+                    list="custom-style-suggestions"
+                    value={customDanceStyle}
+                    onChange={(e) => handleCustomStyleChange(e.target.value)}
+                  />
+                  <datalist id="custom-style-suggestions">
+                    {customStyleSuggestions.map((style) => (
+                      <option key={style} value={style} />
+                    ))}
+                  </datalist>
+                </label>
+              )}
+            </div>
+
+            {stepError && step2Open && <p className={styles.fieldErrorText}>{stepError}</p>}
+            <div className={styles.stepActions}>
+              <button type="button" className={styles.stepConfirmButton} onClick={confirmStep2}>
+                שלב הבא: מוזיקה והזמנות
+              </button>
+            </div>
           </div>
-          {baseSubtotal != null && (
-            <div className={styles.priceBreakdownRow}>
-              <span>
-                מחיר בסיס{isGroup ? ` (${perParticipantPrice}₪ × ${count} משתתפים)` : ""}
-                {isGroup && competition.priceTiers && (
-                  <span className={styles.priceExplain}>
-                    {" "}
-                    · {isEarlyPricing(competition.priceTiers) ? "מחיר מוקדם" : "מחיר רגיל"}
+        </div>
+      </div>
+
+      {/* Step 3: מוזיקה והזמנות נלוות — the last step, so it never collapses
+          back into a summary once reached; the form's real submit button
+          (in the footer below) is its "confirm". */}
+      <div className={styles.stepCard + (step3Open ? ` ${styles.stepCardOpen}` : !step3Reached ? ` ${styles.stepCardFuture}` : "")}>
+        <StepCardHead
+          n={3}
+          title="מוזיקה והזמנות נלוות"
+          state={step3Open ? "open" : step3Reached ? "closed" : "future"}
+          onClick={step3Reached ? () => toggleStep(3) : undefined}
+        />
+
+        {step3Reached && !step3Open && (
+          <p className={styles.managerSummary}>
+            {songFile || existingSongFilePath ? "קובץ שיר הועלה" : "ללא קובץ שיר"}
+            {wantsVideo && " · צילום וידאו"}
+            {wantsStills && " · צילום סטילס"}
+          </p>
+        )}
+
+        <div className={`${styles.stepBody} ${step3Open ? styles.stepBodyOpen : ""}`}>
+          <div className={styles.stepBodyInner}>
+            <p className={styles.timeLimitHint}>
+              אורך מקסימלי לשיר: <strong>{isGroup ? "3 דקות" : "2 דקות"}</strong> - חריגה גוררת תוספת תשלום (ראו פירוט
+              למטה אם השיר שהועלה חורג), ואם לא שולמה מראש - הורדת ניקוד בתחרות במקום.
+            </p>
+            <div className={styles.mediaGrid}>
+              <div className={styles.dropzoneField}>
+                {/* Not actually enforced at submit time — Dani wants managers able
+                    to add the song later, before payment, not blocked on it here —
+                    so this deliberately doesn't use the same `required`-field
+                    asterisk as everything above it; that would promise an
+                    enforcement this field doesn't have. */}
+                <span className={styles.fieldLabel}>קובץ שיר הריקוד</span>
+                <label className={styles.dropzone}>
+                  <input
+                    type="file"
+                    accept="audio/*"
+                    className={styles.dropzoneInput}
+                    onChange={(e) => handleSongFileChange(e.target.files?.[0] ?? null)}
+                  />
+                  <UploadIcon />
+                  <span className={styles.dropzoneText}>לחצו להעלאת קובץ מוזיקה</span>
+                  <span className={styles.dropzoneHint}>MP3/WAV עד 100MB - אפשר להוסיף גם מאוחר יותר, לפני התשלום</span>
+                </label>
+                {/* Hidden — used only to read the file's real duration via the browser, no server processing. */}
+                <audio
+                  ref={audioRef}
+                  hidden
+                  onLoadedMetadata={(e) => setSongDurationSeconds(e.currentTarget.duration)}
+                />
+                {songFile && <span className={styles.durationHint}>{songFile.name}</span>}
+                {songDurationSeconds != null && (
+                  <span className={styles.durationHint}>
+                    משך השיר: {Math.floor(songDurationSeconds / 60)}:
+                    {String(Math.round(songDurationSeconds % 60)).padStart(2, "0")}
                   </span>
                 )}
-              </span>
-              <span>{baseSubtotal}₪</span>
+                {!songFile && existingSongFilePath && (
+                  <span className={styles.durationHint}>קובץ קיים מועלה - ניתן להחליף</span>
+                )}
+              </div>
+
+              <div className={styles.checkboxField}>
+                {/* Invisible — reserves the same vertical space as the
+                    "קובץ שיר הריקוד" label on the dropzone side, so the two
+                    columns' real content (the dropzone box / the checkbox
+                    cards) lines up on the same top edge instead of this
+                    column's cards starting higher (per Dani, 2026-10-03). */}
+                <span className={styles.fieldLabel} aria-hidden="true" style={{ visibility: "hidden" }}>
+                  הזמנות נלוות
+                </span>
+                <label className={styles.checkboxCard}>
+                  <span className={styles.checkboxMain}>
+                    <input type="checkbox" checked={wantsVideo} onChange={(e) => setWantsVideo(e.target.checked)} />
+                    <VideoCameraIcon size={20} />
+                    <span>
+                      <span className={styles.checkboxTitle}>הזמנת צילום וידאו</span>
+                      <span className={styles.checkboxSubtitle}>הקלטת וידאו מקצועית של הריקוד</span>
+                    </span>
+                  </span>
+                  <span className={styles.checkboxPrice}>150 ₪</span>
+                </label>
+                <label className={styles.checkboxCard}>
+                  <span className={styles.checkboxMain}>
+                    <input type="checkbox" checked={wantsStills} onChange={(e) => setWantsStills(e.target.checked)} />
+                    <CameraIcon size={20} />
+                    <span>
+                      <span className={styles.checkboxTitle}>הזמנת צילום סטילס</span>
+                      <span className={styles.checkboxSubtitle}>תמונות סטילס מקצועיות מהריקוד</span>
+                    </span>
+                  </span>
+                  <span className={styles.checkboxPrice}>150 ₪</span>
+                </label>
+                {/* The general pricing-rule explanation paragraph that used to
+                    live here was removed per Dani, 2026-10-03 — this direct
+                    per-dance cost readout (only once a service is actually
+                    selected) stays, since it's live feedback rather than
+                    boilerplate explanation. */}
+                {wantsRecording && (
+                  <p className={styles.durationHint}>
+                    <strong>
+                      העלות עבור הריקוד הזה: {recordingFee}₪
+                      {wantsVideo && wantsStills && ` (וידאו ${videoFee}₪ + סטילס ${stillsFee}₪)`}
+                    </strong>
+                  </p>
+                )}
+              </div>
             </div>
-          )}
-          {surcharge > 0 && (
-            <div className={styles.priceBreakdownRow}>
-              <span>תוספת חריגת זמן בשיר</span>
-              <span>{surcharge}₪</span>
+
+            {surcharge > 0 && (
+              <p className={styles.surchargeNote}>
+                שימו לב: משך השיר חורג ממגבלת הזמן ({isGroup ? "3" : "2"}{" "}
+                דקות) - נוספה תוספת תשלום של <strong>{surcharge}₪</strong> בהתאם לתקנון (אחרת יש הורדת ניקוד במקום).
+              </p>
+            )}
+
+            <div className={styles.footer}>
+              <div className={styles.priceBreakdown}>
+                <div className={styles.priceBreakdownRow}>
+                  <span>קטגוריה לתמחור</span>
+                  <span>{displayCategoryLabel(resolvedCategory, count)}</span>
+                </div>
+                {baseSubtotal != null && (
+                  <div className={styles.priceBreakdownRow}>
+                    <span>
+                      מחיר בסיס{isGroup ? ` (${perParticipantPrice}₪ × ${count} משתתפים)` : ""}
+                      {isGroup && competition.priceTiers && (
+                        <span className={styles.priceExplain}>
+                          {" "}
+                          · {isEarlyPricing(competition.priceTiers) ? "מחיר מוקדם" : "מחיר רגיל"}
+                        </span>
+                      )}
+                    </span>
+                    <span>{baseSubtotal}₪</span>
+                  </div>
+                )}
+                {surcharge > 0 && (
+                  <div className={styles.priceBreakdownRow}>
+                    <span>תוספת חריגת זמן בשיר</span>
+                    <span>{surcharge}₪</span>
+                  </div>
+                )}
+                {videoFee > 0 && (
+                  <div className={styles.priceBreakdownRow}>
+                    <span>צילום וידאו</span>
+                    <span>{videoFee}₪</span>
+                  </div>
+                )}
+                {stillsFee > 0 && (
+                  <div className={styles.priceBreakdownRow}>
+                    <span>צילום סטילס</span>
+                    <span>{stillsFee}₪</span>
+                  </div>
+                )}
+                {totalPrice != null && (
+                  <div className={`${styles.priceBreakdownRow} ${styles.priceBreakdownTotal}`}>
+                    <span>מחיר כולל</span>
+                    <span>{totalPrice}₪</span>
+                  </div>
+                )}
+              </div>
+              {submitError && <p className={styles.submitError}>{submitError}</p>}
+
+              <div className={styles.actions}>
+                <button type="button" className={styles.cancelButton} onClick={onClose}>
+                  ביטול
+                </button>
+                <button type="submit" className={styles.submitButton} disabled={submitting}>
+                  {submitting ? "שולחת..." : editingEntry ? "שמירת שינויים" : "הוספה"}
+                </button>
+              </div>
             </div>
-          )}
-          {videoFee > 0 && (
-            <div className={styles.priceBreakdownRow}>
-              <span>צילום וידאו</span>
-              <span>{videoFee}₪</span>
-            </div>
-          )}
-          {stillsFee > 0 && (
-            <div className={styles.priceBreakdownRow}>
-              <span>צילום סטילס</span>
-              <span>{stillsFee}₪</span>
-            </div>
-          )}
-          {totalPrice != null && (
-            <div className={`${styles.priceBreakdownRow} ${styles.priceBreakdownTotal}`}>
-              <span>מחיר כולל</span>
-              <span>{totalPrice}₪</span>
-            </div>
-          )}
-        </div>
-        <div className={styles.actions}>
-          <button type="button" className={styles.cancelButton} onClick={onClose}>
-            ביטול
-          </button>
-          <button type="submit" className={styles.submitButton} disabled={submitting}>
-            {submitting ? "שולחת..." : editingEntry ? "שמירת שינויים" : "הוספה"}
-          </button>
+          </div>
         </div>
       </div>
     </form>

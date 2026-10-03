@@ -5,9 +5,10 @@ import Nav from "@/components/shared/Nav";
 import Footer from "@/components/shared/Footer";
 import DashboardBanner from "@/components/dashboard/DashboardBanner";
 import RegistrationStepper, { RegistrationStep } from "@/components/dashboard/RegistrationStepper";
-import EarlyRegistrationStatus from "@/components/dashboard/EarlyRegistrationStatus";
+import ReservationNotice from "@/components/dashboard/ReservationNotice";
 import Step2FinalRegistration from "@/components/dashboard/Step2FinalRegistration";
 import StepHeader from "@/components/dashboard/StepHeader";
+import PaymentStatusCard from "@/components/dashboard/PaymentStatusCard";
 import DanceEntriesTable from "@/components/dashboard/DanceEntriesTable";
 import { requireApprovedManager } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabaseServerClient";
@@ -27,12 +28,20 @@ type Props = {
 
 export default function Dashboard({ competitions, registrations, manager }: Props) {
   const [entries, setEntries] = useState(registrations);
-  // A returning manager who already has dances on file almost always came
-  // back to add more of them, not to re-read step 1's reminder — so she
-  // lands straight on step 2. A first-time visitor with nothing yet starts
-  // at step 1, where the actual entry point (the external form) lives.
-  const [activeStep, setActiveStep] = useState<RegistrationStep>(registrations.length === 0 ? 1 : 2);
+  const [activeStep, setActiveStep] = useState<RegistrationStep>(1);
   const [pendingEditEntry, setPendingEditEntry] = useState<Registration | null>(null);
+  // Whether step 1 currently has an unsaved dance in progress (reported live
+  // by Step2FinalRegistration/DanceEntryForm) — switching steps unmounts
+  // step 1 entirely, silently discarding that data, so the stepper tabs
+  // below need to confirm before actually navigating away from it.
+  const [step1Dirty, setStep1Dirty] = useState(false);
+
+  function handleStepSelect(step: RegistrationStep) {
+    if (activeStep === 1 && step !== 1 && step1Dirty) {
+      if (!confirm("יש לך ריקוד שמילאת שעדיין לא נשמר. לעזוב בכל זאת?")) return;
+    }
+    setActiveStep(step);
+  }
 
   // Nav (components/shared/Nav.tsx) is itself position:sticky at top:0, so
   // this bar has to stick just below it rather than at top:0 too — otherwise
@@ -54,7 +63,7 @@ export default function Dashboard({ competitions, registrations, manager }: Prop
 
   function handleEditFromSummary(entry: Registration) {
     setPendingEditEntry(entry);
-    setActiveStep(2);
+    setActiveStep(1);
   }
 
   async function handleSubmit(entry: DanceEntryInput, existingId?: string) {
@@ -78,6 +87,8 @@ export default function Dashboard({ competitions, registrations, manager }: Prop
 
       <Nav competitions={competitions} />
 
+      <ReservationNotice manager={manager} />
+
       <DashboardBanner />
 
       <div className={styles.stickyHeader} style={{ top: navHeight }}>
@@ -85,38 +96,41 @@ export default function Dashboard({ competitions, registrations, manager }: Prop
           <p className={styles.pageSubtitle}>כאן תוכלי לעקוב אחרי ההרשמה שלך ולנהל את הריקודים לתחרויות.</p>
         </header>
 
-        <RegistrationStepper active={activeStep} onSelect={setActiveStep} />
+        <RegistrationStepper active={activeStep} onSelect={handleStepSelect} />
       </div>
 
       <main className={styles.main}>
         {activeStep === 1 && (
           <div className={styles.narrow}>
-            <EarlyRegistrationStatus />
-          </div>
-        )}
-
-        {activeStep === 2 && (
-          <div className={styles.narrow}>
             <Step2FinalRegistration
               studioManagerId={manager.id}
+              manager={manager}
               competitions={competitions}
               entries={entries}
               onSubmit={handleSubmit}
               onDelete={handleDelete}
               initialEditEntry={pendingEditEntry}
               onInitialEditConsumed={() => setPendingEditEntry(null)}
+              onNext={() => setActiveStep(2)}
+              onDirtyChange={setStep1Dirty}
             />
           </div>
         )}
 
-        {activeStep === 3 && (
+        {activeStep === 2 && (
           <>
             <div className={styles.narrow}>
-              <StepHeader
-                kicker="שלב 3"
-                title="סיכום ותשלום"
-                hint='לפני התשלום, בדקו שכל פרטי הריקודים שהוספתם נכונים.'
-              />
+              {/* Column on mobile (unchanged), row on desktop — Dani asked
+                  for these two to sit side by side once there's room. */}
+              <div className={styles.stepHeaderRow}>
+                <StepHeader
+                  kicker="שלב 2"
+                  title="סיכום ותשלום"
+                  hint='לפני התשלום, בדקו שכל פרטי הריקודים שהוספתם נכונים.'
+                  onBack={() => setActiveStep(1)}
+                />
+                <PaymentStatusCard entries={entries} />
+              </div>
             </div>
 
             {/* Outside .narrow deliberately — the entries table has a lot of

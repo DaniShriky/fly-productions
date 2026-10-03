@@ -1,3 +1,35 @@
 .section {
   margin-bottom: 8px;
 }
+
+/* A clear, guided way to move on to step 2 — aligned to the trailing (left,
+   in this RTL layout) edge, the same direction RegistrationStepper's own
+   progression already runs, so it reads as "forward" consistently. */
+.nextStepRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.nextStepButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #f5c542, #e0a84a);
+  color: #050505;
+  padding: 13px 26px;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 10px 26px -8px rgba(245, 197, 66, 0.55);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.nextStepButton:hover {
+  filter: brightness(1.05);
+  transform: translateX(-2px);
+  box-shadow: 0 14px 32px -8px rgba(245, 197, 66, 0.7);
+}

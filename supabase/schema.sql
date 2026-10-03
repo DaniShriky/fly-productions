@@ -378,3 +378,62 @@ end;
 $$;
 
 grant execute on function admin_update_registration_payment(uuid, text, boolean) to authenticated;
+
+-- Round 4 additions (2026-10-02, Dani): manager name/studio name/city are now
+-- captured PER DANCE ENTRY, not just inherited live from studio_managers —
+-- the UI pre-fills them from the manager's own profile but lets her override
+-- per dance (e.g. a guest choreographer entering under a different studio
+-- name). Backfilled from each manager's current profile so existing rows
+-- aren't left blank. Also converts preferred_day (a single date) into
+-- preferred_days (an array) — a dance can now be marked available on more
+-- than one day of a multi-day competition, not just one.
+alter table registrations add column manager_name text not null default '';
+alter table registrations add column studio_name text not null default '';
+alter table registrations add column city text not null default '';
+
+update registrations r
+set manager_name = coalesce(sm.manager_name, ''),
+    studio_name = sm.studio_name,
+    city = coalesce(sm.city, '')
+from studio_managers sm
+where sm.id = r.studio_manager_id;
+
+alter table registrations rename column preferred_day to preferred_days;
+alter table registrations alter column preferred_days type date[]
+  using case when preferred_days is null then null else array[preferred_days] end;
+
+-- preferred_days keeps whatever grant preferred_day already had (column
+-- privileges follow a rename) — only the three new columns need one here.
+
+-- Round 5 additions (2026-10-02, Dani): UX-review fixes.
+
+-- 1. Lets /register check for an already-registered email BEFORE sending an
+-- OTP code and walking the manager through the whole details+verification
+-- flow — the only check before this ran at insert time, at the very end
+-- (register.tsx's 23505 handling, kept as a fallback for the rare race of
+-- two tabs registering the same email at once). SECURITY DEFINER + returns
+-- only a boolean (never manager data), so it's safe to expose to anon — this
+-- runs before the manager has a session at all. Case-insensitive (lower()
+-- both sides) — Supabase Auth itself normalizes emails to lowercase, but
+-- studio_managers.email is plain text with no such guarantee, so comparing
+-- as typed could miss a real match over a casing difference alone.
+create function email_is_registered(check_email text)
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  select exists (select 1 from studio_managers where lower(email) = lower(check_email));
+$$;
+
+grant execute on function email_is_registered(text) to anon, authenticated;
+
+create index if not exists studio_managers_email_idx on studio_managers (lower(email));
+
+-- 2. ReservationNotice (the "שמירת מקום" popup) used to reappear on every
+-- single login with no way to turn it off. This persists "already filled
+-- the external form" per account — not just per browser/device the way the
+-- sessionStorage "just logged in" flag it's paired with does.
+alter table studio_managers add column reservation_notice_dismissed boolean not null default false;
+grant update (reservation_notice_dismissed) on studio_managers to authenticated;
+grant update (manager_name, studio_name, city) on registrations to authenticated;

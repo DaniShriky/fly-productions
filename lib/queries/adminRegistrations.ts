@@ -1,12 +1,13 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { DanceLevel, PaymentStatus, Registration, RegistrationCategory } from "@/types/registration";
 
-// Same shape as Registration (see lib/queries/registrations.ts), plus the
-// studio/competition names an admin needs to make sense of a flat cross-
-// manager list — a studio manager's own dashboard never needs these since
-// she only ever sees her own dances for one competition at a time.
+// Same shape as Registration (see lib/queries/registrations.ts — studioName
+// there is this specific dance's own stored value, not necessarily the
+// manager's current profile), plus the phone number and competition name an
+// admin needs to make sense of a flat cross-manager list — a studio
+// manager's own dashboard never needs these since she only ever sees her own
+// dances for one competition at a time.
 export interface AdminRegistration extends Registration {
-  studioName: string;
   studioPhone: string;
   competitionName: string;
 }
@@ -23,7 +24,10 @@ type AdminRegistrationRow = {
   dancer_name: string | null;
   choreographer_name: string;
   dance_level: DanceLevel;
-  preferred_day: string | null;
+  manager_name: string;
+  studio_name: string;
+  city: string;
+  preferred_days: string[] | null;
   song_file_path: string | null;
   song_duration_seconds: number | null;
   wants_video: boolean;
@@ -32,7 +36,7 @@ type AdminRegistrationRow = {
   payment_due_date: string | null;
   late_payment_exception: boolean;
   created_at: string;
-  studio_managers: { studio_name: string; phone: string } | null;
+  studio_managers: { phone: string } | null;
   competitions: { name: string } | null;
 };
 
@@ -49,7 +53,10 @@ function toAdminRegistration(row: AdminRegistrationRow): AdminRegistration {
     ...(row.dancer_name ? { dancerName: row.dancer_name } : {}),
     choreographerName: row.choreographer_name,
     danceLevel: row.dance_level,
-    ...(row.preferred_day ? { preferredDay: row.preferred_day } : {}),
+    managerName: row.manager_name,
+    studioName: row.studio_name,
+    city: row.city,
+    ...(row.preferred_days?.length ? { preferredDays: row.preferred_days } : {}),
     ...(row.song_file_path ? { songFilePath: row.song_file_path } : {}),
     ...(row.song_duration_seconds != null ? { songDurationSeconds: row.song_duration_seconds } : {}),
     wantsVideo: row.wants_video,
@@ -58,7 +65,6 @@ function toAdminRegistration(row: AdminRegistrationRow): AdminRegistration {
     ...(row.payment_due_date ? { paymentDueDate: row.payment_due_date } : {}),
     latePaymentException: row.late_payment_exception,
     createdAt: row.created_at,
-    studioName: row.studio_managers?.studio_name ?? "—",
     studioPhone: row.studio_managers?.phone ?? "",
     competitionName: row.competitions?.name ?? "—",
   };
@@ -70,7 +76,7 @@ function toAdminRegistration(row: AdminRegistrationRow): AdminRegistration {
 export async function getAllRegistrationsForAdmin(client: SupabaseClient): Promise<AdminRegistration[]> {
   const { data, error } = await client
     .from("registrations")
-    .select("*, studio_managers(studio_name, phone), competitions(name)")
+    .select("*, studio_managers(phone), competitions(name)")
     .order("created_at", { ascending: true });
 
   if (error) throw error;

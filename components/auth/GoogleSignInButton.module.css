@@ -1,0 +1,25 @@
+/* Light/white, not the app's usual dark+gold buttons — Google's own
+   guidelines expect a neutral (white or light grey) button background so
+   the multi-color logo stays legible; forcing it into the dark palette
+   would also read as a modified/unofficial mark. */
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  background: #fff;
+  color: #1f1f1f;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 999px;
+  padding: 12px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  transition: box-shadow 0.2s ease, transform 0.2s ease, filter 0.2s ease;
+}
+
+.button:hover {
+  box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.5);
+  transform: translateY(-1px);
+  filter: brightness(0.98);
+}

@@ -1,8 +1,9 @@
 .card {
-  background: #0a0a0c;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(165deg, #101014, #0a0a0c 70%);
+  border: 1px solid rgba(245, 197, 66, 0.2);
   border-radius: 12px;
   padding: 24px;
+  box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.7);
 }
 
 .header {
@@ -39,7 +40,7 @@
   border-radius: 50%;
   background: linear-gradient(135deg, #5aa7e0, #8a4fc9 50%, #e0a84a);
   font-family: "Hubot Sans", sans-serif;
-  font-size: 20px;
+  font-size: 21px;
   font-weight: 800;
   color: #050505;
 }
@@ -60,13 +61,13 @@
 }
 
 .avatarHint {
-  font-size: 12px;
+  font-size: 13px;
   color: #9c9a93;
   margin-bottom: 4px;
 }
 
 .email {
-  font-size: 14px;
+  font-size: 15px;
   color: #d8d6cf;
 }
 
@@ -94,7 +95,7 @@
   flex-direction: column;
   gap: 6px;
   min-width: 0;
-  font-size: 13px;
+  font-size: 14px;
   color: #d8d6cf;
 }
 
@@ -107,8 +108,27 @@
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   padding: 10px 12px;
-  font-size: 15px;
+  font-size: 16px;
   color: #f3f1ec;
+  transition: border-color 0.2s ease;
+}
+
+/* Was missing entirely — these fields had no visible focus state at all
+   beyond the browser default. */
+.field input:focus,
+.field select:focus {
+  outline: none;
+  border-color: rgba(245, 197, 66, 0.8);
+}
+
+.required {
+  color: #f5c542;
+}
+
+.requiredHint {
+  font-size: 13px;
+  color: #9c9a93;
+  margin-bottom: 14px;
 }
 
 .radioGroup {
@@ -122,7 +142,7 @@
 }
 
 .approvalNote {
-  font-size: 12px;
+  font-size: 13px;
   color: #f5c542;
 }
 
@@ -131,7 +151,7 @@
 }
 
 .radioGroup legend {
-  font-size: 13px;
+  font-size: 14px;
   color: #d8d6cf;
   padding: 0 4px;
 }
@@ -140,7 +160,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
+  font-size: 15px;
   color: #f3f1ec;
   margin-bottom: 16px;
 }
@@ -155,8 +175,13 @@
 }
 
 .savedNote {
-  font-size: 13px;
+  font-size: 14px;
   color: #3fae64;
+}
+
+.errorNote {
+  font-size: 14px;
+  color: #f28b82;
 }
 
 .submit {
@@ -164,7 +189,7 @@
   color: #050505;
   padding: 10px 24px;
   border-radius: 999px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   border: none;
   transition: transform 0.25s ease, filter 0.25s ease;

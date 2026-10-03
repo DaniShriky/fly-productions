@@ -5,6 +5,16 @@ import Footer from "@/components/shared/Footer";
 import AuthPageShell from "@/components/auth/AuthPageShell";
 import authStyles from "@/components/auth/AuthPageShell.module.css";
 import { getAllCompetitions } from "@/lib/queries/competitions";
+import { PHONE, PHONE_TEL_URL, WHATSAPP_URL } from "@/lib/contact";
+
+function ClockIcon() {
+  return (
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 3" />
+    </svg>
+  );
+}
 
 export default function PendingApproval({ competitions }: InferGetStaticPropsType<typeof getStaticProps>) {
   return (
@@ -16,8 +26,18 @@ export default function PendingApproval({ competitions }: InferGetStaticPropsTyp
       <Nav competitions={competitions} />
 
       <AuthPageShell title="הבקשה שלך נקלטה">
+        <span className={authStyles.pendingIcon}>
+          <ClockIcon />
+        </span>
         <p className={authStyles.hint}>
-          ההרשמה שלך ממתינה לאישור מנהל. נעדכן אותך ברגע שהחשבון יאושר, ואז תוכלי להתחבר.
+          ההרשמה שלך ממתינה לאישור מנהל. נעדכן אותך באימייל ברגע שהחשבון יאושר, ואז תוכלי להתחבר.
+        </p>
+        <p className={authStyles.hint}>
+          לוקח יותר מכמה ימים ולא שמעת מאיתנו? אפשר לפנות אלינו ישירות: <a href={PHONE_TEL_URL}>{PHONE}</a> או ב-
+          <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
+            WhatsApp
+          </a>
+          .
         </p>
       </AuthPageShell>
 

@@ -2,23 +2,34 @@
    money amount or a selection, so it uses the same blue as the stepper's
    process indicator rather than the site's gold "selection/primary" accent. */
 .notice {
-  background: linear-gradient(120deg, rgba(127, 184, 230, 0.14), rgba(127, 184, 230, 0.04));
-  border: 1px solid rgba(127, 184, 230, 0.35);
-  border-radius: 12px;
-  padding: 14px 18px;
+  background: linear-gradient(135deg, rgba(127, 184, 230, 0.12), rgba(127, 184, 230, 0.03) 65%);
+  border: 1px solid rgba(127, 184, 230, 0.3);
+  border-radius: 14px;
+  padding: 18px 20px;
   margin-bottom: 20px;
-  font-size: 13px;
+  font-size: 14px;
   color: #f3f1ec;
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  box-shadow: 0 12px 30px -20px rgba(127, 184, 230, 0.4);
+  box-shadow: 0 16px 36px -26px rgba(127, 184, 230, 0.45);
 }
 
-.notice div {
+.notice strong {
+  color: #7fb8e6;
+}
+
+.row {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.titleLine {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex: 1 1 260px;
+  min-width: 0;
 }
 
 .icon {
@@ -27,8 +38,38 @@
   margin-top: 2px;
 }
 
-.notice strong {
-  color: #7fb8e6;
+/* Anchored to the row's trailing edge — in this RTL layout that's visually
+   the left, which is also where CountdownTimer's own forced direction: ltr
+   starts counting from (see CountdownTimer.module.css) — so days end up
+   left-most both within the timer and within this whole notice. */
+.timerBlock {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.timerLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: #9c9a93;
+  white-space: nowrap;
+}
+
+.divider {
+  height: 1px;
+  margin: 14px 0;
+  background: linear-gradient(90deg, rgba(127, 184, 230, 0.3), transparent 85%);
+}
+
+.secondary {
+  font-size: 14px;
+  color: #d8d6cf;
 }
 
 /* A cutoff that already passed is no longer just informational — it's
@@ -38,5 +79,12 @@
 }
 
 .warning strong {
+  color: #f28b82;
+}
+
+/* The video/stills cutoff's "(עוד N ימים)" day-count — red, same as
+   .warning, so it reads as urgent (only shown at all once 7 days or less
+   remain, see RegistrationNotice.tsx). */
+.urgentDays {
   color: #f28b82;
 }

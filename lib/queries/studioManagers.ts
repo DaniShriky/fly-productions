@@ -16,6 +16,7 @@ type StudioManagerRow = {
   additional_notes: string | null;
   wants_stage_services_info: boolean;
   profile_image_path: string | null;
+  reservation_notice_dismissed: boolean;
   created_at: string;
 };
 
@@ -37,6 +38,13 @@ function toStudioManager(row: StudioManagerRow): StudioManager {
     ...(row.additional_notes ? { additionalNotes: row.additional_notes } : {}),
     wantsStageServicesInfo: row.wants_stage_services_info,
     ...(row.profile_image_path ? { profileImagePath: row.profile_image_path } : {}),
+    // Falls back to false rather than trusting the column exists — a
+    // `select *` against a DB that hasn't run the Round 5 migration yet
+    // returns `undefined` here (not `null`), and Next.js's getServerSideProps
+    // can't serialize `undefined` into props at all, crashing /dashboard
+    // entirely. Same class of schema.sql-vs-live-DB mismatch as the
+    // pending_preferred_competition_type bug — see project_profile_save_error_handling.
+    reservationNoticeDismissed: row.reservation_notice_dismissed ?? false,
     createdAt: row.created_at,
   };
 }
@@ -77,7 +85,6 @@ export type StudioManagerEditableFields = {
   managerName?: string;
   phone: string;
   city?: string;
-  danceStyles?: string;
   // Not the live value — a request. `null` cancels any pending request
   // (used when the manager picks the same option that's already approved).
   // See resolve_preferred_competition_type_request in supabase/schema.sql:
@@ -85,13 +92,17 @@ export type StudioManagerEditableFields = {
   // client's update grant, so writing it directly would be rejected by
   // Postgres, not just ignored by the UI.
   requestedCompetitionType: string | null;
-  wantsStageServicesInfo: boolean;
 };
 
 // Everything a manager is allowed to change about her own profile from
 // /profile — deliberately excludes `email`, which is tied to her Supabase
 // Auth login identity and isn't safe to edit as a plain text field here
-// without a re-verification flow (a bigger feature, not this one).
+// without a re-verification flow (a bigger feature, not this one). Also
+// deliberately excludes dance_styles/wants_stage_services_info (2026-10-02,
+// Dani) — neither is collected anywhere in the UI anymore, so this update
+// simply never touches those columns, rather than overwriting them with
+// null/false on every unrelated save and quietly erasing anyone's existing
+// value.
 export async function updateOwnStudioManager(
   client: SupabaseClient,
   id: string,
@@ -104,9 +115,7 @@ export async function updateOwnStudioManager(
       manager_name: fields.managerName || null,
       phone: fields.phone,
       city: fields.city || null,
-      dance_styles: fields.danceStyles || null,
       pending_preferred_competition_type: fields.requestedCompetitionType,
-      wants_stage_services_info: fields.wantsStageServicesInfo,
     })
     .eq("id", id)
     .select("*")
@@ -164,4 +173,11 @@ export async function updateOwnProfilePhoto(client: SupabaseClient, id: string, 
 // call — safe to call on every render.
 export function getProfilePhotoUrl(client: SupabaseClient, path: string): string {
   return client.storage.from("profile-photos").getPublicUrl(path).data.publicUrl;
+}
+
+// Called only from ReservationNotice's "כבר מילאתי, לא להראות שוב" action —
+// a one-way flag, nothing un-sets it from the UI.
+export async function dismissReservationNotice(client: SupabaseClient, id: string): Promise<void> {
+  const { error } = await client.from("studio_managers").update({ reservation_notice_dismissed: true }).eq("id", id);
+  if (error) throw error;
 }

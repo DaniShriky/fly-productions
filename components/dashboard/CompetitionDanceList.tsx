@@ -1,4 +1,6 @@
+import { CSSProperties, useState } from "react";
 import { CompetitionWithPricing } from "@/lib/queries/competitionsWithPricing";
+import { hexToRgbParts } from "@/lib/hexToRgbParts";
 import { Registration } from "@/types/registration";
 import { computePrice, computeRecordingFee, computeTotalPrice, displayCategoryLabel } from "@/lib/pricing";
 import { EditIcon, DeleteIcon, PlusIcon } from "./icons";
@@ -25,25 +27,57 @@ type Props = {
 // "what did I already add" and a single obvious way to add the next one.
 export default function CompetitionDanceList({ competition, allEntries, onAdd, onEdit, onDelete }: Props) {
   const entries = allEntries.filter((e) => e.competitionId === competition.id);
-
-  // Same cross-competition quantity discount as DanceEntriesTable — video and
-  // stills are priced independently, 135₪ for a single dance ordering that
-  // type, 125₪ each once 2+ dances (anywhere, not just this competition)
-  // order that same type.
-  const totalVideoOrders = allEntries.filter((e) => e.wantsVideo).length;
-  const totalStillsOrders = allEntries.filter((e) => e.wantsStills).length;
+  // Previously no try/catch and no loading state at all — a failed delete
+  // threw silently (nothing shown) and nothing stopped a second click mid-
+  // request either. Same fix as DanceEntriesTable's equivalent handler.
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   async function handleDelete(id: string) {
     if (!confirm("למחוק את הריקוד הזה? הפעולה לא הפיכה.")) return;
-    await onDelete(id);
+    setDeletingId(id);
+    setDeleteError(null);
+    try {
+      await onDelete(id);
+    } catch (err) {
+      console.error("Dance delete failed:", err);
+      setDeleteError("המחיקה נכשלה - נסו שוב.");
+    } finally {
+      setDeletingId(null);
+    }
   }
 
+  // Tints the saved-dances price text and the background glow to this
+  // competition's accent color — see lib/competitionAccentColors.ts —
+  // matching DanceEntryForm above it. --list-rgb holds bare "r, g, b"
+  // tokens so rgba(var(--list-rgb), alpha) can build translucent shades
+  // without CSS color-mix() support (see DanceEntryForm.tsx for why).
+  const rgb = competition.accentColor ? hexToRgbParts(competition.accentColor) : null;
+  const wrapStyle = rgb
+    ? ({
+        "--list-accent": competition.accentColor,
+        "--list-rgb": `${rgb.r}, ${rgb.g}, ${rgb.b}`,
+      } as CSSProperties)
+    : undefined;
+
   return (
-    <div className={styles.wrap}>
+    <div className={styles.wrap} style={wrapStyle}>
       <div className={styles.headerRow}>
         <p className={styles.count}>
           ריקודים שנוספו לתחרות זו ({entries.length})
         </p>
+      </div>
+
+      {deleteError && <p className={styles.deleteError}>{deleteError}</p>}
+
+      {/* Moved above the list itself (was below it) — with 10-20 dances
+          already added, the add button used to be a scroll away every time;
+          now it's reachable immediately regardless of list length. */}
+      <div className={styles.addButtonRow}>
+        <button type="button" className={styles.addButton} onClick={onAdd}>
+          <PlusIcon size={18} />
+          הוספת ריקוד חדש
+        </button>
       </div>
 
       {entries.length === 0 ? (
@@ -52,7 +86,7 @@ export default function CompetitionDanceList({ competition, allEntries, onAdd, o
         <div className={styles.list}>
           {entries.map((entry) => {
             const perParticipantPrice = computePrice(competition.priceTiers, entry.category);
-            const recordingFee = computeRecordingFee(entry.wantsVideo, entry.wantsStills, totalVideoOrders, totalStillsOrders);
+            const recordingFee = computeRecordingFee(entry.wantsVideo, entry.wantsStills);
             const price = competition.priceTiers
               ? computeTotalPrice(competition.priceTiers, entry.category, entry.participantCount, entry.songDurationSeconds, recordingFee)
               : null;
@@ -82,16 +116,17 @@ export default function CompetitionDanceList({ competition, allEntries, onAdd, o
                 {isUnpaid && (
                   <div className={styles.actions}>
                     <button type="button" className={styles.iconButton} title="עריכה" aria-label="עריכה" onClick={() => onEdit(entry)}>
-                      <EditIcon />
+                      <EditIcon size={19} />
                     </button>
                     <button
                       type="button"
                       className={`${styles.iconButton} ${styles.deleteIconButton}`}
                       title="מחיקה"
                       aria-label="מחיקה"
+                      disabled={deletingId === entry.id}
                       onClick={() => handleDelete(entry.id)}
                     >
-                      <DeleteIcon />
+                      <DeleteIcon size={19} />
                     </button>
                   </div>
                 )}
@@ -100,13 +135,6 @@ export default function CompetitionDanceList({ competition, allEntries, onAdd, o
           })}
         </div>
       )}
-
-      <div className={styles.addButtonRow}>
-        <button type="button" className={styles.addButton} onClick={onAdd}>
-          <PlusIcon size={18} />
-          הוספת ריקוד חדש
-        </button>
-      </div>
     </div>
   );
 }

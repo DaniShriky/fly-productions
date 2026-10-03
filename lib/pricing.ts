@@ -1,15 +1,6 @@
 import { PriceTiers } from "@/types/priceTiers";
 import { RegistrationCategory } from "@/types/registration";
 
-// What the form lets a manager pick. "group" gets resolved to
-// group_small/group_large from the participant count before it's ever stored,
-// since the DB category needs to match a price_tiers key directly. "trio" and
-// "quartet" are a UI-only split — the flyer prices them identically as one
-// combined "trio_quartet" DB category/price tier, so they both resolve to
-// that same stored category and differ only in their fixed participant count
-// (3 vs 4, see FIXED_PARTICIPANT_COUNTS in DanceEntryForm).
-export type UiCategory = "solo" | "duet" | "trio" | "quartet" | "group";
-
 export const CATEGORY_LABELS: Record<RegistrationCategory, string> = {
   solo: "סולו",
   duet: "דואט",
@@ -41,10 +32,13 @@ export const STEP_DIVISIONS = [
   "STEP STAR (גילאי 25+)",
 ];
 
+// Masculine plural throughout (per Dani, 2026-10-03: the site's address
+// language is plural masculine, same convention as "כניסת מנהלים" in the
+// nav) — not feminine plural, even though "רמת הרקדנים" itself already was.
 export const DANCE_LEVELS: { value: "A" | "B" | "C"; label: string }[] = [
-  { value: "A", label: "A - מתחילות (פעם-פעמיים בשבוע)" },
-  { value: "B", label: "B - מתקדמות (3 פעמים בשבוע ומעלה)" },
-  { value: "C", label: "C - מקצועית (3 פעמים בשבוע ומעלה, מעל שנתיים)" },
+  { value: "A", label: "A - מתחילים (לומדים בסטודיו פעם-פעמיים בשבוע)" },
+  { value: "B", label: "B - מתקדמים (לומדים בסטודיו 3 פעמים בשבוע ומעלה)" },
+  { value: "C", label: "C - מקצועיים (לומדים בסטודיו 3 פעמים בשבוע ומעלה, מעל שנתיים)" },
 ];
 
 // The real options from FLY's existing Google Form (screenshot, 2026-09-21) —
@@ -70,23 +64,16 @@ export const DANCE_STYLES = [
   "רגאטון",
 ];
 
-// "group" resolves to group_small (5-10) / group_large (11+) from the actual
-// participant count, matching the flyer's own split; "trio" and "quartet"
-// both resolve to the one combined DB category — everything else passes
-// through unchanged.
-export function resolveCategory(uiCategory: UiCategory, participantCount: number): RegistrationCategory {
-  if (uiCategory === "group") return participantCount >= 11 ? "group_large" : "group_small";
-  if (uiCategory === "trio" || uiCategory === "quartet") return "trio_quartet";
-  return uiCategory;
-}
-
-// Reverses resolveCategory for editing an existing entry. "trio_quartet"
-// can't tell trio from quartet on its own — the entry's own participant
-// count is what disambiguates it.
-export function uiCategoryOf(category: RegistrationCategory, participantCount: number): UiCategory {
-  if (category === "group_small" || category === "group_large") return "group";
-  if (category === "trio_quartet") return participantCount === 4 ? "quartet" : "trio";
-  return category;
+// The category field was removed from the form (per Dani, 2026-10-03) — the
+// participant count alone now determines it, instead of asking for both and
+// risking them disagreeing. Thresholds straight from the flyer: 1=solo,
+// 2=duet, 3-4=trio_quartet (priced identically either way), 5-10=group_small,
+// 11+=group_large.
+export function categoryFromParticipantCount(participantCount: number): RegistrationCategory {
+  if (participantCount <= 1) return "solo";
+  if (participantCount === 2) return "duet";
+  if (participantCount <= 4) return "trio_quartet";
+  return participantCount >= 11 ? "group_large" : "group_small";
 }
 
 export function isEarlyPricing(priceTiers: PriceTiers | undefined): boolean {
@@ -160,28 +147,17 @@ export function computeSurcharge(
 // a single order or 125₪ per order once 2+ of THAT SAME type are ordered —
 // Dani corrected this 2026-09 (the flyer's "צילום וידאו ו/או סטילס" wording
 // first read as one shared line item, but ordering both is really two
-// separate charges). The two types' quantity discounts are independent of
-// each other: e.g. 1 video order + 1 stills order are each still priced at
-// the "single" 135₪ tier, not treated as "2 recording orders" together.
-export function computeRecordingFeeForType(totalOrdersOfThisType: number): number {
-  return totalOrdersOfThisType >= 2 ? 125 : 135;
+// separate charges). Flat 150₪ per type regardless of quantity — per Dani,
+// 2026-10-03, replacing the previous 135₪/125₪ quantity-discount tiers
+// entirely (not just at new numbers).
+export function computeRecordingFeeForType(): number {
+  return 150;
 }
 
 // Combined recording add-on fee for one dance entry — the sum of whichever
-// of video/stills it ordered, each priced against its own type's total order
-// count (across all of a manager's dances, in this competition or overall —
-// see project_pricing_and_rules). Callers must pass counts that include the
-// entry being priced itself.
-export function computeRecordingFee(
-  wantsVideo: boolean,
-  wantsStills: boolean,
-  totalVideoOrders: number,
-  totalStillsOrders: number
-): number {
-  return (
-    (wantsVideo ? computeRecordingFeeForType(totalVideoOrders) : 0) +
-    (wantsStills ? computeRecordingFeeForType(totalStillsOrders) : 0)
-  );
+// of video/stills it ordered.
+export function computeRecordingFee(wantsVideo: boolean, wantsStills: boolean): number {
+  return (wantsVideo ? computeRecordingFeeForType() : 0) + (wantsStills ? computeRecordingFeeForType() : 0);
 }
 
 // Total price for one dance entry: per-participant price × participant count

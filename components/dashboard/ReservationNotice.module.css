@@ -1,0 +1,103 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(5, 5, 5, 0.72);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.card {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  background: linear-gradient(165deg, #101014, #0a0a0c 60%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 36px 28px 30px;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+}
+
+.closeBtn {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: #cfcdc6;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.closeBtn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+
+.emoji {
+  font-size: 37px;
+  margin-bottom: 10px;
+}
+
+.card h2 {
+  font-size: 21px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.card p {
+  font-size: 15px;
+  color: #cfcdc6;
+  line-height: 1.6;
+  margin-bottom: 22px;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f5c542, #e0a84a);
+  color: #050505;
+  font-weight: 700;
+  font-size: 16px;
+  box-shadow: 0 8px 24px -8px rgba(245, 197, 66, 0.55);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.cta:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 30px -8px rgba(245, 197, 66, 0.7);
+}
+
+.alreadyDoneBtn {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #9c9a93;
+  text-decoration: underline;
+}
+
+.alreadyDoneBtn:hover:not(:disabled) {
+  color: #f3f1ec;
+}
+
+.alreadyDoneBtn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

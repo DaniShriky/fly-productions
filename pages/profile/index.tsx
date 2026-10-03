@@ -34,7 +34,7 @@ export default function Profile({ competitions, manager: initialManager }: Props
       <main className={styles.main}>
         <header className={styles.pageHeader}>
           <h1 className={styles.pageTitle}>הפרטים שלי</h1>
-          <p className={styles.pageSubtitle}>הפרטים שמילאת בהרשמת הסטודיו/הלהקה שלך — ניתן לעדכן אותם כאן.</p>
+          <p className={styles.pageSubtitle}>הפרטים שמילאת בהרשמת הסטודיו/הלהקה שלך - ניתן לעדכן אותם כאן.</p>
         </header>
 
         <ProfileEditForm manager={manager} onSaved={setManager} />

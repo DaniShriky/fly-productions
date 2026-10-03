@@ -15,11 +15,23 @@ import { getAllCompetitions } from "@/lib/queries/competitions";
 export default function Register({ competitions }: InferGetStaticPropsType<typeof getStaticProps>) {
   const router = useRouter();
   const [details, setDetails] = useState<RegistrationDetails | null>(null);
+  // Separate from `details` — going back no longer clears what was typed
+  // (it used to: `details` was the ONLY thing deciding which step showed,
+  // so "back" meant nulling it out, losing everything already filled in).
+  const [step, setStep] = useState<"details" | "verify">("details");
   const [insertError, setInsertError] = useState<string | null>(null);
+
+  function handleDetailsSubmit(submitted: RegistrationDetails) {
+    setDetails(submitted);
+    setStep("verify");
+  }
 
   async function handleVerified(userId: string, email: string) {
     if (!details) return;
 
+    // dance_styles and wants_stage_services_info are no longer collected at
+    // registration (2026-10-02, Dani) — both columns stay nullable/default
+    // false, settable later from /profile instead.
     const { error } = await supabaseBrowserClient.from("studio_managers").insert({
       id: userId,
       studio_name: details.studioName,
@@ -27,10 +39,8 @@ export default function Register({ competitions }: InferGetStaticPropsType<typeo
       phone: details.phone,
       email,
       city: details.city,
-      dance_styles: details.danceStyles || null,
       referral_source: details.referralSource || null,
       preferred_competition_type: details.preferredCompetitionType === "religious" ? "דתי" : "רגיל",
-      wants_stage_services_info: details.wantsStageServicesInfo,
     });
 
     if (error) {
@@ -53,11 +63,14 @@ export default function Register({ competitions }: InferGetStaticPropsType<typeo
 
       <Nav competitions={competitions} />
 
-      <AuthPageShell title="הרשמת מנהלת סטודיו/להקה">
-        {!details ? (
-          <RegistrationDetailsForm onSubmit={setDetails} />
+      <AuthPageShell title="הרשמת מנהלת סטודיו/להקה" step={{ current: step === "details" ? 1 : 2, total: 2 }}>
+        {step === "details" ? (
+          <RegistrationDetailsForm onSubmit={handleDetailsSubmit} initialValues={details ?? undefined} />
         ) : (
           <>
+            <button type="button" className={authStyles.backLink} onClick={() => setStep("details")}>
+              → חזרה לעריכת הפרטים
+            </button>
             <OtpEmailForm mode="register" onVerified={handleVerified} />
             {insertError && (
               <p className={authStyles.error}>

@@ -18,7 +18,14 @@ export interface Registration {
   dancerName?: string; // only set when category is 'solo'
   choreographerName: string;
   danceLevel: DanceLevel;
-  preferredDay?: string; // ISO date — only relevant for multi-day competitions
+  // Pre-filled from the studio manager's own profile in the UI, but stored
+  // per dance entry since she can override it there (e.g. a guest
+  // choreographer entering under a different studio name) — not just a
+  // live mirror of studio_managers.
+  managerName: string;
+  studioName: string;
+  city: string;
+  preferredDays?: string[]; // ISO dates — only relevant for multi-day competitions; a dance can be available on more than one
   songFilePath?: string; // path in the "dance-music" Supabase Storage bucket
   songDurationSeconds?: number;
   wantsVideo: boolean;

@@ -93,3 +93,19 @@ export function getVideoOrderCutoffIso(date: string): string | null {
   cutoff.setUTCDate(cutoff.getUTCDate() - 10);
   return cutoff.toISOString().slice(0, 10);
 }
+
+// General registration (not just early pricing) closes a month and a half
+// before the competition's FIRST day, at full price — per Dani (2026-10-02),
+// distinct from `priceTiers.earlyUntil` (which only ends the early-price
+// window, not registration itself). Approximated as a flat 45-day offset,
+// same flat-day-count approach as getVideoOrderCutoffIso above, rather than
+// calendar-aware month subtraction — consistent with how these cutoffs are
+// treated elsewhere as rules of thumb (see project_pricing_and_rules).
+export function getGeneralRegistrationCutoffIso(date: string): string | null {
+  const range = getCompetitionDateRange(date);
+  if (!range) return null;
+
+  const cutoff = new Date(range.start);
+  cutoff.setUTCDate(cutoff.getUTCDate() - 45);
+  return cutoff.toISOString().slice(0, 10);
+}
