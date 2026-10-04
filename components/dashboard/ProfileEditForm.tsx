@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { ISRAELI_CITIES } from "@/lib/cities";
 import {
   getProfilePhotoUrl,
@@ -46,10 +46,23 @@ export default function ProfileEditForm({
   const [city, setCity] = useState(manager.city && ISRAELI_CITIES.includes(manager.city) ? manager.city : "");
   const [customCity, setCustomCity] = useState(manager.city && !ISRAELI_CITIES.includes(manager.city) ? manager.city : "");
   const [isOtherCity, setIsOtherCity] = useState(!!manager.city && !ISRAELI_CITIES.includes(manager.city));
-  const approvedCompetitionType = manager.preferredCompetitionType ?? "רגיל";
+  const approvedCompetitionType = manager.preferredCompetitionType ?? "חילוני";
   const [selectedCompetitionType, setSelectedCompetitionType] = useState(
     manager.pendingPreferredCompetitionType ?? approvedCompetitionType
   );
+  // useState's initial value is only read on mount — without this, a live
+  // update to manager.pendingPreferredCompetitionType (LiveNotifications,
+  // after an admin approves/rejects — see pages/profile/index.tsx) would
+  // correctly clear the "יש בקשה ממתינה" note, but leave the radio itself
+  // (and, specifically after a *rejection*, the "שינוי טעון אישור" note too)
+  // stuck showing her old requested choice instead of resyncing to
+  // whatever got decided. Re-syncing here on every change to the two
+  // server-confirmed fields covers both her own save (onSaved already
+  // passes a manager matching her own selection, so this is a no-op then)
+  // and a live update from someone else's action.
+  useEffect(() => {
+    setSelectedCompetitionType(manager.pendingPreferredCompetitionType ?? manager.preferredCompetitionType ?? "חילוני");
+  }, [manager.pendingPreferredCompetitionType, manager.preferredCompetitionType]);
   const [profileImagePath, setProfileImagePath] = useState(manager.profileImagePath);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -208,28 +221,27 @@ export default function ProfileEditForm({
           <input
             type="radio"
             name="preferredCompetitionType"
-            checked={selectedCompetitionType === "רגיל"}
-            onChange={() => setSelectedCompetitionType("רגיל")}
+            checked={selectedCompetitionType === "חילוני"}
+            onChange={() => setSelectedCompetitionType("חילוני")}
           />
-          רגיל
+          חילוני
         </label>
         <label className={styles.radio}>
           <input
             type="radio"
             name="preferredCompetitionType"
-            checked={selectedCompetitionType === "דתי"}
-            onChange={() => setSelectedCompetitionType("דתי")}
+            checked={selectedCompetitionType === "מגזר דתי"}
+            onChange={() => setSelectedCompetitionType("מגזר דתי")}
           />
-          דתי
+          מגזר דתי
         </label>
-        <p className={styles.approvalNote}>הבחירה המאושרת כרגע: {approvedCompetitionType}.</p>
         {manager.pendingPreferredCompetitionType && (
-          <p className={styles.approvalNote}>
+          <p className={styles.approvalWarning}>
             יש בקשה ממתינה לאישור מנהל האתר לשינוי ל<strong>{manager.pendingPreferredCompetitionType}</strong>.
           </p>
         )}
         {!manager.pendingPreferredCompetitionType && selectedCompetitionType !== approvedCompetitionType && (
-          <p className={styles.approvalNote}>שינוי בסוג התחרויות טעון אישור מנהל האתר ולא יחול מיד.</p>
+          <p className={styles.approvalWarning}>שינוי בסוג התחרויות טעון אישור מנהל האתר ולא יחול מיד.</p>
         )}
       </fieldset>
 

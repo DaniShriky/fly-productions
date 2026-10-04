@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import Head from "next/head";
 import type { GetServerSideProps } from "next";
 import Nav from "@/components/shared/Nav";
 import Footer from "@/components/shared/Footer";
 import ProfileEditForm from "@/components/dashboard/ProfileEditForm";
+import LiveNotifications from "@/components/dashboard/LiveNotifications";
 import { requireApprovedManager } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabaseServerClient";
 import { CompetitionWithPricing, getCompetitionsWithPricing } from "@/lib/queries/competitionsWithPricing";
@@ -23,6 +24,23 @@ type Props = {
 export default function Profile({ competitions, manager: initialManager }: Props) {
   const [manager, setManager] = useState(initialManager);
 
+  // Per Dani, 2026-10-03: approving/rejecting a pending competition-type
+  // request used to leave this exact page — the one showing the radio
+  // buttons and approval-note text — stuck on the pre-decision state until
+  // a manual refresh, even though the popup notification already fired.
+  const handleManagerUpdated = useCallback(
+    (update: { preferredCompetitionType: string | null; pendingPreferredCompetitionType: string | null }) => {
+      setManager((current) => ({
+        ...current,
+        ...(update.preferredCompetitionType ? { preferredCompetitionType: update.preferredCompetitionType } : {}),
+        ...(update.pendingPreferredCompetitionType
+          ? { pendingPreferredCompetitionType: update.pendingPreferredCompetitionType }
+          : { pendingPreferredCompetitionType: undefined }),
+      }));
+    },
+    []
+  );
+
   return (
     <>
       <Head>
@@ -30,6 +48,8 @@ export default function Profile({ competitions, manager: initialManager }: Props
       </Head>
 
       <Nav competitions={competitions} />
+
+      <LiveNotifications managerId={manager.id} onManagerUpdated={handleManagerUpdated} />
 
       <main className={styles.main}>
         <header className={styles.pageHeader}>

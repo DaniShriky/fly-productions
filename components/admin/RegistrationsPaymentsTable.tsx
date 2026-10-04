@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { AdminRegistration, updateRegistrationPaymentAdmin } from "@/lib/queries/adminRegistrations";
+import { useEffect, useState } from "react";
+import { AdminRegistration, getAllRegistrationsForAdmin, updateRegistrationPaymentAdmin } from "@/lib/queries/adminRegistrations";
 import { CompetitionWithPricing } from "@/lib/queries/competitionsWithPricing";
 import { supabaseBrowserClient } from "@/lib/supabaseBrowserClient";
 import { computePrice, computeRecordingFee, computeTotalPrice, displayCategoryLabel } from "@/lib/pricing";
@@ -32,6 +32,29 @@ export default function RegistrationsPaymentsTable({ initialRegistrations, compe
   const [registrations, setRegistrations] = useState(initialRegistrations);
   const [filter, setFilter] = useState<Filter>("all");
   const [savingId, setSavingId] = useState<string | null>(null);
+
+  // Live updates: a studio manager submitting (or an admin herself changing
+  // payment status) should show up here immediately, not only on the next
+  // page load — per Dani, 2026-10-03. Refetches the whole list on any
+  // change rather than trying to merge the bare Postgres row from the
+  // realtime payload, since this table needs the joined studio_managers/
+  // competitions fields (phone, competition name) that payload doesn't
+  // carry. Infrequent enough (studio submissions, admin edits) that the
+  // extra round-trip per change is a non-issue.
+  useEffect(() => {
+    const channel = supabaseBrowserClient
+      .channel("admin-registrations-payments")
+      .on("postgres_changes", { event: "*", schema: "public", table: "registrations" }, () => {
+        getAllRegistrationsForAdmin(supabaseBrowserClient)
+          .then(setRegistrations)
+          .catch((err) => console.error("Live registrations refresh failed:", err));
+      })
+      .subscribe();
+
+    return () => {
+      supabaseBrowserClient.removeChannel(channel);
+    };
+  }, []);
 
   const recordingFeeOf = (r: AdminRegistration) => computeRecordingFee(r.wantsVideo, r.wantsStills);
 

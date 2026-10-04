@@ -418,71 +418,11 @@
   color: #d8d6cf;
 }
 
-.grandTotalLabel {
-  color: #9c9a93;
-  font-weight: 600;
-}
-
-.grandTotalValue {
-  color: #f5c542;
-  font-weight: 700;
-  font-size: 16px;
-}
-
-/* Was green (the "paid"/checkout-convention color) — Dani said that shade
-   didn't work for her, so this switched to the site's one consistent
-   primary-action gold (same as .submitButton/.addButton elsewhere) instead
-   of picking a second accent color just for this bar. */
-.stickyBar {
-  position: sticky;
-  bottom: 12px;
-  margin-top: 24px;
-  background: rgba(10, 10, 12, 0.82);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(245, 197, 66, 0.35);
-  border-radius: 16px;
-  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.35), 0 20px 40px -20px rgba(0, 0, 0, 0.6), 0 0 30px -10px rgba(245, 197, 66, 0.18);
-  overflow: hidden;
-}
-
-.stickyBarBar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 16px 20px;
-}
-
-.stickyBarInfo {
-  font-size: 15px;
-  color: #d8d6cf;
-}
-
-.stickyBarButton {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 0 0 auto;
-  background: linear-gradient(135deg, #f5c542, #e0a84a);
-  color: #050505;
-  padding: 10px 22px;
-  border-radius: 999px;
-  font-size: 15px;
-  font-weight: 700;
-  white-space: nowrap;
-  box-shadow: 0 8px 22px -8px rgba(245, 197, 66, 0.55);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
-}
-
-.stickyBarButton:hover {
-  filter: brightness(1.05);
-  transform: translateY(-1px);
-  box-shadow: 0 12px 28px -8px rgba(245, 197, 66, 0.7);
-}
-
-.globalPayPanel {
+/* Replaces the old standalone sticky bar + its toggleable panel — per Dani,
+   2026-10-03, the breakdown now lives directly in the table's own footer,
+   always visible, instead of behind a "פרטי תשלום ליצירת קשר" button. Same
+   gold-tinted treatment the removed .globalPayPanel used. */
+.breakdownFooterCell {
   background: rgba(245, 197, 66, 0.06);
   border-top: 1px solid rgba(245, 197, 66, 0.2);
   padding: 16px 20px;
@@ -490,17 +430,9 @@
   color: #d8d6cf;
 }
 
-.globalPayPanel a {
+.breakdownFooterCell a {
   color: #f5c542;
   text-decoration: underline;
-}
-
-@media (max-width: 640px) {
-  .stickyBarBar {
-    flex-direction: column;
-    align-items: stretch;
-    text-align: center;
-  }
 }
 
 /* Below this width even the trimmed 7-column table gets cramped, so each row
@@ -579,8 +511,15 @@
   }
 
   .table tfoot tr {
-    display: flex;
-    justify-content: space-between;
     padding: 8px 4px;
+  }
+
+  /* The generic ".table td { display: flex; justify-content: space-between }"
+     above assumes a simple label/value pair, which breaks this cell's
+     stacked multi-paragraph breakdown content (it would lay the warning/
+     title/breakdown/instructions out as one squashed row instead of
+     stacking them) — reset back to a normal block here. */
+  .table td.breakdownFooterCell {
+    display: block;
   }
 }

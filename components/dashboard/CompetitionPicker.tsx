@@ -50,20 +50,26 @@ export default function CompetitionPicker({ competitions, selectedId, onSelect, 
                   <CheckIcon size={13} />
                 </span>
               )}
-              {c.logo && <Image src={c.logo} alt="" width={44} height={38} className={styles.logo} />}
+              {/* Fixed-height slot regardless of whether this competition has
+                  a logo yet (not every one does) — otherwise a card without
+                  one would be shorter than its neighbors, per Dani,
+                  2026-10-03 ("more organized/consistent"). */}
+              <span className={styles.logoSlot}>
+                {c.logo && <Image src={c.logo} alt="" width={44} height={38} className={styles.logo} />}
+              </span>
               <span className={`${styles.name} en`} lang="en">
                 {c.name}
               </span>
               <span className={styles.date} dir="ltr" lang="en">
                 {getCompetitionDateLabel(c.date)}
               </span>
-              {/* Only shown once she's actually started this competition —
-                  "0 ריקודים" on every untouched card would just be noise. */}
-              {danceCount > 0 && (
-                <span className={styles.danceCount}>
-                  {danceCount} {danceCount === 1 ? "ריקוד רשום" : "ריקודים רשומים"}
-                </span>
-              )}
+              {/* Always takes up its row's space so every card ends at the
+                  same height — only its content is conditional (an empty,
+                  invisible badge for a competition with no dances yet reads
+                  as cleaner than that card simply being shorter). */}
+              <span className={styles.danceCount} style={danceCount === 0 ? { visibility: "hidden" } : undefined}>
+                {danceCount} {danceCount === 1 ? "ריקוד רשום" : "ריקודים רשומים"}
+              </span>
             </button>
           );
         })}

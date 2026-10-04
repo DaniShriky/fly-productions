@@ -131,7 +131,7 @@ export default function CompetitionDetail({ competition }: { competition: Compet
           </div>
         )}
         <div className={styles.description}>
-          {/* descriptionParagraphs is sanitized with isomorphic-dompurify in
+          {/* descriptionParagraphs is sanitized with sanitize-html in
               lib/queries/competitions.ts before it ever reaches this
               component — safe to render as-is here. */}
           {competition.descriptionParagraphs.map((html, i) => (

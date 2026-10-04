@@ -1,11 +1,12 @@
 import { CheckIcon } from "./icons";
 import styles from "./RegistrationStepper.module.css";
 
-export type RegistrationStep = 1 | 2;
+export type RegistrationStep = 1 | 2 | 3;
 
 const STEPS: { step: RegistrationStep; label: string }[] = [
   { step: 1, label: "הוספת ריקודים" },
-  { step: 2, label: "סיכום ותשלום" },
+  { step: 2, label: "סיכום הזמנה" },
+  { step: 3, label: "אישורים והגשה" },
 ];
 
 type Props = {

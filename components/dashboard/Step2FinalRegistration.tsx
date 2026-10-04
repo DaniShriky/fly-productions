@@ -60,8 +60,18 @@ export default function Step2FinalRegistration({
     return entries.some((e) => e.competitionId === competitionId);
   }
 
+  // Only affects which competitions are offered as *new* picks — never
+  // narrows the full `competitions` list used below for looking up a
+  // competition's own details, so an existing dance from before her
+  // preference changed (or was set by an admin exception) still opens and
+  // edits correctly either way. Falls back to secular the same way
+  // ProfileEditForm already does when no preference is set yet.
+  const pickableCompetitions = competitions.filter((c) =>
+    manager.preferredCompetitionType === "מגזר דתי" ? c.isReligious : !c.isReligious
+  );
+
   const [selectedCompetitionId, setSelectedCompetitionId] = useState(
-    initialEditEntry?.competitionId ?? competitions[0]?.id ?? ""
+    initialEditEntry?.competitionId ?? pickableCompetitions[0]?.id ?? ""
   );
   const [mode, setMode] = useState<"list" | "form">(() => {
     if (initialEditEntry) return "form";
@@ -134,7 +144,7 @@ export default function Step2FinalRegistration({
       <StepHeader kicker="שלב 1" title="הוספת ריקודים לתחרות" />
 
       <CompetitionPicker
-        competitions={competitions}
+        competitions={pickableCompetitions}
         selectedId={selectedCompetitionId}
         onSelect={handleCompetitionSelect}
         entries={entries}
@@ -173,7 +183,7 @@ export default function Step2FinalRegistration({
 
       <div className={styles.nextStepRow}>
         <button type="button" className={styles.nextStepButton} onClick={handleNextClick}>
-          שלב הבא: סיכום ותשלום
+          שלב הבא: סיכום הזמנה
           <ArrowForwardIcon size={15} />
         </button>
       </div>

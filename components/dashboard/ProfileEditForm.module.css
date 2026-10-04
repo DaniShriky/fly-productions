@@ -141,12 +141,13 @@
   margin-bottom: 16px;
 }
 
-.approvalNote {
+.approvalWarning {
   font-size: 13px;
-  color: #f5c542;
+  font-weight: 700;
+  color: #f28b82;
 }
 
-.approvalNote strong {
+.approvalWarning strong {
   color: #fff;
 }
 

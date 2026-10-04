@@ -56,12 +56,21 @@ const NO_DAY_SELECTION_SLUGS = new Set(["eilat-dance-international", "super-star
 
 // A numbered badge in front of each step's title — matches the accordion
 // below it (only one step open at a time; see `openStep`), 1→3.
+// A <span>, not a <p>: this renders inside StepCardHead's <button>, and
+// <button>'s content model only allows phrasing (inline) content — a <p> is
+// flow content, so browsers were silently "fixing" the invalid nesting by
+// closing the button early, splitting it into two separate elements (visible
+// as the chevron rendering in its own little boxed-off area, per Dani's
+// screenshot, 2026-10-03). That split is also why clicking the title/text
+// area didn't open the step: most of the row had been parsed as sitting
+// outside the real <button>, only the chevron (ending up back inside) still
+// worked.
 function SectionTitle({ n, children }: { n: number; children: string }) {
   return (
-    <p className={styles.groupTitle}>
+    <span className={styles.groupTitle}>
       <span className={styles.sectionNumber}>{n}</span>
       {children}
-    </p>
+    </span>
   );
 }
 
@@ -142,7 +151,18 @@ export default function DanceEntryForm({
   const initialStep = !manager.managerName || !manager.studioName || !manager.city ? 1 : 2;
   const [openStep, setOpenStep] = useState<0 | 1 | 2 | 3>(initialStep);
   const [furthestStep, setFurthestStep] = useState<1 | 2 | 3>(initialStep);
-  const [stepError, setStepError] = useState<string | null>(null);
+  // Per-field red "שדה חובה" markers (per Dani, 2026-10-03: she wants to see
+  // exactly which fields are missing, not just one generic message) — keyed
+  // by field name, cleared individually as each one gets filled in. Not a
+  // replacement for the native `required` attributes still on every input:
+  // those remain as the real validation; this is purely the extra visible
+  // cue for the custom-styled fields (selects/day-picker) the browser's own
+  // validation UI doesn't reach, plus consistent red text for all of them.
+  const [fieldErrors, setFieldErrors] = useState<Record<string, boolean>>({});
+
+  function clearFieldError(field: string) {
+    setFieldErrors((prev) => (prev[field] ? { ...prev, [field]: false } : prev));
+  }
   // Split into a single required "preferred" day and a single optional
   // "alternate" day (per Dani, 2026-10-03: a backup in case the preferred
   // one is already full) rather than the old free multi-select — still
@@ -195,7 +215,7 @@ export default function DanceEntryForm({
     // forcing a click back through steps that are already correct.
     setOpenStep(3);
     setFurthestStep(3);
-    setStepError(null);
+    setFieldErrors({});
     setDayError(false);
     setWantsVideo(editingEntry.wantsVideo);
     setWantsStills(editingEntry.wantsStills);
@@ -312,11 +332,14 @@ export default function DanceEntryForm({
   }
 
   function confirmStep1() {
-    if (!managerName || !studioName || !city) {
-      setStepError("נא למלא את כל השדות המסומנים בכוכבית");
-      return;
-    }
-    setStepError(null);
+    const errors = {
+      managerName: !managerName,
+      studioName: !studioName,
+      city: !city,
+    };
+    setFieldErrors((prev) => ({ ...prev, ...errors }));
+    if (Object.values(errors).some(Boolean)) return;
+
     setFurthestStep((prev) => Math.max(prev, 2) as 1 | 2 | 3);
     setOpenStep(2);
   }
@@ -324,23 +347,20 @@ export default function DanceEntryForm({
   function confirmStep2() {
     const dayMissing = showDayQuestion && !preferredDay;
     setDayError(dayMissing);
-    if (dayMissing) {
-      setStepError(null);
-      return;
-    }
-    if (
-      !danceName ||
-      !choreographerName ||
-      count < 1 ||
-      !danceLevel ||
-      !stepDivision ||
-      !resolvedDanceStyle ||
-      (isSolo && !dancerName)
-    ) {
-      setStepError("נא למלא את כל השדות המסומנים בכוכבית");
-      return;
-    }
-    setStepError(null);
+
+    const errors = {
+      danceName: !danceName,
+      participantCount: count < 1,
+      dancerName: isSolo && !dancerName,
+      choreographerName: !choreographerName,
+      danceLevel: !danceLevel,
+      stepDivision: !stepDivision,
+      danceStyle: !danceStyle,
+      customDanceStyle: danceStyle === OTHER_STYLE && !customDanceStyle,
+    };
+    setFieldErrors((prev) => ({ ...prev, ...errors }));
+    if (dayMissing || Object.values(errors).some(Boolean)) return;
+
     setFurthestStep((prev) => Math.max(prev, 3) as 1 | 2 | 3);
     setOpenStep(3);
   }
@@ -392,7 +412,7 @@ export default function DanceEntryForm({
     const resetStep = !manager.managerName || !manager.studioName || !manager.city ? 1 : 2;
     setOpenStep(resetStep);
     setFurthestStep(resetStep);
-    setStepError(null);
+    setFieldErrors({});
     setDayError(false);
     setPreferredDay("");
     setAlternateDay("");
@@ -517,24 +537,50 @@ export default function DanceEntryForm({
                 <span>
                   שם מנהלת סטודיו <span className={styles.required}>*</span>
                 </span>
-                <input required autoComplete="off" value={managerName} onChange={(e) => setManagerName(e.target.value)} />
+                <input
+                  required
+                  autoComplete="off"
+                  value={managerName}
+                  onChange={(e) => {
+                    setManagerName(e.target.value);
+                    clearFieldError("managerName");
+                  }}
+                />
+                {fieldErrors.managerName && <p className={styles.fieldErrorText}>שדה חובה</p>}
               </label>
 
               <label className={styles.field}>
                 <span>
                   שם סטודיו <span className={styles.required}>*</span>
                 </span>
-                <input required autoComplete="off" value={studioName} onChange={(e) => setStudioName(e.target.value)} />
+                <input
+                  required
+                  autoComplete="off"
+                  value={studioName}
+                  onChange={(e) => {
+                    setStudioName(e.target.value);
+                    clearFieldError("studioName");
+                  }}
+                />
+                {fieldErrors.studioName && <p className={styles.fieldErrorText}>שדה חובה</p>}
               </label>
 
               <label className={styles.field}>
                 <span>
                   יישוב <span className={styles.required}>*</span>
                 </span>
-                <input required autoComplete="off" value={city} onChange={(e) => setCity(e.target.value)} />
+                <input
+                  required
+                  autoComplete="off"
+                  value={city}
+                  onChange={(e) => {
+                    setCity(e.target.value);
+                    clearFieldError("city");
+                  }}
+                />
+                {fieldErrors.city && <p className={styles.fieldErrorText}>שדה חובה</p>}
               </label>
             </div>
-            {stepError && step1Open && <p className={styles.fieldErrorText}>{stepError}</p>}
             <div className={styles.stepActions}>
               <button type="button" className={styles.stepConfirmButton} onClick={confirmStep1}>
                 שלב הבא: פרטי הריקוד
@@ -626,8 +672,17 @@ export default function DanceEntryForm({
                 </span>
                 <div className={styles.fieldIconWrap}>
                   <DancerIcon size={22} />
-                  <input required autoComplete="off" value={danceName} onChange={(e) => setDanceName(e.target.value)} />
+                  <input
+                    required
+                    autoComplete="off"
+                    value={danceName}
+                    onChange={(e) => {
+                      setDanceName(e.target.value);
+                      clearFieldError("danceName");
+                    }}
+                  />
                 </div>
+                {fieldErrors.danceName && <p className={styles.fieldErrorText}>שדה חובה</p>}
               </label>
 
               <label className={styles.field}>
@@ -654,7 +709,10 @@ export default function DanceEntryForm({
                     required
                     className={styles.stepperInput}
                     value={participantCount}
-                    onChange={(e) => setParticipantCount(e.target.value)}
+                    onChange={(e) => {
+                      setParticipantCount(e.target.value);
+                      clearFieldError("participantCount");
+                    }}
                   />
                   <button
                     type="button"
@@ -665,6 +723,7 @@ export default function DanceEntryForm({
                     <PlusIcon size={16} />
                   </button>
                 </div>
+                {fieldErrors.participantCount && <p className={styles.fieldErrorText}>שדה חובה</p>}
                 {/* The category (סולו/דואט/טריו/קוורטט/קבוצה) is no longer a
                     separate field — per Dani, 2026-10-03, it's derived
                     automatically from this count alone (see
@@ -676,7 +735,7 @@ export default function DanceEntryForm({
               {isSolo && (
                 <label className={styles.field}>
                   <span>
-                    שם הרקדנית (שם מלא) <span className={styles.required}>*</span>
+                    שם הרקדנ/ית (שם מלא) <span className={styles.required}>*</span>
                   </span>
                   <div className={styles.fieldIconWrap}>
                     <PersonIcon size={15} />
@@ -685,7 +744,10 @@ export default function DanceEntryForm({
                       autoComplete="off"
                       list="dancer-name-suggestions"
                       value={dancerName}
-                      onChange={(e) => setDancerName(e.target.value)}
+                      onChange={(e) => {
+                        setDancerName(e.target.value);
+                        clearFieldError("dancerName");
+                      }}
                     />
                   </div>
                   <datalist id="dancer-name-suggestions">
@@ -693,6 +755,7 @@ export default function DanceEntryForm({
                       <option key={name} value={name} />
                     ))}
                   </datalist>
+                  {fieldErrors.dancerName && <p className={styles.fieldErrorText}>שדה חובה</p>}
                 </label>
               )}
 
@@ -707,7 +770,10 @@ export default function DanceEntryForm({
                     autoComplete="off"
                     list="choreographer-suggestions"
                     value={choreographerName}
-                    onChange={(e) => setChoreographerName(e.target.value)}
+                    onChange={(e) => {
+                      setChoreographerName(e.target.value);
+                      clearFieldError("choreographerName");
+                    }}
                   />
                 </div>
                 <datalist id="choreographer-suggestions">
@@ -715,6 +781,7 @@ export default function DanceEntryForm({
                     <option key={name} value={name} />
                   ))}
                 </datalist>
+                {fieldErrors.choreographerName && <p className={styles.fieldErrorText}>שדה חובה</p>}
               </label>
             </div>
 
@@ -726,7 +793,10 @@ export default function DanceEntryForm({
                 <select
                   required
                   value={danceLevel}
-                  onChange={(e) => setDanceLevel(e.target.value as "A" | "B" | "C")}
+                  onChange={(e) => {
+                    setDanceLevel(e.target.value as "A" | "B" | "C");
+                    clearFieldError("danceLevel");
+                  }}
                 >
                   <option value="" disabled hidden>
                     בחרו רמת רקדנים
@@ -737,13 +807,21 @@ export default function DanceEntryForm({
                     </option>
                   ))}
                 </select>
+                {fieldErrors.danceLevel && <p className={styles.fieldErrorText}>שדה חובה</p>}
               </label>
 
               <label className={styles.field}>
                 <span>
                   חלוקת גיל (STEP) <span className={styles.required}>*</span>
                 </span>
-                <select required value={stepDivision} onChange={(e) => setStepDivision(e.target.value)}>
+                <select
+                  required
+                  value={stepDivision}
+                  onChange={(e) => {
+                    setStepDivision(e.target.value);
+                    clearFieldError("stepDivision");
+                  }}
+                >
                   <option value="" disabled hidden>
                     בחרו חלוקת גיל
                   </option>
@@ -753,13 +831,21 @@ export default function DanceEntryForm({
                     </option>
                   ))}
                 </select>
+                {fieldErrors.stepDivision && <p className={styles.fieldErrorText}>שדה חובה</p>}
               </label>
 
               <label className={styles.field}>
                 <span>
                   סגנון ריקוד <span className={styles.required}>*</span>
                 </span>
-                <select required value={danceStyle} onChange={(e) => setDanceStyle(e.target.value)}>
+                <select
+                  required
+                  value={danceStyle}
+                  onChange={(e) => {
+                    setDanceStyle(e.target.value);
+                    clearFieldError("danceStyle");
+                  }}
+                >
                   <option value="" disabled hidden>
                     בחרו סגנון ריקוד
                   </option>
@@ -770,6 +856,7 @@ export default function DanceEntryForm({
                   ))}
                   <option value={OTHER_STYLE}>{OTHER_STYLE}</option>
                 </select>
+                {fieldErrors.danceStyle && <p className={styles.fieldErrorText}>שדה חובה</p>}
               </label>
 
               {danceStyle === OTHER_STYLE && (
@@ -782,18 +869,21 @@ export default function DanceEntryForm({
                     autoComplete="off"
                     list="custom-style-suggestions"
                     value={customDanceStyle}
-                    onChange={(e) => handleCustomStyleChange(e.target.value)}
+                    onChange={(e) => {
+                      handleCustomStyleChange(e.target.value);
+                      clearFieldError("customDanceStyle");
+                    }}
                   />
                   <datalist id="custom-style-suggestions">
                     {customStyleSuggestions.map((style) => (
                       <option key={style} value={style} />
                     ))}
                   </datalist>
+                  {fieldErrors.customDanceStyle && <p className={styles.fieldErrorText}>שדה חובה</p>}
                 </label>
               )}
             </div>
 
-            {stepError && step2Open && <p className={styles.fieldErrorText}>{stepError}</p>}
             <div className={styles.stepActions}>
               <button type="button" className={styles.stepConfirmButton} onClick={confirmStep2}>
                 שלב הבא: מוזיקה והזמנות

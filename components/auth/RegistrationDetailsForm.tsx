@@ -133,7 +133,7 @@ export default function RegistrationDetailsForm({ onSubmit, initialValues }: Pro
             checked={preferredCompetitionType === "regular"}
             onChange={() => setPreferredCompetitionType("regular")}
           />
-          רגיל
+          חילוני
         </label>
         <label className={styles.radio}>
           <input
@@ -142,7 +142,7 @@ export default function RegistrationDetailsForm({ onSubmit, initialValues }: Pro
             checked={preferredCompetitionType === "religious"}
             onChange={() => setPreferredCompetitionType("religious")}
           />
-          דתי
+          מגזר דתי
         </label>
       </fieldset>
 

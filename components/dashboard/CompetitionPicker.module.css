@@ -21,6 +21,11 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  /* Explicit rather than relying on Grid's own default — every card in a
+     row stretches to match the row's tallest one, so a short name/no logo/
+     no "X ריקודים" badge doesn't leave some cards visibly shorter than
+     their neighbors (per Dani, 2026-10-03). */
+  align-items: stretch;
   gap: 12px;
   margin-bottom: 20px;
 }
@@ -63,14 +68,32 @@
   box-shadow: 0 0 0 1px rgba(245, 197, 66, 0.3), 0 16px 32px -16px rgba(245, 197, 66, 0.25);
 }
 
+/* Fixed height regardless of whether this card's competition has a logo —
+   see CompetitionPicker.tsx. */
+.logoSlot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  height: 38px;
+}
+
 .logo {
   flex: 0 0 auto;
   object-fit: contain;
 }
 
+/* min-height reserves two lines' worth regardless of whether this
+   particular name wraps (e.g. "MEGA STAR" vs "EILAT DANCE INTERNATIONAL") —
+   otherwise the date/badge below it would land at a different height per
+   card depending on how many lines the name happened to take. */
 .name {
+  display: flex;
+  align-items: center;
   font-size: 14px;
   font-weight: 600;
+  line-height: 1.25;
+  min-height: 2.5em;
   color: #d8d6cf;
   text-align: center;
 }

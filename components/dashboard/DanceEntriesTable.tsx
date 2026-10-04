@@ -13,7 +13,7 @@ import {
 import { getDanceMusicUrl } from "@/lib/queries/registrations";
 import { supabaseBrowserClient } from "@/lib/supabaseBrowserClient";
 import { PHONE, PHONE_TEL_URL, WHATSAPP_URL } from "@/lib/contact";
-import { EditIcon, DeleteIcon, PayIcon } from "./icons";
+import { EditIcon, DeleteIcon } from "./icons";
 import styles from "./DanceEntriesTable.module.css";
 
 type Filter = "all" | "unpaid" | "paid";
@@ -65,7 +65,6 @@ function StopIcon() {
 
 export default function DanceEntriesTable({ entries, competitions, onEdit, onDelete }: Props) {
   const [filter, setFilter] = useState<Filter>("all");
-  const [showGlobalPay, setShowGlobalPay] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
@@ -145,12 +144,10 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
 
   const grandTotal = filtered.reduce((sum, entry) => sum + (priceOf(entry) ?? 0), 0);
 
-  // Independent of the all/unpaid/paid tab above — this is "what's actually
-  // left to pay right now" regardless of which tab happens to be open, so the
-  // bottom bar doesn't change meaning or disappear when a manager switches
-  // tabs to double check something already paid.
+  // Independent of the all/unpaid/paid tab above — the missing-song warning
+  // below is always about what's actually left to pay, regardless of which
+  // tab happens to be open.
   const unpaidEntries = entries.filter((e) => e.paymentStatus === "unpaid");
-  const unpaidTotal = unpaidEntries.reduce((sum, entry) => sum + (priceOf(entry) ?? 0), 0);
 
   // Every other field is required at submission time (see DanceEntryForm) —
   // the song file is the one thing a manager can genuinely leave for later,
@@ -234,6 +231,10 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
                   const price = priceOf(entry);
                   const perParticipantPrice = perParticipantPriceOf(entry);
                   const isUnpaid = entry.paymentStatus === "unpaid";
+                  // A submitted dance is locked the same way a paid one
+                  // already is — see supabase/schema.sql's updated RLS
+                  // (submitted_at is null required to update/delete).
+                  const isEditable = isUnpaid && !entry.submittedAt;
 
                   return (
                     <Fragment key={entry.id}>
@@ -350,7 +351,7 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
                           </span>
                         </td>
                         <td className={styles.actions} data-label="פעולות">
-                          {isUnpaid && (
+                          {isEditable ? (
                             <>
                               <button
                                 type="button"
@@ -372,6 +373,12 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
                                 <DeleteIcon />
                               </button>
                             </>
+                          ) : (
+                            // Explains the missing buttons specifically for the new
+                            // locked-by-submission case — the existing paid-and-locked
+                            // case already reads clearly enough from the "שולם" badge
+                            // alone, so this only shows when submission is the reason.
+                            entry.submittedAt && <span className={styles.tag}>הוגש</span>
                           )}
                         </td>
                       </tr>
@@ -384,34 +391,12 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
         </tbody>
         <tfoot>
           <tr>
-            <td colSpan={4} className={styles.grandTotalLabel}>
-              סה"כ ({filtered.length} ריקודים)
-            </td>
-            <td className={styles.grandTotalValue}>{grandTotal}₪</td>
-            <td colSpan={2}></td>
-          </tr>
-        </tfoot>
-      </table>
-      </div>
-
-      {unpaidEntries.length > 0 && (
-        <div className={styles.stickyBar}>
-          <div className={styles.stickyBarBar}>
-            <p className={styles.stickyBarInfo}>
-              סה&quot;כ לתשלום: <span className={styles.grandTotalValue}>{unpaidTotal}₪</span> ({unpaidEntries.length} ריקודים לא
-              משולמים)
-            </p>
-            <button type="button" className={styles.stickyBarButton} onClick={() => setShowGlobalPay((v) => !v)}>
-              <PayIcon size={15} />
-              {showGlobalPay ? "סגירת פרטי תשלום" : "פרטי תשלום ליצירת קשר"}
-            </button>
-          </div>
-
-          {showGlobalPay && (
-            <div className={styles.globalPayPanel}>
-              {/* Shown immediately on opening this panel — the moment a
-                  manager is actually about to pay is exactly when a missing
-                  song still matters, not buried further down. */}
+            {/* Replaces the old one-line "סה"כ" total — per Dani, 2026-10-03,
+                the itemized breakdown (previously only visible behind the
+                now-removed "פרטי תשלום ליצירת קשר" button/bottom banner)
+                lives directly in the table's own footer now, always
+                visible, for whichever entries the current filter tab shows. */}
+            <td colSpan={COLUMN_COUNT} className={styles.breakdownFooterCell}>
               {incompleteUnpaid.length > 0 && (
                 <div className={styles.missingWarning}>
                   <strong>
@@ -422,12 +407,12 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
                 </div>
               )}
 
-              <p className={styles.breakdownTitle}>כל הריקודים הלא משולמים</p>
-              {/* A full itemized breakdown per dance — not just one total
-                  per row — so it reads like a real receipt: what each
-                  charge actually is, not just the final number. */}
+              <p className={styles.breakdownTitle}>פירוט התשלום</p>
+              {/* A full itemized breakdown per dance — not just one total —
+                  so it reads like a real receipt: what each charge actually
+                  is, not just the final number. */}
               <div className={styles.globalBreakdown}>
-                {unpaidEntries.map((entry) => {
+                {filtered.map((entry) => {
                   const competition = competitions.find((c) => c.id === entry.competitionId);
                   const perParticipantPrice = perParticipantPriceOf(entry);
                   const groupDance = isGroup(entry.category);
@@ -482,22 +467,23 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
                   );
                 })}
                 <div className={`${styles.breakdownRow} ${styles.breakdownTotal}`}>
-                  <span>סה&quot;כ לתשלום</span>
-                  <span>{unpaidTotal}₪</span>
+                  <span>סה&quot;כ ({filtered.length} ריקודים)</span>
+                  <span>{grandTotal}₪</span>
                 </div>
               </div>
               <p className={styles.payInstructions}>
-                התשלום עדיין מתבצע ידנית - העברה בנקאית, המחאה, או מזומן. לתיאום תשלום עבור כל הריקודים יחד, צרו קשר עם
+                התשלום מתבצע ידנית - העברה בנקאית, המחאה, או מזומן. לתיאום תשלום עבור כל הריקודים יחד, צרו קשר עם
                 המשרד: <a href={PHONE_TEL_URL}>{PHONE}</a> או ב-
                 <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
                   WhatsApp
                 </a>
                 .
               </p>
-            </div>
-          )}
-        </div>
-      )}
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+      </div>
     </div>
   );
 }

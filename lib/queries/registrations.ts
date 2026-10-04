@@ -24,6 +24,7 @@ type RegistrationRow = {
   payment_status: Registration["paymentStatus"];
   payment_due_date: string | null;
   late_payment_exception: boolean;
+  submitted_at: string | null;
   created_at: string;
 };
 
@@ -51,6 +52,7 @@ function toRegistration(row: RegistrationRow): Registration {
     paymentStatus: row.payment_status,
     ...(row.payment_due_date ? { paymentDueDate: row.payment_due_date } : {}),
     latePaymentException: row.late_payment_exception,
+    ...(row.submitted_at ? { submittedAt: row.submitted_at } : {}),
     createdAt: row.created_at,
   };
 }
@@ -134,6 +136,24 @@ export async function upsertDanceEntry(
 
 export async function deleteDanceEntry(client: SupabaseClient, id: string): Promise<void> {
   const { error } = await client.from("registrations").delete().eq("id", id);
+  if (error) throw error;
+}
+
+// Calls the submit_registrations() RPC (see supabase/schema.sql) — submits
+// every one of the manager's currently-draft (submitted_at is null) dances
+// in one shot, and records this exact consent as its own row in
+// registration_submissions. The RPC itself rejects acceptedTerms=false, so
+// callers should already be blocking that in the UI rather than relying on
+// this to surface it after the fact.
+export async function submitRegistrations(
+  client: SupabaseClient,
+  acceptedTerms: boolean,
+  mediaConsent: "consented" | "declined"
+): Promise<void> {
+  const { error } = await client.rpc("submit_registrations", {
+    p_accepted_terms: acceptedTerms,
+    p_media_consent: mediaConsent,
+  });
   if (error) throw error;
 }
 

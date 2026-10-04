@@ -91,6 +91,10 @@ export default function CompetitionDanceList({ competition, allEntries, onAdd, o
               ? computeTotalPrice(competition.priceTiers, entry.category, entry.participantCount, entry.songDurationSeconds, recordingFee)
               : null;
             const isUnpaid = entry.paymentStatus === "unpaid";
+            // Locked the same way a paid dance already is — see
+            // supabase/schema.sql's updated RLS (submitted_at is null
+            // required to update/delete).
+            const isEditable = isUnpaid && !entry.submittedAt;
 
             return (
               <div key={entry.id} className={styles.row}>
@@ -113,7 +117,7 @@ export default function CompetitionDanceList({ competition, allEntries, onAdd, o
                   )}
                 </span>
 
-                {isUnpaid && (
+                {isEditable ? (
                   <div className={styles.actions}>
                     <button type="button" className={styles.iconButton} title="עריכה" aria-label="עריכה" onClick={() => onEdit(entry)}>
                       <EditIcon size={19} />
@@ -129,6 +133,8 @@ export default function CompetitionDanceList({ competition, allEntries, onAdd, o
                       <DeleteIcon size={19} />
                     </button>
                   </div>
+                ) : (
+                  entry.submittedAt && <span className={styles.subLine}>הוגש</span>
                 )}
               </div>
             );

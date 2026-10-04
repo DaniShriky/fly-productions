@@ -437,3 +437,114 @@ create index if not exists studio_managers_email_idx on studio_managers (lower(e
 alter table studio_managers add column reservation_notice_dismissed boolean not null default false;
 grant update (reservation_notice_dismissed) on studio_managers to authenticated;
 grant update (manager_name, studio_name, city) on registrations to authenticated;
+
+-- Round 6 additions (2026-10-03, Dani): a real final-submission step. Dances
+-- were editable indefinitely and visible to the admin dashboard the moment
+-- they were created, even mid-draft — now a dance stays invisible to admin
+-- (and editable by its manager) until she explicitly submits it via the new
+-- submit_registrations() RPC, same as payment_status already gates editing.
+-- A manager can keep adding dances after submitting; those start as drafts
+-- again and need their own later submission.
+alter table registrations add column submitted_at timestamptz;
+
+alter policy "Manager updates own unpaid registration" on registrations
+  using (studio_manager_id = auth.uid() and payment_status = 'unpaid' and submitted_at is null)
+  with check (studio_manager_id = auth.uid());
+
+alter policy "Manager deletes own unpaid registration" on registrations
+  using (studio_manager_id = auth.uid() and payment_status = 'unpaid' and submitted_at is null);
+
+alter policy "Admin reads all registrations" on registrations
+  using (is_admin() and submitted_at is not null);
+
+-- The durable consent record — one row per "הגשה" click (not per dance),
+-- since the two consent questions are asked once per submission, covering
+-- whichever dances are currently draft at that moment.
+create table registration_submissions (
+  id uuid primary key default gen_random_uuid(),
+  studio_manager_id uuid not null references studio_managers(id),
+  accepted_terms boolean not null,
+  media_consent text not null check (media_consent in ('consented', 'declined')),
+  created_at timestamptz not null default now()
+);
+
+alter table registration_submissions enable row level security;
+
+create policy "Manager inserts own submission" on registration_submissions
+  for insert with check (studio_manager_id = auth.uid());
+
+create policy "Manager reads own submissions" on registration_submissions
+  for select using (studio_manager_id = auth.uid());
+
+create policy "Admin reads all submissions" on registration_submissions
+  for select using (is_admin());
+
+grant select, insert on registration_submissions to authenticated;
+
+-- security definer — `submitted_at` deliberately has no column-level UPDATE
+-- grant to `authenticated` (unlike dance_name/category/etc above), so it can
+-- only ever be set through this controlled function, never by a raw client
+-- update call that skips the terms check and the consent record. Since RLS
+-- and column grants are bypassed for the function's owner, every statement
+-- inside is manually scoped to auth.uid() instead (same reasoning as
+-- resolve_preferred_competition_type_request above). Submits every one of
+-- her currently-draft dances in one shot, matching the "one global הגשה"
+-- decision rather than a per-competition submission.
+create function submit_registrations(p_accepted_terms boolean, p_media_consent text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not p_accepted_terms then
+    raise exception 'Terms must be accepted to submit';
+  end if;
+
+  insert into registration_submissions (studio_manager_id, accepted_terms, media_consent)
+  values (auth.uid(), p_accepted_terms, p_media_consent);
+
+  update registrations
+  set submitted_at = now()
+  where studio_manager_id = auth.uid()
+    and submitted_at is null
+    and payment_status = 'unpaid';
+end;
+$$;
+
+grant execute on function submit_registrations(boolean, text) to authenticated;
+
+-- Round 7 (2026-10-03, Dani): renamed the two preferred_competition_type
+-- values for clarity — "רגיל" -> "חילוני" ("secular", clearer contrast with
+-- "religious" than "regular" was) and "דתי" -> "מגזר דתי" ("religious
+-- sector"), matching the term already used elsewhere for this (see
+-- lib/splitReligiousSuffix.ts's "MEGA STAR (מגזר דתי)" example). The column
+-- stores the Hebrew label itself as the value (no separate code/label split
+-- for this field), so existing rows need updating too, not just the app code.
+update studio_managers set preferred_competition_type = 'חילוני' where preferred_competition_type = 'רגיל';
+update studio_managers set preferred_competition_type = 'מגזר דתי' where preferred_competition_type = 'דתי';
+update studio_managers set pending_preferred_competition_type = 'חילוני' where pending_preferred_competition_type = 'רגיל';
+update studio_managers set pending_preferred_competition_type = 'מגזר דתי' where pending_preferred_competition_type = 'דתי';
+
+-- Round 8 (2026-10-03, Dani): live-updating admin dashboard — /admin's three
+-- tables (pending approvals, competition-type requests, registrations
+-- payments) used to only ever reflect whatever was loaded on that page
+-- load. Adding these two tables to Supabase's built-in `supabase_realtime`
+-- publication lets the client subscribe to postgres_changes on them (see
+-- the admin components' own useEffect subscriptions) — Realtime applies the
+-- same RLS policies as any other read, so this doesn't expose anything an
+-- admin couldn't already query directly.
+alter publication supabase_realtime add table registrations;
+alter publication supabase_realtime add table studio_managers;
+
+-- Round 9 (2026-10-03, Dani): popup notifications to a studio manager when
+-- an admin action affects her directly (payment approved, competition-type
+-- request approved/rejected) — see LiveNotifications.tsx. Telling "her
+-- payment just got approved" apart from "an unrelated field on an
+-- already-paid dance changed" (and likewise for an unrelated profile edit
+-- vs. an actual competition-type decision) needs the *previous* row values
+-- to compare against, not just the new ones. Postgres's default replica
+-- identity only includes primary-key columns in a realtime UPDATE's `old`
+-- payload — FULL includes every column, which is what that comparison needs.
+alter table registrations replica identity full;
+alter table studio_managers replica identity full;

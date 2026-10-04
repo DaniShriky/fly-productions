@@ -1,0 +1,79 @@
+/* Fixed to the bottom-left corner regardless of RTL (a toast stack, not a
+   reading-flow element) — stays clear of the sticky header at the top and
+   of the RTL-primary content on the right. */
+.stack {
+  position: fixed;
+  z-index: 200;
+  bottom: 20px;
+  left: 20px;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 10px;
+  max-width: 340px;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(165deg, #16161a, #101014 70%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-shadow: 0 16px 36px -16px rgba(0, 0, 0, 0.7);
+  font-size: 14px;
+  color: #f3f1ec;
+  animation: slideIn 0.25s ease;
+}
+
+.toastSuccess {
+  border-color: rgba(63, 174, 100, 0.4);
+  box-shadow: 0 16px 36px -16px rgba(0, 0, 0, 0.7), 0 0 20px -8px rgba(63, 174, 100, 0.3);
+}
+
+.icon {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(63, 174, 100, 0.18);
+  color: #3fae64;
+}
+
+.message {
+  flex: 1;
+  line-height: 1.4;
+}
+
+.close {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: none;
+  color: #9c9a93;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.close:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

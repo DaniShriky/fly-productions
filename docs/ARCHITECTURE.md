@@ -80,7 +80,7 @@
 | email | text | |
 | status | text | 'pending' / 'approved' / 'rejected' |
 | referral_source | text | "מאיפה שמעת עלינו" |
-| preferred_competition_type | text | דתי / רגיל |
+| preferred_competition_type | text | מגזר דתי / חילוני |
 
 ### `registrations` (הרשמות ראשוניות + מדויקות)
 | שדה | טיפוס | הערות |

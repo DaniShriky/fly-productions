@@ -33,5 +33,10 @@ export interface Registration {
   paymentStatus: PaymentStatus;
   paymentDueDate?: string;
   latePaymentException: boolean;
+  // Unset = still a draft: editable by the manager, invisible to admin.
+  // Set once via the final "הגשה" step (see submitRegistrations in
+  // lib/queries/registrations.ts) — locks the dance from further edits and
+  // is what makes it visible to the admin dashboard at all.
+  submittedAt?: string;
   createdAt: string;
 }

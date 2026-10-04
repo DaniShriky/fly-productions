@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Head from "next/head";
 import type { GetServerSideProps } from "next";
 import Nav from "@/components/shared/Nav";
@@ -10,10 +10,19 @@ import Step2FinalRegistration from "@/components/dashboard/Step2FinalRegistratio
 import StepHeader from "@/components/dashboard/StepHeader";
 import PaymentStatusCard from "@/components/dashboard/PaymentStatusCard";
 import DanceEntriesTable from "@/components/dashboard/DanceEntriesTable";
+import SubmissionStep from "@/components/dashboard/SubmissionStep";
+import LiveNotifications from "@/components/dashboard/LiveNotifications";
+import { ArrowForwardIcon } from "@/components/dashboard/icons";
 import { requireApprovedManager } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabaseServerClient";
 import { CompetitionWithPricing, getCompetitionsWithPricing } from "@/lib/queries/competitionsWithPricing";
-import { DanceEntryInput, deleteDanceEntry, getOwnRegistrations, upsertDanceEntry } from "@/lib/queries/registrations";
+import {
+  DanceEntryInput,
+  deleteDanceEntry,
+  getOwnRegistrations,
+  submitRegistrations,
+  upsertDanceEntry,
+} from "@/lib/queries/registrations";
 import { getOwnStudioManager } from "@/lib/queries/studioManagers";
 import { supabaseBrowserClient } from "@/lib/supabaseBrowserClient";
 import { StudioManager } from "@/types/studioManager";
@@ -26,7 +35,8 @@ type Props = {
   manager: StudioManager;
 };
 
-export default function Dashboard({ competitions, registrations, manager }: Props) {
+export default function Dashboard({ competitions, registrations, manager: initialManager }: Props) {
+  const [manager, setManager] = useState(initialManager);
   const [entries, setEntries] = useState(registrations);
   const [activeStep, setActiveStep] = useState<RegistrationStep>(1);
   const [pendingEditEntry, setPendingEditEntry] = useState<Registration | null>(null);
@@ -79,6 +89,54 @@ export default function Dashboard({ competitions, registrations, manager }: Prop
     setEntries((current) => current.filter((e) => e.id !== id));
   }
 
+  // Mirrors exactly what submit_registrations() does server-side (see
+  // supabase/schema.sql) — every currently-draft, unpaid entry becomes
+  // submitted — so the UI reflects the lock/visibility change immediately
+  // without a round-trip refetch.
+  async function handleSubmitRegistrations(acceptedTerms: boolean, mediaConsent: "consented" | "declined") {
+    await submitRegistrations(supabaseBrowserClient, acceptedTerms, mediaConsent);
+    const now = new Date().toISOString();
+    setEntries((current) =>
+      current.map((e) => (!e.submittedAt && e.paymentStatus === "unpaid" ? { ...e, submittedAt: now } : e))
+    );
+  }
+
+  // Stable across renders (useCallback, no deps) so LiveNotifications' own
+  // realtime subscription doesn't tear down and reconnect every time this
+  // page re-renders — see its effect's comment. Keeps her own table in sync
+  // the moment an admin changes payment status/exception, not just the
+  // popup notification.
+  const handleRegistrationUpdated = useCallback(
+    (update: { id: string; paymentStatus: "unpaid" | "paid"; latePaymentException: boolean }) => {
+      setEntries((current) =>
+        current.map((e) =>
+          e.id === update.id
+            ? { ...e, paymentStatus: update.paymentStatus, latePaymentException: update.latePaymentException }
+            : e
+        )
+      );
+    },
+    []
+  );
+
+  // Stable for the same reason as handleRegistrationUpdated above — per
+  // Dani, 2026-10-03: the toast for a competition-type decision was showing
+  // while the actual data behind it (CompetitionPicker's filter in
+  // Step2FinalRegistration, and /profile's own radio/approval-note display)
+  // still reflected the pre-approval state until a manual refresh.
+  const handleManagerUpdated = useCallback(
+    (update: { preferredCompetitionType: string | null; pendingPreferredCompetitionType: string | null }) => {
+      setManager((current) => ({
+        ...current,
+        ...(update.preferredCompetitionType ? { preferredCompetitionType: update.preferredCompetitionType } : {}),
+        ...(update.pendingPreferredCompetitionType
+          ? { pendingPreferredCompetitionType: update.pendingPreferredCompetitionType }
+          : { pendingPreferredCompetitionType: undefined }),
+      }));
+    },
+    []
+  );
+
   return (
     <>
       <Head>
@@ -86,6 +144,12 @@ export default function Dashboard({ competitions, registrations, manager }: Prop
       </Head>
 
       <Nav competitions={competitions} />
+
+      <LiveNotifications
+        managerId={manager.id}
+        onRegistrationUpdated={handleRegistrationUpdated}
+        onManagerUpdated={handleManagerUpdated}
+      />
 
       <ReservationNotice manager={manager} />
 
@@ -125,7 +189,7 @@ export default function Dashboard({ competitions, registrations, manager }: Prop
               <div className={styles.stepHeaderRow}>
                 <StepHeader
                   kicker="שלב 2"
-                  title="סיכום ותשלום"
+                  title="סיכום הזמנה"
                   hint='לפני התשלום, בדקו שכל פרטי הריקודים שהוספתם נכונים.'
                   onBack={() => setActiveStep(1)}
                 />
@@ -140,7 +204,23 @@ export default function Dashboard({ competitions, registrations, manager }: Prop
             <div className={styles.wideTable}>
               <DanceEntriesTable entries={entries} competitions={competitions} onEdit={handleEditFromSummary} onDelete={handleDelete} />
             </div>
+
+            <div className={styles.narrow}>
+              <div className={styles.nextStepRow}>
+                <button type="button" className={styles.nextStepButton} onClick={() => setActiveStep(3)}>
+                  שלב הבא: אישורים והגשה
+                  <ArrowForwardIcon size={15} />
+                </button>
+              </div>
+            </div>
           </>
+        )}
+
+        {activeStep === 3 && (
+          <div className={styles.narrow}>
+            <StepHeader kicker="שלב 3" title="אישורים והגשה" onBack={() => setActiveStep(2)} />
+            <SubmissionStep entries={entries} onSubmit={handleSubmitRegistrations} />
+          </div>
         )}
       </main>
 

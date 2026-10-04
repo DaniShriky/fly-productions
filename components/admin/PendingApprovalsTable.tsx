@@ -1,12 +1,33 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { StudioManager } from "@/types/studioManager";
 import { supabaseBrowserClient } from "@/lib/supabaseBrowserClient";
-import { updateStudioManagerStatus } from "@/lib/queries/studioManagers";
+import { getPendingStudioManagers, updateStudioManagerStatus } from "@/lib/queries/studioManagers";
 import styles from "./PendingApprovalsTable.module.css";
 
 export default function PendingApprovalsTable({ initialManagers }: { initialManagers: StudioManager[] }) {
   const [managers, setManagers] = useState(initialManagers);
   const [pendingId, setPendingId] = useState<string | null>(null);
+
+  // A new registration should appear here the moment it's submitted, not
+  // only on the next page load — per Dani, 2026-10-03. Refetches on any
+  // studio_managers change rather than merging the realtime payload
+  // directly, so this stays correct even though the query itself filters
+  // to status='pending' (a plain row update wouldn't tell us on its own
+  // whether a manager entered or left that set).
+  useEffect(() => {
+    const channel = supabaseBrowserClient
+      .channel("admin-pending-approvals")
+      .on("postgres_changes", { event: "*", schema: "public", table: "studio_managers" }, () => {
+        getPendingStudioManagers(supabaseBrowserClient)
+          .then(setManagers)
+          .catch((err) => console.error("Live pending-approvals refresh failed:", err));
+      })
+      .subscribe();
+
+    return () => {
+      supabaseBrowserClient.removeChannel(channel);
+    };
+  }, []);
 
   async function handleDecision(id: string, status: "approved" | "rejected") {
     setPendingId(id);

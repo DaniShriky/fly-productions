@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { StudioManager } from "@/types/studioManager";
 import { supabaseBrowserClient } from "@/lib/supabaseBrowserClient";
-import { resolveCompetitionTypeRequest } from "@/lib/queries/studioManagers";
+import { getPendingCompetitionTypeRequests, resolveCompetitionTypeRequest } from "@/lib/queries/studioManagers";
 import styles from "./PendingApprovalsTable.module.css";
 
 // Managers can't change preferred_competition_type themselves anymore (see
@@ -11,6 +11,25 @@ import styles from "./PendingApprovalsTable.module.css";
 export default function CompetitionTypeRequestsTable({ initialManagers }: { initialManagers: StudioManager[] }) {
   const [managers, setManagers] = useState(initialManagers);
   const [pendingId, setPendingId] = useState<string | null>(null);
+
+  // A new request should appear here live — per Dani, 2026-10-03. Same
+  // refetch-on-any-change approach as PendingApprovalsTable, for the same
+  // reason (the query's own filter — a non-null pending_preferred_
+  // competition_type — can't be evaluated from the bare realtime payload).
+  useEffect(() => {
+    const channel = supabaseBrowserClient
+      .channel("admin-competition-type-requests")
+      .on("postgres_changes", { event: "*", schema: "public", table: "studio_managers" }, () => {
+        getPendingCompetitionTypeRequests(supabaseBrowserClient)
+          .then(setManagers)
+          .catch((err) => console.error("Live competition-type-requests refresh failed:", err));
+      })
+      .subscribe();
+
+    return () => {
+      supabaseBrowserClient.removeChannel(channel);
+    };
+  }, []);
 
   async function handleDecision(id: string, approve: boolean) {
     setPendingId(id);
@@ -43,7 +62,7 @@ export default function CompetitionTypeRequestsTable({ initialManagers }: { init
             <tr key={m.id}>
               <td>{m.studioName}</td>
               <td dir="ltr">{m.phone}</td>
-              <td>{m.preferredCompetitionType ?? "רגיל"}</td>
+              <td>{m.preferredCompetitionType ?? "חילוני"}</td>
               <td>{m.pendingPreferredCompetitionType}</td>
               <td className={styles.actions}>
                 <button

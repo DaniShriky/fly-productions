@@ -1,4 +1,4 @@
-import DOMPurify from "isomorphic-dompurify";
+import sanitizeHtml from "sanitize-html";
 import { supabase } from "@/lib/supabase";
 import { Competition } from "@/types/competition";
 import { COMPETITION_ACCENT_COLORS } from "@/lib/competitionAccentColors";
@@ -16,6 +16,20 @@ export type CompetitionRow = {
   video_file: string | null;
   description_paragraphs: string[];
   gallery: string[];
+};
+
+// Only what description_paragraphs actually uses (<span class="hl">…</span>,
+// plus basic inline emphasis) is allowlisted — everything else is stripped.
+// Switched from isomorphic-dompurify to sanitize-html because the former
+// pulls in jsdom, which drags in an ESM-only transitive dependency
+// (@exodus/bytes) that crashes with ERR_REQUIRE_ESM once bundled into a
+// Vercel serverless function — broke every page whose getServerSideProps
+// touched this file (/dashboard, /profile, /admin) while leaving
+// getStaticProps pages (home, competition pages) looking fine, since those
+// only run this code at build time. sanitize-html has no DOM dependency.
+const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
+  allowedTags: ["span", "strong", "b", "em", "i", "br"],
+  allowedAttributes: { span: ["class"] },
 };
 
 // descriptionParagraphs can contain HTML (e.g. <span class="hl">…</span>) and
@@ -40,7 +54,7 @@ export function toCompetition(row: CompetitionRow): Competition {
     ...(row.logo ? { logo: row.logo } : {}),
     ...(row.video_file ? { videoFile: row.video_file } : {}),
     ...(accentColor ? { accentColor } : {}),
-    descriptionParagraphs: row.description_paragraphs.map((p) => DOMPurify.sanitize(p)),
+    descriptionParagraphs: row.description_paragraphs.map((p) => sanitizeHtml(p, SANITIZE_OPTIONS)),
     gallery: row.gallery,
   };
 }
