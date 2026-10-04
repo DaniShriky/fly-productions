@@ -1,4 +1,4 @@
-import sanitizeHtml from "sanitize-html";
+import { FilterXSS } from "xss";
 import { supabase } from "@/lib/supabase";
 import { Competition } from "@/types/competition";
 import { COMPETITION_ACCENT_COLORS } from "@/lib/competitionAccentColors";
@@ -20,17 +20,19 @@ export type CompetitionRow = {
 
 // Only what description_paragraphs actually uses (<span class="hl">…</span>,
 // plus basic inline emphasis) is allowlisted — everything else is stripped.
-// Switched from isomorphic-dompurify to sanitize-html because the former
-// pulls in jsdom, which drags in an ESM-only transitive dependency
-// (@exodus/bytes) that crashes with ERR_REQUIRE_ESM once bundled into a
-// Vercel serverless function — broke every page whose getServerSideProps
-// touched this file (/dashboard, /profile, /admin) while leaving
-// getStaticProps pages (home, competition pages) looking fine, since those
-// only run this code at build time. sanitize-html has no DOM dependency.
-const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
-  allowedTags: ["span", "strong", "b", "em", "i", "br"],
-  allowedAttributes: { span: ["class"] },
-};
+// Went through two sanitizers before this one: isomorphic-dompurify pulls in
+// jsdom, and sanitize-html pulls in htmlparser2@12 — both ESM-only
+// transitive dependencies that crash with ERR_REQUIRE_ESM once bundled into
+// a Vercel serverless function (broke every page whose getServerSideProps
+// touched this file: /dashboard, /profile, /admin — getStaticProps pages
+// looked fine since those only run this code at build time). xss has no
+// parser dependency at all, just plain regex-based tag scanning, so there's
+// nothing in its tree that can hit this class of bug.
+const sanitizer = new FilterXSS({
+  whiteList: { span: ["class"], strong: [], b: [], em: [], i: [], br: [] },
+  stripIgnoreTag: true,
+  stripIgnoreTagBody: ["script", "style"],
+});
 
 // descriptionParagraphs can contain HTML (e.g. <span class="hl">…</span>) and
 // is rendered via dangerouslySetInnerHTML in CompetitionDetail — sanitizing
@@ -54,7 +56,7 @@ export function toCompetition(row: CompetitionRow): Competition {
     ...(row.logo ? { logo: row.logo } : {}),
     ...(row.video_file ? { videoFile: row.video_file } : {}),
     ...(accentColor ? { accentColor } : {}),
-    descriptionParagraphs: row.description_paragraphs.map((p) => sanitizeHtml(p, SANITIZE_OPTIONS)),
+    descriptionParagraphs: row.description_paragraphs.map((p) => sanitizer.process(p)),
     gallery: row.gallery,
   };
 }
