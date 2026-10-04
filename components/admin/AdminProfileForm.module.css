@@ -1,0 +1,131 @@
+.card {
+  background: linear-gradient(165deg, #101014, #0a0a0c 70%);
+  border: 1px solid rgba(245, 197, 66, 0.2);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 420px;
+  box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.7);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.avatarWrap {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.avatarPhoto {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatarInitials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #5aa7e0, #8a4fc9 50%, #e0a84a);
+  font-family: "Hubot Sans", sans-serif;
+  font-size: 23px;
+  font-weight: 800;
+  color: #050505;
+}
+
+.avatarEditBadge {
+  position: absolute;
+  bottom: -2px;
+  left: -2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #f5c542;
+  color: #050505;
+  border: 2px solid #0a0a0c;
+}
+
+.avatarHint {
+  font-size: 13px;
+  color: #9c9a93;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  color: #d8d6cf;
+  margin-bottom: 20px;
+}
+
+.field input {
+  width: 100%;
+  box-sizing: border-box;
+  background: #101014;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 16px;
+  color: #f3f1ec;
+  transition: border-color 0.2s ease;
+}
+
+.field input:focus {
+  outline: none;
+  border-color: rgba(245, 197, 66, 0.8);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.savedNote {
+  font-size: 14px;
+  color: #3fae64;
+}
+
+.errorNote {
+  font-size: 14px;
+  color: #f28b82;
+}
+
+.submit {
+  background: linear-gradient(135deg, #f5c542, #e0a84a);
+  color: #050505;
+  padding: 10px 24px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+.submit:hover {
+  transform: scale(1.03);
+  filter: brightness(1.08);
+}
+
+.submit:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

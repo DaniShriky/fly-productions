@@ -1,0 +1,63 @@
+.pageHeader {
+  padding: 48px 5% 0;
+}
+
+/* Warm, personal welcome line (per Dani, 2026-10-05: "חוויה כיפית ומהנה")
+   sitting above the plain page title — same gold-gradient-text treatment as
+   the dashboard's CountdownTimer digits, the site's established way of
+   marking a moment as a little special rather than purely functional copy. */
+.greeting {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  background: linear-gradient(135deg, #f5c542, #e0a84a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.pageTitle {
+  font-size: 28px;
+  margin-bottom: 4px;
+}
+
+.pageSubtitle {
+  font-size: 14px;
+  color: #9c9a93;
+}
+
+/* Same sticky-below-Nav technique as pages/dashboard/index.module.css —
+   Nav itself is position:sticky with no fixed height (it varies by
+   breakpoint), so `top` is set from the page's own measurement of Nav's
+   real rendered height instead of a hardcoded number. */
+.stickyTabs {
+  position: sticky;
+  z-index: 40;
+  width: 100%;
+  padding: 16px 5%;
+  background: rgba(10, 10, 12, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 20px;
+}
+
+.main {
+  padding: 32px 5% 60px;
+}
+
+.sectionTitle {
+  font-size: 18px;
+  margin-bottom: 16px;
+}
+
+.sectionGap {
+  margin-top: 40px;
+}
+
+.emptyNote {
+  font-size: 14px;
+  color: #9c9a93;
+  text-align: center;
+  padding: 40px 0;
+}

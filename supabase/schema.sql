@@ -548,3 +548,99 @@ alter publication supabase_realtime add table studio_managers;
 -- payload — FULL includes every column, which is what that comparison needs.
 alter table registrations replica identity full;
 alter table studio_managers replica identity full;
+
+-- Round 10 (2026-10-05, Dani): step 3 also asks for the studio's total
+-- headcount — a single self-reported number covering everyone coming with
+-- the studio, not derived from summing each dance's participant_count
+-- (a dancer performing in multiple numbers would get double-counted that
+-- way). Stored on registration_submissions since it's a once-per-הגשה
+-- answer, same as the two consent questions, not a per-dance field.
+alter table registration_submissions add column total_participant_count integer not null default 0;
+alter table registration_submissions alter column total_participant_count drop default;
+
+-- submit_registrations()'s signature is changing (new 3rd param), so the old
+-- 2-param version needs dropping first — create or replace alone would just
+-- add an overload alongside it instead of replacing it.
+drop function if exists submit_registrations(boolean, text);
+
+create function submit_registrations(
+  p_accepted_terms boolean,
+  p_media_consent text,
+  p_total_participant_count integer
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not p_accepted_terms then
+    raise exception 'Terms must be accepted to submit';
+  end if;
+
+  if p_total_participant_count is null or p_total_participant_count < 1 then
+    raise exception 'total_participant_count must be a positive number';
+  end if;
+
+  insert into registration_submissions (studio_manager_id, accepted_terms, media_consent, total_participant_count)
+  values (auth.uid(), p_accepted_terms, p_media_consent, p_total_participant_count);
+
+  update registrations
+  set submitted_at = now()
+  where studio_manager_id = auth.uid()
+    and submitted_at is null
+    and payment_status = 'unpaid';
+end;
+$$;
+
+grant execute on function submit_registrations(boolean, text, integer) to authenticated;
+
+-- Round 11 (2026-10-05, Dani): lets an admin nudge a specific competition's
+-- general registration cutoff forward/back by some number of days, instead
+-- of it always being a fixed 45-days-before-the-event computation (see
+-- getGeneralRegistrationCutoffIso in lib/getCompetitionDays.ts). Null means
+-- "use the default 45-day computation" — the override only kicks in once an
+-- admin actually sets one. No column-level grant to authenticated (same
+-- reasoning as submitted_at above): this is admin-only, enforced entirely
+-- through the RPC below, not a raw client update.
+alter table competitions add column registration_cutoff_override date;
+
+-- get_competitions_with_pricing() already does `select c.*`, so this new
+-- column flows through to every approved-manager/admin caller automatically
+-- — no changes needed there.
+create function admin_update_registration_cutoff(p_competition_id uuid, p_override_date date)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not is_admin() then
+    raise exception 'Only an admin can update a competition''s registration cutoff';
+  end if;
+
+  update competitions
+  set registration_cutoff_override = p_override_date
+  where id = p_competition_id;
+end;
+$$;
+
+grant execute on function admin_update_registration_cutoff(uuid, date) to authenticated;
+
+-- Round 12 (2026-10-05, Dani): /profile ("הפרטים שלי") was built only for
+-- studio managers — an admin visiting it got wrongly redirected to
+-- /pending-approval, since requireApprovedManager only ever checks
+-- studio_managers and an admin account has no row there at all. Giving
+-- admins a real (minimal — name + photo only, per Dani) profile of their
+-- own means the `admins` table needs somewhere to put that data.
+alter table admins add column name text;
+alter table admins add column profile_image_path text;
+
+create policy "Admin updates own row" on admins
+  for update using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- Narrow column grant (not a blanket `grant update on admins`) even though
+-- nothing here is as sensitive as e.g. submitted_at — matching this
+-- schema's established habit of only ever granting exactly the columns a
+-- normal client write is supposed to touch.
+grant update (name, profile_image_path) on admins to authenticated;

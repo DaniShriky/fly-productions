@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import { Competition } from "@/types/competition";
 import { getCompetitionDateLabel } from "@/lib/getCompetitionDays";
 import { getOwnStudioManager, getProfilePhotoUrl } from "@/lib/queries/studioManagers";
+import { getOwnAdmin } from "@/lib/queries/admins";
 import { PROFILE_UPDATED_EVENT, ProfileUpdateDetail } from "@/lib/profileUpdateEvent";
 import { supabaseBrowserClient } from "@/lib/supabaseBrowserClient";
 import styles from "./Nav.module.css";
@@ -52,6 +53,7 @@ export default function Nav({ competitions }: { competitions: Competition[] }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [studioName, setStudioName] = useState<string | null>(null);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
@@ -64,12 +66,28 @@ export default function Nav({ competitions }: { competitions: Competition[] }) {
     async function syncSession(session: { user: { id: string } } | null) {
       setIsLoggedIn(!!session);
       if (!session) {
+        setIsAdmin(false);
         setStudioName(null);
         setPhotoUrl(null);
         return;
       }
-      // Best-effort — an admin (or a manager whose row hasn't landed yet)
-      // simply falls back to a generic avatar/label instead of a name.
+      // Same "Self admin check" RLS policy already used by /login's
+      // destination logic (see lib/resolveLoginDestination.ts) — determines
+      // which profile-menu link to show below (per Dani, 2026-10-05: an
+      // admin account should see "ניהול האתר" instead of "הרשמה לתחרויות",
+      // which doesn't apply to her) and which profile this account's own
+      // name/photo come from.
+      const admin = await getOwnAdmin(supabaseBrowserClient, session.user.id).catch(() => null);
+      setIsAdmin(!!admin);
+
+      if (admin) {
+        setStudioName(admin.name ?? null);
+        setPhotoUrl(admin.profileImagePath ? getProfilePhotoUrl(supabaseBrowserClient, admin.profileImagePath) : null);
+        return;
+      }
+
+      // Best-effort — a manager whose row hasn't landed yet simply falls
+      // back to a generic avatar/label instead of a name.
       const manager = await getOwnStudioManager(supabaseBrowserClient, session.user.id).catch(() => null);
       setStudioName(manager?.studioName ?? null);
       setPhotoUrl(manager?.profileImagePath ? getProfilePhotoUrl(supabaseBrowserClient, manager.profileImagePath) : null);
@@ -171,17 +189,31 @@ export default function Nav({ competitions }: { competitions: Competition[] }) {
                   <UserIcon size={16} />
                   הפרטים שלי
                 </Link>
-                <Link
-                  href="/dashboard"
-                  className={styles.menuItem}
-                  onClick={() => {
-                    setProfileOpen(false);
-                    setMobileOpen(false);
-                  }}
-                >
-                  <DashboardIcon />
-                  הרשמה לתחרויות
-                </Link>
+                {isAdmin ? (
+                  <Link
+                    href="/admin"
+                    className={styles.menuItem}
+                    onClick={() => {
+                      setProfileOpen(false);
+                      setMobileOpen(false);
+                    }}
+                  >
+                    <DashboardIcon />
+                    ניהול האתר
+                  </Link>
+                ) : (
+                  <Link
+                    href="/dashboard"
+                    className={styles.menuItem}
+                    onClick={() => {
+                      setProfileOpen(false);
+                      setMobileOpen(false);
+                    }}
+                  >
+                    <DashboardIcon />
+                    הרשמה לתחרויות
+                  </Link>
+                )}
                 <div className={styles.menuDivider} />
                 <button type="button" className={styles.menuItem} onClick={handleSignOut}>
                   <SignOutIcon />

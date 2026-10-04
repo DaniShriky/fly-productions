@@ -6,13 +6,16 @@ import CountdownTimer from "./CountdownTimer";
 import styles from "./RegistrationNotice.module.css";
 
 // Dani specifically wants this hard to miss — early-registration discounts
-// and the video/stills order cutoff are easy for a studio manager to lose
+// and the video/stills + music cutoff are easy for a studio manager to lose
 // track of (see project_pricing_and_rules: dates get updated ad hoc even via
 // WhatsApp broadcasts, so surfacing this prominently in the UI matters).
 //
 // Two visually separate sections (divided by .divider): early-pricing status
-// with its countdown, then video/stills order status — they're different
-// topics with different cutoffs, so they read as two things, not one blob.
+// with its countdown, then the video/stills-order-and-music-submission
+// status — they're different topics with different cutoffs, so they read as
+// two things, not one blob. Video/stills and music share the literal same
+// 10-days-before cutoff (per Dani, 2026-10-04), so they're one combined line
+// rather than two near-identical blocks.
 export default function RegistrationNotice({ competition }: { competition?: CompetitionWithPricing }) {
   if (!competition?.priceTiers) return null;
 
@@ -23,16 +26,17 @@ export default function RegistrationNotice({ competition }: { competition?: Comp
   // early-price window ending — those are two different deadlines.
   // CountdownTimer itself renders nothing once this date has passed, so no
   // extra "has registration closed" check is needed here.
-  const generalCutoffIso = getGeneralRegistrationCutoffIso(competition.date);
+  const generalCutoffIso = getGeneralRegistrationCutoffIso(competition.date, competition.registrationCutoffOverride);
 
   // 10 days before the competition's first day (project_pricing_and_rules'
-  // general date rule) — computed from the competition's own date instead of
-  // shown as generic "10 days before" text, so a manager filling this in
-  // after the cutoff already passed sees that clearly instead of a reminder
-  // that's no longer actionable.
-  const videoCutoffIso = getVideoOrderCutoffIso(competition.date);
-  const videoCutoffDaysLeft = videoCutoffIso ? daysUntil(videoCutoffIso) : null;
-  const videoCutoffPassed = videoCutoffDaysLeft != null && videoCutoffDaysLeft <= 0;
+  // general date rule) — shared by both video/stills ordering and final
+  // music submission (per Dani, 2026-10-04), computed from the competition's
+  // own date instead of shown as generic "10 days before" text, so a manager
+  // filling this in after the cutoff already passed sees that clearly
+  // instead of a reminder that's no longer actionable.
+  const tenDayCutoffIso = getVideoOrderCutoffIso(competition.date);
+  const tenDayCutoffDaysLeft = tenDayCutoffIso ? daysUntil(tenDayCutoffIso) : null;
+  const tenDayCutoffPassed = tenDayCutoffDaysLeft != null && tenDayCutoffDaysLeft <= 0;
 
   return (
     <div className={styles.notice}>
@@ -74,27 +78,30 @@ export default function RegistrationNotice({ competition }: { competition?: Comp
 
       <div className={styles.divider} />
 
-      {videoCutoffIso == null ? (
-        <p className={styles.secondary}>הזמנת צילום וידאו/סטילס צריכה להתבצע ולהיות משולמת עד 10 ימים לפני התחרות.</p>
-      ) : videoCutoffPassed ? (
+      {tenDayCutoffIso == null ? (
+        <p className={styles.secondary}>
+          הזמנת צילום וידאו/סטילס צריכה להתבצע ולהיות משולמת, והעלאת קובץ המוזיקה הסופי צריכה להתבצע, עד 10 ימים
+          לפני התחרות.
+        </p>
+      ) : tenDayCutoffPassed ? (
         <p className={`${styles.secondary} ${styles.warning}`}>
-          המועד להזמנת ותשלום עבור צילום וידאו/סטילס עבר (היה עד{" "}
-          <strong dir="ltr">{formatDateHe(videoCutoffIso)}</strong>) - לבדיקה אם עדיין ניתן להזמין יש ליצור קשר עם
+          המועד להזמנת ותשלום עבור צילום וידאו/סטילס ולהעלאת קובץ המוזיקה הסופי עבר (היה עד{" "}
+          <strong dir="ltr">{formatDateHe(tenDayCutoffIso)}</strong>) - לבדיקה אם עדיין ניתן לעדכן יש ליצור קשר עם
           המשרד.
         </p>
       ) : (
         <p className={styles.secondary}>
-          הזמנת צילום וידאו/סטילס צריכה להתבצע ולהיות משולמת עד{" "}
-          <strong dir="ltr">{formatDateHe(videoCutoffIso)}</strong>
+          הזמנת צילום וידאו/סטילס צריכה להתבצע ולהיות משולמת, והעלאת קובץ המוזיקה הסופי צריכה להתבצע, עד{" "}
+          <strong dir="ltr">{formatDateHe(tenDayCutoffIso)}</strong>
           {/* Only surfaced once it's actually close/urgent (a week or less
               left) — otherwise a "206 days left" count isn't useful
               information, just noise next to the date. Red specifically so
               it reads as a "pay attention now" cue once it does show up. */}
-          {videoCutoffDaysLeft != null && videoCutoffDaysLeft <= 7 && (
+          {tenDayCutoffDaysLeft != null && tenDayCutoffDaysLeft <= 7 && (
             <>
               {" "}
               <strong className={styles.urgentDays}>
-                (עוד {videoCutoffDaysLeft} {videoCutoffDaysLeft === 1 ? "יום" : "ימים"})
+                (עוד {tenDayCutoffDaysLeft} {tenDayCutoffDaysLeft === 1 ? "יום" : "ימים"})
               </strong>
             </>
           )}

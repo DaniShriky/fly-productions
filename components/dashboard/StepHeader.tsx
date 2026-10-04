@@ -8,19 +8,21 @@ type Props = {
   kicker: string;
   title: string;
   hint?: string;
-  // Only step 2 passes this — the stepper tabs above already let you jump
+  // Steps 2 and 3 pass these — the stepper tabs above already let you jump
   // back, but Dani asked for an explicit button too since the tabs alone
-  // weren't obvious enough as a way back to step 1.
+  // weren't obvious enough as a way back. backTo names the step the button
+  // actually lands on, since that's not always step - 1 in general.
   onBack?: () => void;
+  backTo?: number;
 };
 
-export default function StepHeader({ kicker, title, hint, onBack }: Props) {
+export default function StepHeader({ kicker, title, hint, onBack, backTo }: Props) {
   return (
     <header>
       {onBack && (
         <button type="button" className={styles.backButton} onClick={onBack}>
           <ArrowBackIcon size={14} />
-          חזרה לשלב 1
+          חזרה לשלב {backTo}
         </button>
       )}
       <p className={styles.kicker}>{kicker}</p>

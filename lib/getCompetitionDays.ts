@@ -94,6 +94,12 @@ export function getVideoOrderCutoffIso(date: string): string | null {
   return cutoff.toISOString().slice(0, 10);
 }
 
+// Final music file submission closes the same 10 days before the
+// competition's first day as the video/stills order cutoff (per Dani,
+// 2026-10-04) — kept as its own named export so it reads correctly at each
+// call site, even though the computation is identical to the one above.
+export const getMusicSubmissionCutoffIso = getVideoOrderCutoffIso;
+
 // General registration (not just early pricing) closes a month and a half
 // before the competition's FIRST day, at full price — per Dani (2026-10-02),
 // distinct from `priceTiers.earlyUntil` (which only ends the early-price
@@ -101,11 +107,27 @@ export function getVideoOrderCutoffIso(date: string): string | null {
 // same flat-day-count approach as getVideoOrderCutoffIso above, rather than
 // calendar-aware month subtraction — consistent with how these cutoffs are
 // treated elsewhere as rules of thumb (see project_pricing_and_rules).
-export function getGeneralRegistrationCutoffIso(date: string): string | null {
+//
+// `override` is `competitions.registration_cutoff_override` (per Dani,
+// 2026-10-05: admin needs to nudge this per-competition, see
+// admin_update_registration_cutoff in supabase/schema.sql) — when an admin
+// has set one, it replaces the 45-day computation entirely rather than
+// shifting it, so callers don't need to know which case they're in.
+export function getGeneralRegistrationCutoffIso(date: string, override?: string | null): string | null {
+  if (override) return override;
+
   const range = getCompetitionDateRange(date);
   if (!range) return null;
 
   const cutoff = new Date(range.start);
   cutoff.setUTCDate(cutoff.getUTCDate() - 45);
   return cutoff.toISOString().slice(0, 10);
+}
+
+// Hebrew weekday name for a plain ISO (YYYY-MM-DD) date — for admin-facing
+// cutoff dates (see RegistrationCutoffEditor) where knowing "that's a
+// Friday" matters when nudging a date, unlike the free-text `date` field
+// the other helpers in this file parse.
+export function getHebrewDayOfWeek(iso: string): string {
+  return HEBREW_DAYS[new Date(`${iso}T00:00:00Z`).getUTCDay()];
 }

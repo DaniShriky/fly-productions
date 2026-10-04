@@ -5,6 +5,10 @@ import { CompetitionRow, toCompetition } from "@/lib/queries/competitions";
 
 export interface CompetitionWithPricing extends Competition {
   priceTiers?: PriceTiers;
+  // Admin-set override for the general registration cutoff (see
+  // getGeneralRegistrationCutoffIso) — null/absent means "use the default
+  // 45-days-before computation."
+  registrationCutoffOverride?: string | null;
 }
 
 type PriceTiersRow = {
@@ -18,6 +22,7 @@ type PriceTiersRow = {
 
 type CompetitionRowWithPricing = CompetitionRow & {
   price_tiers: PriceTiersRow | null;
+  registration_cutoff_override: string | null;
 };
 
 function toPriceTiers(row: PriceTiersRow): PriceTiers {
@@ -45,5 +50,6 @@ export async function getCompetitionsWithPricing(client: SupabaseClient): Promis
   return (data as CompetitionRowWithPricing[]).map((row) => ({
     ...toCompetition(row),
     ...(row.price_tiers ? { priceTiers: toPriceTiers(row.price_tiers) } : {}),
+    registrationCutoffOverride: row.registration_cutoff_override,
   }));
 }

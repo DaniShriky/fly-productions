@@ -93,8 +93,12 @@ export default function Dashboard({ competitions, registrations, manager: initia
   // supabase/schema.sql) — every currently-draft, unpaid entry becomes
   // submitted — so the UI reflects the lock/visibility change immediately
   // without a round-trip refetch.
-  async function handleSubmitRegistrations(acceptedTerms: boolean, mediaConsent: "consented" | "declined") {
-    await submitRegistrations(supabaseBrowserClient, acceptedTerms, mediaConsent);
+  async function handleSubmitRegistrations(
+    acceptedTerms: boolean,
+    mediaConsent: "consented" | "declined",
+    totalParticipantCount: number
+  ) {
+    await submitRegistrations(supabaseBrowserClient, acceptedTerms, mediaConsent, totalParticipantCount);
     const now = new Date().toISOString();
     setEntries((current) =>
       current.map((e) => (!e.submittedAt && e.paymentStatus === "unpaid" ? { ...e, submittedAt: now } : e))
@@ -192,6 +196,7 @@ export default function Dashboard({ competitions, registrations, manager: initia
                   title="סיכום הזמנה"
                   hint='לפני התשלום, בדקו שכל פרטי הריקודים שהוספתם נכונים.'
                   onBack={() => setActiveStep(1)}
+                  backTo={1}
                 />
                 <PaymentStatusCard entries={entries} />
               </div>
@@ -218,7 +223,7 @@ export default function Dashboard({ competitions, registrations, manager: initia
 
         {activeStep === 3 && (
           <div className={styles.narrow}>
-            <StepHeader kicker="שלב 3" title="אישורים והגשה" onBack={() => setActiveStep(2)} />
+            <StepHeader kicker="שלב 3" title="אישורים והגשה" onBack={() => setActiveStep(2)} backTo={2} />
             <SubmissionStep entries={entries} onSubmit={handleSubmitRegistrations} />
           </div>
         )}

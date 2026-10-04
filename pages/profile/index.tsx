@@ -4,24 +4,77 @@ import type { GetServerSideProps } from "next";
 import Nav from "@/components/shared/Nav";
 import Footer from "@/components/shared/Footer";
 import ProfileEditForm from "@/components/dashboard/ProfileEditForm";
+import AdminProfileForm from "@/components/admin/AdminProfileForm";
 import LiveNotifications from "@/components/dashboard/LiveNotifications";
 import { requireApprovedManager } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabaseServerClient";
 import { CompetitionWithPricing, getCompetitionsWithPricing } from "@/lib/queries/competitionsWithPricing";
 import { getOwnStudioManager } from "@/lib/queries/studioManagers";
+import { getOwnAdmin } from "@/lib/queries/admins";
 import { StudioManager } from "@/types/studioManager";
+import { Admin } from "@/types/admin";
 import styles from "./index.module.css";
 
-type Props = {
+type ManagerProps = {
+  isAdmin: false;
   competitions: CompetitionWithPricing[];
   manager: StudioManager;
 };
 
+type AdminProps = {
+  isAdmin: true;
+  competitions: CompetitionWithPricing[];
+  admin: Admin;
+};
+
+type Props = ManagerProps | AdminProps;
+
 // Split out of /dashboard so the nav's profile menu can point to a page
-// that's actually just "who you are" (studio/contact details from
-// registration) — separate from /dashboard, which is the registration
-// workflow itself (early-registration status + final per-dance registration).
-export default function Profile({ competitions, manager: initialManager }: Props) {
+// that's actually just "who you are" — separate from /dashboard, which is
+// the studio manager's registration workflow. Also reachable by an admin
+// account (same Nav menu item, same "הפרטים שלי" URL) — per Dani, 2026-10-05:
+// an admin used to land on /pending-approval here, since requireApprovedManager
+// only ever checks studio_managers and an admin has no row there at all.
+// getServerSideProps checks the admins table first and renders a
+// deliberately minimal AdminProfile (name + photo only) in that case.
+export default function Profile(props: Props) {
+  if (props.isAdmin) {
+    return <AdminProfile competitions={props.competitions} initialAdmin={props.admin} />;
+  }
+  return <ManagerProfile competitions={props.competitions} initialManager={props.manager} />;
+}
+
+function AdminProfile({ competitions, initialAdmin }: { competitions: CompetitionWithPricing[]; initialAdmin: Admin }) {
+  const [admin, setAdmin] = useState(initialAdmin);
+
+  return (
+    <>
+      <Head>
+        <title>הפרטים שלי - FLY Productions</title>
+      </Head>
+
+      <Nav competitions={competitions} />
+
+      <main className={styles.main}>
+        <header className={styles.pageHeader}>
+          <h1 className={styles.pageTitle}>הפרטים שלי</h1>
+        </header>
+
+        <AdminProfileForm admin={admin} onSaved={setAdmin} />
+      </main>
+
+      <Footer />
+    </>
+  );
+}
+
+function ManagerProfile({
+  competitions,
+  initialManager,
+}: {
+  competitions: CompetitionWithPricing[];
+  initialManager: StudioManager;
+}) {
   const [manager, setManager] = useState(initialManager);
 
   // Per Dani, 2026-10-03: approving/rejecting a pending competition-type
@@ -66,19 +119,32 @@ export default function Profile({ competitions, manager: initialManager }: Props
 }
 
 export const getServerSideProps: GetServerSideProps<Props> = async (context) => {
-  const guard = await requireApprovedManager(context);
-  if (guard) return guard;
-
   const supabase = createSupabaseServerClient(context);
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const studioManagerId = user!.id;
+
+  if (!user) {
+    return { redirect: { destination: "/login", permanent: false } };
+  }
+
+  const { data: adminRow } = await supabase.from("admins").select("user_id").eq("user_id", user.id).maybeSingle();
+
+  if (adminRow) {
+    const [competitions, admin] = await Promise.all([
+      getCompetitionsWithPricing(supabase),
+      getOwnAdmin(supabase, user.id),
+    ]);
+    return { props: { isAdmin: true, competitions, admin: admin ?? { userId: user.id } } };
+  }
+
+  const guard = await requireApprovedManager(context);
+  if (guard) return guard;
 
   const [competitions, manager] = await Promise.all([
     getCompetitionsWithPricing(supabase),
-    getOwnStudioManager(supabase, studioManagerId),
+    getOwnStudioManager(supabase, user.id),
   ]);
 
-  return { props: { competitions, manager: manager! } };
+  return { props: { isAdmin: false, competitions, manager: manager! } };
 };

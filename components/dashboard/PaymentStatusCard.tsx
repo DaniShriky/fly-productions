@@ -27,7 +27,7 @@ export default function PaymentStatusCard({ entries }: { entries: Registration[]
       <span className={styles.statusDivider} />
 
       <span className={`${styles.statusPill} ${styles.pillUnpaid}`}>
-        <span className={styles.legendDot} /> {unpaidCount} לא שולם
+        <span className={styles.legendDot} /> {unpaidCount} טרם שולם
       </span>
       <span className={`${styles.statusPill} ${styles.pillPaid}`}>
         <span className={styles.legendDot} /> {paidCount} שולם

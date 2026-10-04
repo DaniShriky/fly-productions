@@ -19,6 +19,24 @@ export default function CompetitionDetail({ competition }: { competition: Compet
     const video = videoRef.current;
     if (!wrap || !video) return;
 
+    // Explicitly (re)setting src here, not just relying on the JSX attribute
+    // — see the matching comment in VideoSection.tsx: this effect's own
+    // cleanup below does video.removeAttribute("src"), and React 18 dev-mode
+    // StrictMode runs an effect, its cleanup, then the effect again on the
+    // SAME DOM node, so without this the element is genuinely srcless on
+    // that second run (dev-only; never caught before since this is the
+    // first time this page was exercised in local dev rather than deploy).
+    video.src = competition.videoFile!;
+
+    // preload="none" on the element was only meant to avoid a decode/layout
+    // pile-up at first paint, but it also delays the network fetch until
+    // play() actually fires, which is what was making videos visibly stall
+    // before starting (per Dani, 2026-10-04). Starting the fetch immediately
+    // here gives it the full scroll-to-view time to buffer, while play()
+    // itself stays gated by the delayed observer below exactly as before.
+    video.preload = "auto";
+    video.load();
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {

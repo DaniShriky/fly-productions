@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { Registration } from "@/types/registration";
 import { PHONE, WHATSAPP_URL } from "@/lib/contact";
-import { CloseIcon } from "./icons";
+import { CloseIcon, MinusIcon, PlusIcon } from "./icons";
 import styles from "./SubmissionStep.module.css";
 
 type MediaConsent = "consented" | "declined";
 
 type Props = {
   entries: Registration[];
-  onSubmit: (acceptedTerms: boolean, mediaConsent: MediaConsent) => Promise<void>;
+  onSubmit: (acceptedTerms: boolean, mediaConsent: MediaConsent, totalParticipantCount: number) => Promise<void>;
 };
 
 // The popup shown right after a successful הגשה — same overlay/card/
@@ -57,18 +57,32 @@ export default function SubmissionStep({ entries, onSubmit }: Props) {
   const draftEntries = entries.filter((e) => !e.submittedAt);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [mediaConsent, setMediaConsent] = useState<MediaConsent | "">("");
+  // Free text, not number, so the field can be genuinely empty while typing
+  // instead of snapping to 0 — parsed/validated below. Self-reported, not
+  // derived from summing entries' participantCount: a dancer performing in
+  // several numbers would get double-counted that way, and this question is
+  // asking for the studio's actual total headcount (per Dani, 2026-10-05).
+  const [totalParticipantCount, setTotalParticipantCount] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [justSubmitted, setJustSubmitted] = useState(false);
 
-  const canSubmit = acceptedTerms && mediaConsent !== "";
+  const parsedParticipantCount = Number(totalParticipantCount);
+  const participantCountValid = totalParticipantCount.trim() !== "" && Number.isInteger(parsedParticipantCount) && parsedParticipantCount > 0;
+  const canSubmit = acceptedTerms && mediaConsent !== "" && participantCountValid;
+
+  // Same +/- stepper behavior as DanceEntryForm's participant-count field —
+  // floors at 1, and the first click from an empty field lands on 1.
+  function adjustTotalParticipantCount(delta: number) {
+    setTotalParticipantCount((prev) => String(Math.max(1, (Number(prev) || 0) + delta)));
+  }
 
   async function handleSubmitClick() {
     if (!canSubmit) return;
     setSubmitting(true);
     setSubmitError(null);
     try {
-      await onSubmit(acceptedTerms, mediaConsent as MediaConsent);
+      await onSubmit(acceptedTerms, mediaConsent as MediaConsent, parsedParticipantCount);
       setJustSubmitted(true);
     } catch (err) {
       console.error("Registration submission failed:", err);
@@ -128,6 +142,38 @@ export default function SubmissionStep({ entries, onSubmit }: Props) {
               />
               לא מאשר/ת
             </label>
+          </div>
+
+          <div className={styles.questionCard}>
+            <p className={styles.question}>
+              מה מספר המשתתפים מהסטודיו שלכם בסה&quot;כ? <span className={styles.required}>*</span>
+            </p>
+            <div className={styles.stepper}>
+              <button
+                type="button"
+                className={styles.stepperButton}
+                onClick={() => adjustTotalParticipantCount(-1)}
+                disabled={parsedParticipantCount <= 1}
+                aria-label="הפחתת משתתף"
+              >
+                <MinusIcon size={16} />
+              </button>
+              <input
+                type="number"
+                min={1}
+                className={styles.stepperInput}
+                value={totalParticipantCount}
+                onChange={(e) => setTotalParticipantCount(e.target.value)}
+              />
+              <button
+                type="button"
+                className={styles.stepperButton}
+                onClick={() => adjustTotalParticipantCount(1)}
+                aria-label="הוספת משתתף"
+              >
+                <PlusIcon size={16} />
+              </button>
+            </div>
           </div>
 
           <p className={styles.reviewNote}>עברתי על כל הפרטים שמילאתי בטבלת הסיכום למעלה ואני מאשר/ת שהם נכונים.</p>

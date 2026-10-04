@@ -9,6 +9,7 @@ import {
   computeSurcharge,
   computeTotalPrice,
   displayCategoryLabel,
+  formatPrice,
 } from "@/lib/pricing";
 import { getDanceMusicUrl } from "@/lib/queries/registrations";
 import { supabaseBrowserClient } from "@/lib/supabaseBrowserClient";
@@ -182,7 +183,7 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
               className={`${styles.filterButton} ${filter === f ? styles.filterActive : ""}`}
               onClick={() => setFilter(f)}
             >
-              {f === "all" ? "הכל" : f === "unpaid" ? "לא שולם" : "שולם"}
+              {f === "all" ? "הכל" : f === "unpaid" ? "טרם שולם" : "שולם"}
             </button>
           ))}
         </div>
@@ -338,16 +339,16 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
                             "—"
                           ) : isGroup(entry.category) ? (
                             <>
-                              <div className={styles.priceLine}>{perParticipantPrice}₪ / משתתפ/ת</div>
-                              <div className={styles.priceTotalLine}>{price}₪ סה"כ</div>
+                              <div className={styles.priceLine}>{formatPrice(perParticipantPrice!)}₪ / משתתפ/ת</div>
+                              <div className={styles.priceTotalLine}>{formatPrice(price)}₪ סה"כ</div>
                             </>
                           ) : (
-                            <div className={styles.priceLine}>{price}₪</div>
+                            <div className={styles.priceLine}>{formatPrice(price)}₪</div>
                           )}
                         </td>
                         <td data-label="סטטוס תשלום">
                           <span className={`${styles.statusBadge} ${isUnpaid ? styles.unpaid : styles.paid}`}>
-                            {isUnpaid ? "לא שולם" : "שולם"}
+                            {isUnpaid ? "טרם שולם" : "שולם"}
                           </span>
                         </td>
                         <td className={styles.actions} data-label="פעולות">
@@ -435,40 +436,40 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
                         <div className={styles.breakdownLineRow}>
                           <span>
                             {displayCategoryLabel(entry.category, entry.participantCount)}
-                            {groupDance && ` · ${perParticipantPrice}₪ × ${entry.participantCount}`}
+                            {groupDance && ` · ${formatPrice(perParticipantPrice!)}₪ × ${entry.participantCount}`}
                           </span>
-                          <span>{base}₪</span>
+                          <span>{formatPrice(base)}₪</span>
                         </div>
                       )}
                       {surcharge > 0 && (
                         <div className={styles.breakdownLineRow}>
                           <span>תוספת חריגת זמן בשיר</span>
-                          <span>{surcharge}₪</span>
+                          <span>{formatPrice(surcharge)}₪</span>
                         </div>
                       )}
                       {videoFee > 0 && (
                         <div className={styles.breakdownLineRow}>
                           <span>צילום וידאו</span>
-                          <span>{videoFee}₪</span>
+                          <span>{formatPrice(videoFee)}₪</span>
                         </div>
                       )}
                       {stillsFee > 0 && (
                         <div className={styles.breakdownLineRow}>
                           <span>צילום סטילס</span>
-                          <span>{stillsFee}₪</span>
+                          <span>{formatPrice(stillsFee)}₪</span>
                         </div>
                       )}
 
                       <div className={styles.breakdownSubtotal}>
                         <span>סה&quot;כ לריקוד</span>
-                        <span>{total}₪</span>
+                        <span>{total != null ? `${formatPrice(total)}₪` : "—"}</span>
                       </div>
                     </div>
                   );
                 })}
                 <div className={`${styles.breakdownRow} ${styles.breakdownTotal}`}>
                   <span>סה&quot;כ ({filtered.length} ריקודים)</span>
-                  <span>{grandTotal}₪</span>
+                  <span>{formatPrice(grandTotal)}₪</span>
                 </div>
               </div>
               <p className={styles.payInstructions}>

@@ -5,7 +5,7 @@ import { DanceEntryInput, uploadDanceMusic } from "@/lib/queries/registrations";
 import { supabaseBrowserClient } from "@/lib/supabaseBrowserClient";
 import { Registration } from "@/types/registration";
 import { StudioManager } from "@/types/studioManager";
-import { getCompetitionDayOptions } from "@/lib/getCompetitionDays";
+import { getCompetitionDayOptions, getMusicSubmissionCutoffIso } from "@/lib/getCompetitionDays";
 import {
   DANCE_LEVELS,
   DANCE_STYLES,
@@ -16,6 +16,8 @@ import {
   computeSurcharge,
   computeTotalPrice,
   displayCategoryLabel,
+  formatDateHe,
+  formatPrice,
   isEarlyPricing,
 } from "@/lib/pricing";
 import {
@@ -228,6 +230,7 @@ export default function DanceEntryForm({
   // The category dropdown was removed (per Dani, 2026-10-03) — participant
   // count alone now drives it, so there's nothing left that could disagree.
   const resolvedCategory = categoryFromParticipantCount(count);
+  const musicCutoffIso = getMusicSubmissionCutoffIso(competition.date);
   const dayOptions = getCompetitionDayOptions(competition.date);
   const showDayQuestion = dayOptions.length > 1 && !NO_DAY_SELECTION_SLUGS.has(competition.slug);
   const alternateDayOptions = dayOptions.filter((d) => d.date !== preferredDay);
@@ -935,7 +938,15 @@ export default function DanceEntryForm({
                   />
                   <UploadIcon />
                   <span className={styles.dropzoneText}>לחצו להעלאת קובץ מוזיקה</span>
-                  <span className={styles.dropzoneHint}>MP3/WAV עד 100MB - אפשר להוסיף גם מאוחר יותר, לפני התשלום</span>
+                  <span className={styles.dropzoneHint}>
+                    MP3/WAV עד 100MB - אפשר להוסיף גם מאוחר יותר, לפני התשלום
+                    {musicCutoffIso && (
+                      <>
+                        {" "}
+                        (לא יאוחר מ-<strong dir="ltr">{formatDateHe(musicCutoffIso)}</strong>)
+                      </>
+                    )}
+                  </span>
                 </label>
                 {/* Hidden — used only to read the file's real duration via the browser, no server processing. */}
                 <audio
@@ -994,8 +1005,8 @@ export default function DanceEntryForm({
                 {wantsRecording && (
                   <p className={styles.durationHint}>
                     <strong>
-                      העלות עבור הריקוד הזה: {recordingFee}₪
-                      {wantsVideo && wantsStills && ` (וידאו ${videoFee}₪ + סטילס ${stillsFee}₪)`}
+                      העלות עבור הריקוד הזה: {formatPrice(recordingFee)}₪
+                      {wantsVideo && wantsStills && ` (וידאו ${formatPrice(videoFee)}₪ + סטילס ${formatPrice(stillsFee)}₪)`}
                     </strong>
                   </p>
                 )}
@@ -1005,7 +1016,7 @@ export default function DanceEntryForm({
             {surcharge > 0 && (
               <p className={styles.surchargeNote}>
                 שימו לב: משך השיר חורג ממגבלת הזמן ({isGroup ? "3" : "2"}{" "}
-                דקות) - נוספה תוספת תשלום של <strong>{surcharge}₪</strong> בהתאם לתקנון (אחרת יש הורדת ניקוד במקום).
+                דקות) - נוספה תוספת תשלום של <strong>{formatPrice(surcharge)}₪</strong> בהתאם לתקנון (אחרת יש הורדת ניקוד במקום).
               </p>
             )}
 
@@ -1018,7 +1029,7 @@ export default function DanceEntryForm({
                 {baseSubtotal != null && (
                   <div className={styles.priceBreakdownRow}>
                     <span>
-                      מחיר בסיס{isGroup ? ` (${perParticipantPrice}₪ × ${count} משתתפים)` : ""}
+                      מחיר בסיס{isGroup ? ` (${formatPrice(perParticipantPrice!)}₪ × ${count} משתתפים)` : ""}
                       {isGroup && competition.priceTiers && (
                         <span className={styles.priceExplain}>
                           {" "}
@@ -1026,31 +1037,31 @@ export default function DanceEntryForm({
                         </span>
                       )}
                     </span>
-                    <span>{baseSubtotal}₪</span>
+                    <span>{formatPrice(baseSubtotal)}₪</span>
                   </div>
                 )}
                 {surcharge > 0 && (
                   <div className={styles.priceBreakdownRow}>
                     <span>תוספת חריגת זמן בשיר</span>
-                    <span>{surcharge}₪</span>
+                    <span>{formatPrice(surcharge)}₪</span>
                   </div>
                 )}
                 {videoFee > 0 && (
                   <div className={styles.priceBreakdownRow}>
                     <span>צילום וידאו</span>
-                    <span>{videoFee}₪</span>
+                    <span>{formatPrice(videoFee)}₪</span>
                   </div>
                 )}
                 {stillsFee > 0 && (
                   <div className={styles.priceBreakdownRow}>
                     <span>צילום סטילס</span>
-                    <span>{stillsFee}₪</span>
+                    <span>{formatPrice(stillsFee)}₪</span>
                   </div>
                 )}
                 {totalPrice != null && (
                   <div className={`${styles.priceBreakdownRow} ${styles.priceBreakdownTotal}`}>
                     <span>מחיר כולל</span>
-                    <span>{totalPrice}₪</span>
+                    <span>{formatPrice(totalPrice)}₪</span>
                   </div>
                 )}
               </div>

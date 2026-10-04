@@ -97,6 +97,13 @@ export function formatDateHe(dateStr: string): string {
   return `${day}.${month}.${year}`;
 }
 
+// Every ₪ amount shown to a manager/admin should go through this (per Dani,
+// 2026-10-05: thousands need a comma, e.g. 1,500 not 1500) instead of being
+// interpolated directly — he-IL's grouping is the same comma style as en-US.
+export function formatPrice(amount: number): string {
+  return amount.toLocaleString("he-IL");
+}
+
 // Group categories are early/regular tiered by date; solo/duet/trio_quartet
 // are flat — that's what the real flyer actually prints (no early price shown
 // for those categories). Flag to Dani if that assumption turns out wrong.

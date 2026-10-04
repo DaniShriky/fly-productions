@@ -26,6 +26,29 @@ export default function VideoSection() {
     const video = videoRef.current;
     if (!section || !video) return;
 
+    // Explicitly (re)setting src here, not just relying on the JSX attribute,
+    // matters because of this effect's own cleanup below: React 18 dev-mode
+    // StrictMode runs an effect, its cleanup, then the effect again, all on
+    // the SAME DOM node (no real re-render in between) — so the cleanup's
+    // video.removeAttribute("src") leaves the element genuinely srcless on
+    // that second run, since nothing else restores it (production only
+    // invokes the effect once, so this is dev-only, but it's the first time
+    // this page has been exercised in local dev rather than the deployed
+    // preview, which is why it wasn't caught earlier).
+    video.src = HIGHLIGHT_VIDEO_SRC;
+
+    // preload="none" on the element itself only avoids a decode/layout pile-up
+    // in the very first paint (see the observeTimer comment below) — it isn't
+    // meant to also delay the network fetch, but leaving preload="none" in
+    // place does exactly that: nothing downloads until play() is actually
+    // called at the 400ms+intersection point, so the video visibly stalls
+    // there instead of being ready. Kicking the fetch off here, immediately
+    // on mount, gives it the full scroll-to-view time to buffer while still
+    // leaving the heavier decode/play() work gated below (per Dani,
+    // 2026-10-04: videos were taking a long time to start).
+    video.preload = "auto";
+    video.load();
+
     // Playback follows visibility: plays (with sound, unless the user muted
     // it themselves) while the video is on screen, pauses once it scrolls
     // away. Browsers that block unmuted autoplay without a prior user

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { AdminRegistration, getAllRegistrationsForAdmin, updateRegistrationPaymentAdmin } from "@/lib/queries/adminRegistrations";
 import { CompetitionWithPricing } from "@/lib/queries/competitionsWithPricing";
 import { supabaseBrowserClient } from "@/lib/supabaseBrowserClient";
-import { computePrice, computeRecordingFee, computeTotalPrice, displayCategoryLabel } from "@/lib/pricing";
+import { computePrice, computeRecordingFee, computeTotalPrice, displayCategoryLabel, formatPrice } from "@/lib/pricing";
 import styles from "./RegistrationsPaymentsTable.module.css";
 
 type Filter = "all" | "unpaid" | "paid";
@@ -102,7 +102,7 @@ export default function RegistrationsPaymentsTable({ initialRegistrations, compe
             className={`${styles.filterButton} ${filter === f ? styles.filterActive : ""}`}
             onClick={() => setFilter(f)}
           >
-            {f === "all" ? "הכל" : f === "unpaid" ? "לא שולם" : "שולם"}
+            {f === "all" ? "הכל" : f === "unpaid" ? "טרם שולם" : "שולם"}
           </button>
         ))}
       </div>
@@ -158,9 +158,9 @@ export default function RegistrationsPaymentsTable({ initialRegistrations, compe
                     "—"
                   ) : (
                     <>
-                      <span className={styles.price}>{price}₪</span>
+                      <span className={styles.price}>{formatPrice(price)}₪</span>
                       {perParticipantPrice != null && r.participantCount > 1 && (
-                        <div className={styles.subLine}>({perParticipantPrice}₪ / משתתף)</div>
+                        <div className={styles.subLine}>({formatPrice(perParticipantPrice)}₪ / משתתף)</div>
                       )}
                     </>
                   )}
@@ -172,7 +172,7 @@ export default function RegistrationsPaymentsTable({ initialRegistrations, compe
                     disabled={savingId === r.id}
                     onClick={() => handleToggleStatus(r)}
                   >
-                    {isPaid ? "שולם" : "לא שולם"}
+                    {isPaid ? "שולם" : "טרם שולם"}
                   </button>
                 </td>
                 <td>

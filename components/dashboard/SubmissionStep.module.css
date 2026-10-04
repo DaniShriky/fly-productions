@@ -39,6 +39,78 @@
   accent-color: #f5c542;
 }
 
+/* Same +/- stepper as DanceEntryForm's participant-count field (per Dani's
+   reference, 2026-10-03) — ported rather than shared since this file has no
+   per-competition --form-accent theming to key off, just the fixed gold
+   used elsewhere in this component (.submitButton etc). */
+.stepper {
+  display: flex;
+  align-items: stretch;
+  width: 160px;
+  box-sizing: border-box;
+  background: #101014;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.stepper:focus-within {
+  border-color: rgba(245, 197, 66, 0.8);
+}
+
+.stepperButton {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  background: none;
+  border: none;
+  color: #d8d6cf;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.stepperButton:first-child {
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.stepperButton:last-child {
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.stepperButton:hover:not(:disabled) {
+  background: rgba(245, 197, 66, 0.12);
+  color: #f5c542;
+}
+
+.stepperButton:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.stepperInput {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: none;
+  border-radius: 0;
+  outline: none;
+  padding: 10px 0;
+  font-size: 16px;
+  text-align: center;
+  color: #f3f1ec;
+  -webkit-appearance: none;
+  appearance: none;
+  -moz-appearance: textfield;
+}
+
+.stepperInput::-webkit-outer-spin-button,
+.stepperInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 .emptyText {
   font-size: 14px;
   color: #9c9a93;

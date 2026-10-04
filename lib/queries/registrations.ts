@@ -148,11 +148,13 @@ export async function deleteDanceEntry(client: SupabaseClient, id: string): Prom
 export async function submitRegistrations(
   client: SupabaseClient,
   acceptedTerms: boolean,
-  mediaConsent: "consented" | "declined"
+  mediaConsent: "consented" | "declined",
+  totalParticipantCount: number
 ): Promise<void> {
   const { error } = await client.rpc("submit_registrations", {
     p_accepted_terms: acceptedTerms,
     p_media_consent: mediaConsent,
+    p_total_participant_count: totalParticipantCount,
   });
   if (error) throw error;
 }

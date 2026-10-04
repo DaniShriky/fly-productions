@@ -2,7 +2,7 @@ import { CSSProperties, useState } from "react";
 import { CompetitionWithPricing } from "@/lib/queries/competitionsWithPricing";
 import { hexToRgbParts } from "@/lib/hexToRgbParts";
 import { Registration } from "@/types/registration";
-import { computePrice, computeRecordingFee, computeTotalPrice, displayCategoryLabel } from "@/lib/pricing";
+import { computePrice, computeRecordingFee, computeTotalPrice, displayCategoryLabel, formatPrice } from "@/lib/pricing";
 import { EditIcon, DeleteIcon, PlusIcon } from "./icons";
 import styles from "./CompetitionDanceList.module.css";
 
@@ -107,13 +107,13 @@ export default function CompetitionDanceList({ competition, allEntries, onAdd, o
                 </div>
 
                 <span className={`${styles.badge} ${isUnpaid ? styles.badgeUnpaid : styles.badgePaid}`}>
-                  {isUnpaid ? "לא שולם" : "שולם"}
+                  {isUnpaid ? "טרם שולם" : "שולם"}
                 </span>
 
                 <span className={styles.price}>
-                  {price != null ? `${price}₪` : "—"}
+                  {price != null ? `${formatPrice(price)}₪` : "—"}
                   {perParticipantPrice != null && entry.participantCount > 1 && (
-                    <span className={styles.subLine}> ({perParticipantPrice}₪ / משתתף)</span>
+                    <span className={styles.subLine}> ({formatPrice(perParticipantPrice)}₪ / משתתף)</span>
                   )}
                 </span>
 
