@@ -2,6 +2,7 @@ import { CSSProperties, Fragment, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { CompetitionWithPricing } from "@/lib/queries/competitionsWithPricing";
 import { hexToRgbParts } from "@/lib/hexToRgbParts";
+import { errorDetail } from "@/lib/errorDetail";
 import { Registration } from "@/types/registration";
 import {
   computePrice,
@@ -56,18 +57,6 @@ function shortLabel(label: string): string {
 function songFileName(path: string): string {
   const afterSlash = path.split("/").pop() ?? path;
   return afterSlash.replace(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-/i, "");
-}
-
-// Supabase/Postgrest errors (RLS denials, the manager_upload_song RPC's own
-// `raise exception`, a network failure) all carry a `.message` — surfacing
-// it, not just a generic "failed, try again," is what actually lets Dani
-// and a manager tell a real permissions/data problem apart from a flaky
-// network blip, per Dani, 2026-10-06.
-function errorDetail(err: unknown): string | null {
-  if (err && typeof err === "object" && "message" in err && typeof err.message === "string" && err.message) {
-    return err.message;
-  }
-  return null;
 }
 
 function formatDuration(seconds: number): string {

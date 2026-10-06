@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { StudioManager } from "@/types/studioManager";
 import { supabaseBrowserClient } from "@/lib/supabaseBrowserClient";
 import { getPendingCompetitionTypeRequests, resolveCompetitionTypeRequest } from "@/lib/queries/studioManagers";
+import { errorDetail } from "@/lib/errorDetail";
 import styles from "./PendingApprovalsTable.module.css";
 
 // Managers can't change preferred_competition_type themselves anymore (see
@@ -11,6 +12,9 @@ import styles from "./PendingApprovalsTable.module.css";
 export default function CompetitionTypeRequestsTable({ initialManagers }: { initialManagers: StudioManager[] }) {
   const [managers, setManagers] = useState(initialManagers);
   const [pendingId, setPendingId] = useState<string | null>(null);
+  // See the matching fix in PendingApprovalsTable.tsx — this had the same
+  // no-catch silent-failure bug.
+  const [actionError, setActionError] = useState<string | null>(null);
 
   // A new request should appear here live — per Dani, 2026-10-03. Same
   // refetch-on-any-change approach as PendingApprovalsTable, for the same
@@ -33,9 +37,14 @@ export default function CompetitionTypeRequestsTable({ initialManagers }: { init
 
   async function handleDecision(id: string, approve: boolean) {
     setPendingId(id);
+    setActionError(null);
     try {
       await resolveCompetitionTypeRequest(supabaseBrowserClient, id, approve);
       setManagers((current) => current.filter((m) => m.id !== id));
+    } catch (err) {
+      console.error("Competition-type request approval/rejection failed:", err);
+      const detail = errorDetail(err);
+      setActionError(`הפעולה נכשלה - נסו שוב.${detail ? ` (${detail})` : ""}`);
     } finally {
       setPendingId(null);
     }
@@ -47,6 +56,7 @@ export default function CompetitionTypeRequestsTable({ initialManagers }: { init
 
   return (
     <div className={styles.wrap}>
+      {actionError && <p className={styles.actionError}>{actionError}</p>}
       <table className={styles.table}>
         <thead>
           <tr>

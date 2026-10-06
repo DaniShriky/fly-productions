@@ -2,11 +2,17 @@ import { useEffect, useState } from "react";
 import { StudioManager } from "@/types/studioManager";
 import { supabaseBrowserClient } from "@/lib/supabaseBrowserClient";
 import { getPendingStudioManagers, updateStudioManagerStatus } from "@/lib/queries/studioManagers";
+import { errorDetail } from "@/lib/errorDetail";
 import styles from "./PendingApprovalsTable.module.css";
 
 export default function PendingApprovalsTable({ initialManagers }: { initialManagers: StudioManager[] }) {
   const [managers, setManagers] = useState(initialManagers);
   const [pendingId, setPendingId] = useState<string | null>(null);
+  // Previously had no catch at all — a failed approve/reject (RLS, network)
+  // threw silently, the button just re-enabling with nothing visibly
+  // changed and no indication anything went wrong. Found 2026-10-06 when
+  // Dani reported "לא נותן לי לאשר" with no further symptom to go on.
+  const [actionError, setActionError] = useState<string | null>(null);
 
   // A new registration should appear here the moment it's submitted, not
   // only on the next page load — per Dani, 2026-10-03. Refetches on any
@@ -31,9 +37,14 @@ export default function PendingApprovalsTable({ initialManagers }: { initialMana
 
   async function handleDecision(id: string, status: "approved" | "rejected") {
     setPendingId(id);
+    setActionError(null);
     try {
       await updateStudioManagerStatus(supabaseBrowserClient, id, status);
       setManagers((current) => current.filter((m) => m.id !== id));
+    } catch (err) {
+      console.error("Studio manager approval/rejection failed:", err);
+      const detail = errorDetail(err);
+      setActionError(`הפעולה נכשלה - נסו שוב.${detail ? ` (${detail})` : ""}`);
     } finally {
       setPendingId(null);
     }
@@ -45,6 +56,7 @@ export default function PendingApprovalsTable({ initialManagers }: { initialMana
 
   return (
     <div className={styles.wrap}>
+      {actionError && <p className={styles.actionError}>{actionError}</p>}
       <table className={styles.table}>
         <thead>
           <tr>

@@ -2,6 +2,20 @@
   overflow-x: auto;
 }
 
+/* Shared by PendingApprovalsTable and CompetitionTypeRequestsTable (both
+   import this file) — per Dani, 2026-10-06: an approve/reject that failed
+   used to do nothing visible at all (missing catch block), reported as
+   "לא נותן לי לאשר". */
+.actionError {
+  background: rgba(242, 139, 130, 0.12);
+  border: 1px solid rgba(242, 139, 130, 0.4);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  color: #f3f1ec;
+  font-size: 13px;
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;
