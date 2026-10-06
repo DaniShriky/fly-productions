@@ -736,3 +736,40 @@ $$;
 grant execute on function admin_update_registration_details(
   uuid, text, text, integer, text, text, text, text, text, text, text, text, boolean, boolean
 ) to authenticated;
+
+-- Round 14 (2026-10-06, Dani): approving/rejecting a pending studio manager
+-- was broken — "permission denied for table studio_managers". Root cause:
+-- updateStudioManagerStatus() does a direct client .update({ status }), but
+-- the blanket `grant update on studio_managers to authenticated` was
+-- revoked and replaced with an explicit column list (see the "Round" above
+-- adding pending_preferred_competition_type) that never included `status`
+-- in the first place — same bug class as project_dance_edit_save_failure's
+-- competition_id issue, just never caught until this flow was actually
+-- exercised live. Fixed with a security-definer RPC rather than simply
+-- adding `status` to that column grant: "Manager updates own row" has no
+-- restriction on which columns/values beyond id = auth.uid(), so a bare
+-- grant would let a manager set her own status straight to 'approved',
+-- defeating the "she cannot self-approve" rule "Manager inserts own
+-- pending row" already enforces at creation time.
+create function admin_update_studio_manager_status(target_id uuid, new_status text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not is_admin() then
+    raise exception 'Only an admin can approve or reject a studio manager';
+  end if;
+
+  if new_status not in ('pending', 'approved', 'rejected') then
+    raise exception 'Invalid status';
+  end if;
+
+  update studio_managers
+  set status = new_status
+  where id = target_id;
+end;
+$$;
+
+grant execute on function admin_update_studio_manager_status(uuid, text) to authenticated;

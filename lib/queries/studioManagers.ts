@@ -72,12 +72,22 @@ export async function getOwnStudioManager(client: SupabaseClient, userId: string
   return data ? toStudioManager(data as StudioManagerRow) : null;
 }
 
+// Runs as the admin_update_studio_manager_status SQL function (security
+// definer, admin-only) — see supabase/schema.sql. A direct client update
+// doesn't work: `status` was never included in studio_managers' column-
+// level update grant (same bug class as project_dance_edit_save_failure's
+// competition_id issue), and simply adding it there would also let a
+// manager set her own status straight to 'approved' via "Manager updates
+// own row"'s policy, which has no restriction beyond row ownership.
 export async function updateStudioManagerStatus(
   client: SupabaseClient,
   id: string,
   status: StudioManagerStatus
 ): Promise<void> {
-  const { error } = await client.from("studio_managers").update({ status }).eq("id", id);
+  const { error } = await client.rpc("admin_update_studio_manager_status", {
+    target_id: id,
+    new_status: status,
+  });
   if (error) throw error;
 }
 
