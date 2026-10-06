@@ -30,7 +30,7 @@ export default function PendingApproval({ competitions }: InferGetStaticPropsTyp
           <ClockIcon />
         </span>
         <p className={authStyles.hint}>
-          ההרשמה שלך ממתינה לאישור מנהל. נעדכן אותך באימייל ברגע שהחשבון יאושר, ואז תוכלי להתחבר.
+          ההרשמה שלך ממתינה לאישור מנהל. נעדכן אותך באימייל ברגע שהחשבון יאושר, ואז תוכלו להתחבר.
         </p>
         <p className={authStyles.hint}>
           לוקח יותר מכמה ימים ולא שמעת מאיתנו? אפשר לפנות אלינו ישירות: <a href={PHONE_TEL_URL}>{PHONE}</a> או ב-
