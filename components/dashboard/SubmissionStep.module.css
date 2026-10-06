@@ -16,6 +16,16 @@
   margin-bottom: 14px;
 }
 
+.takanonLink {
+  color: #f5c542;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.takanonLink:hover {
+  color: #e0a84a;
+}
+
 .required {
   color: #f28b82;
 }

@@ -276,8 +276,11 @@ export default function DanceEntryForm({
     onDirtyChange?.(hasUnsavedChanges);
   }, [hasUnsavedChanges, onDirtyChange]);
   const isSolo = count === 1;
+  // Group judging/time-limit category (3 min, per-participant surcharge
+  // rate) — separate from pricing, which multiplies by headcount for every
+  // non-solo category (see computeTotalPrice's comment, lib/pricing.ts).
   const isGroup = count >= 5;
-  const baseSubtotal = perParticipantPrice != null ? perParticipantPrice * (isGroup ? count : 1) : null;
+  const baseSubtotal = perParticipantPrice != null ? perParticipantPrice * (isSolo ? 1 : count) : null;
   const wantsRecording = wantsVideo || wantsStills;
 
   // Video and stills are two independent services, flat 150₪ each regardless
@@ -1029,7 +1032,7 @@ export default function DanceEntryForm({
                 {baseSubtotal != null && (
                   <div className={styles.priceBreakdownRow}>
                     <span>
-                      מחיר בסיס{isGroup ? ` (${formatPrice(perParticipantPrice!)}₪ × ${count} משתתפים)` : ""}
+                      מחיר בסיס{!isSolo ? ` (${formatPrice(perParticipantPrice!)}₪ × ${count} משתתפים)` : ""}
                       {isGroup && competition.priceTiers && (
                         <span className={styles.priceExplain}>
                           {" "}

@@ -2,6 +2,47 @@
   overflow-x: auto;
 }
 
+.searchRow {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.searchInput {
+  flex: 1 1 260px;
+  min-width: 0;
+  background: #101014;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  padding: 9px 14px;
+  font-size: 14px;
+  color: #f3f1ec;
+  transition: border-color 0.2s ease;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: rgba(245, 197, 66, 0.7);
+}
+
+.competitionSelect {
+  flex: 0 0 auto;
+  background: #101014;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  padding: 9px 14px;
+  font-size: 14px;
+  color: #f3f1ec;
+}
+
+.noResults {
+  font-size: 14px;
+  color: #9c9a93;
+  text-align: center;
+  padding: 30px 0;
+}
+
 .filters {
   display: flex;
   gap: 8px;
@@ -59,6 +100,69 @@
   font-weight: 700;
 }
 
+/* Per Dani, 2026-10-06: the price breakdown used to always show inline —
+   now the row itself is the toggle (cursor + hover feedback), and the
+   breakdown lives in a separate row that only renders while expanded. */
+.row {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.priceCell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.expandChevron {
+  display: flex;
+  color: #9c9a93;
+  transition: transform 0.2s ease;
+}
+
+.expandChevronOpen {
+  transform: rotate(180deg);
+}
+
+.breakdownRow td {
+  padding: 0 14px 16px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  white-space: normal;
+}
+
+.breakdown {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 12px 16px;
+  max-width: 360px;
+}
+
+.breakdownLine {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 13px;
+  color: #d8d6cf;
+  padding: 5px 0;
+}
+
+.breakdownTotal {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 4px;
+  padding-top: 9px;
+  font-weight: 700;
+  color: #f3f1ec;
+}
+
+.breakdownTotal span:last-child {
+  color: #f5c542;
+}
+
 .statusButton {
   border: none;
   border-radius: 999px;
@@ -98,4 +202,22 @@
 
 .exceptionLabel input {
   accent-color: #f5c542;
+}
+
+.editButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: none;
+  color: #d8d6cf;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.editButton:hover {
+  background: rgba(245, 197, 66, 0.15);
+  color: #f5c542;
 }

@@ -21,6 +21,8 @@ import {
   deleteDanceEntry,
   getOwnRegistrations,
   submitRegistrations,
+  uploadDanceMusic,
+  uploadSongForRegistration,
   upsertDanceEntry,
 } from "@/lib/queries/registrations";
 import { getOwnStudioManager } from "@/lib/queries/studioManagers";
@@ -71,6 +73,7 @@ export default function Dashboard({ competitions, registrations, manager: initia
     return () => resizeObserver.disconnect();
   }, []);
 
+
   function handleEditFromSummary(entry: Registration) {
     setPendingEditEntry(entry);
     setActiveStep(1);
@@ -87,6 +90,20 @@ export default function Dashboard({ competitions, registrations, manager: initia
   async function handleDelete(id: string) {
     await deleteDanceEntry(supabaseBrowserClient, id);
     setEntries((current) => current.filter((e) => e.id !== id));
+  }
+
+  // Per Dani, 2026-10-06: music can still be uploaded up to 10 days before
+  // the event, even once the dance itself is locked by submission — see
+  // uploadSongForRegistration/manager_upload_song in supabase/schema.sql.
+  // Takes the raw File (not a path) since the storage upload itself needs
+  // manager.id for the path prefix, which DanceEntriesTable doesn't
+  // otherwise need to know.
+  async function handleSongUpload(id: string, file: File, durationSeconds: number) {
+    const path = await uploadDanceMusic(supabaseBrowserClient, manager.id, file);
+    await uploadSongForRegistration(supabaseBrowserClient, id, path, durationSeconds);
+    setEntries((current) =>
+      current.map((e) => (e.id === id ? { ...e, songFilePath: path, songDurationSeconds: Math.round(durationSeconds) } : e))
+    );
   }
 
   // Mirrors exactly what submit_registrations() does server-side (see
@@ -159,11 +176,15 @@ export default function Dashboard({ competitions, registrations, manager: initia
 
       <DashboardBanner />
 
-      <div className={styles.stickyHeader} style={{ top: navHeight }}>
-        <header className={styles.pageHeader}>
-          <p className={styles.pageSubtitle}>כאן תוכלי לעקוב אחרי ההרשמה שלך ולנהל את הריקודים לתחרויות.</p>
-        </header>
+      {/* Outside .stickyHeader on purpose (per Dani, 2026-10-06) — this
+          scrolls away with the normal page flow instead of being toggled by
+          JS, so there's no layout jump. Only RegistrationStepper itself
+          stays pinned once scrolled past. */}
+      <header className={styles.pageHeader}>
+        <p className={styles.pageSubtitle}>כאן תוכלי לעקוב אחרי ההרשמה שלך ולנהל את הריקודים לתחרויות.</p>
+      </header>
 
+      <div className={styles.stickyHeader} style={{ top: navHeight }}>
         <RegistrationStepper active={activeStep} onSelect={handleStepSelect} />
       </div>
 
@@ -207,7 +228,13 @@ export default function Dashboard({ competitions, registrations, manager: initia
                 being squeezed into the same reading-width column as the rest
                 of the dashboard. */}
             <div className={styles.wideTable}>
-              <DanceEntriesTable entries={entries} competitions={competitions} onEdit={handleEditFromSummary} onDelete={handleDelete} />
+              <DanceEntriesTable
+                entries={entries}
+                competitions={competitions}
+                onEdit={handleEditFromSummary}
+                onDelete={handleDelete}
+                onSongUpload={handleSongUpload}
+              />
             </div>
 
             <div className={styles.narrow}>

@@ -1,14 +1,30 @@
-import { useState } from "react";
+import { CSSProperties, useState } from "react";
+import Image from "next/image";
 import { CompetitionWithPricing } from "@/lib/queries/competitionsWithPricing";
 import { updateRegistrationCutoffAdmin } from "@/lib/queries/adminCompetitions";
 import { supabaseBrowserClient } from "@/lib/supabaseBrowserClient";
 import { formatDateHe } from "@/lib/pricing";
 import { getGeneralRegistrationCutoffIso, getHebrewDayOfWeek } from "@/lib/getCompetitionDays";
+import { hexToRgbParts } from "@/lib/hexToRgbParts";
 import { MinusIcon, PlusIcon } from "@/components/dashboard/icons";
 import styles from "./RegistrationCutoffEditor.module.css";
 
 type Props = {
   competitions: CompetitionWithPricing[];
+};
+
+// Religious competitions get this pink override in this table specifically
+// (per Dani, 2026-10-06) — see the longer comment on rowStyle below.
+const RELIGIOUS_ROW_COLOR = "#f582c2";
+
+// Per-slug color overrides, local to this admin table only — per Dani,
+// 2026-10-06: star-of-the-dance's accentColor (lib/competitionAccentColors.ts)
+// changed to blue for the studio manager's registration flow (DanceEntryForm's
+// glow, DanceEntriesTable, CompetitionDanceList, RegistrationNotice), but
+// should keep showing its original red specifically here, in the admin's
+// cutoff table.
+const ADMIN_ROW_COLOR_OVERRIDES: Record<string, string> = {
+  "star-of-the-dance": "#f0615f",
 };
 
 // Lets an admin nudge a specific competition's general registration cutoff
@@ -44,6 +60,36 @@ export default function RegistrationCutoffEditor({ competitions }: Props) {
     }
   }
 
+  // Per Dani, 2026-10-06: each competition's row gets its own accent color
+  // (same hand-picked COMPETITION_ACCENT_COLORS used on the dance-entry
+  // form/saved-dances list — see lib/competitionAccentColors.ts) so rows are
+  // easy to tell apart at a glance, not just by reading the name. A leading
+  // (right, in this RTL table) colored bar plus a faint background tint —
+  // same rgba-from-hex-parts technique as DanceEntryForm's glow, since
+  // CSS color-mix() isn't supported everywhere.
+  //
+  // Religious competitions get RELIGIOUS_ROW_COLOR here specifically —
+  // mega-star-religious otherwise shares mega-star's plain gold accentColor,
+  // so the two were indistinguishable in this table even though they're
+  // different competitions. This is a local override just for this admin
+  // table, not a change to COMPETITION_ACCENT_COLORS itself (that color is
+  // still what mega-star-religious's own hero/branding use).
+  function rowStyle(competition: CompetitionWithPricing): CSSProperties | undefined {
+    const color = competition.isReligious
+      ? RELIGIOUS_ROW_COLOR
+      : ADMIN_ROW_COLOR_OVERRIDES[competition.slug] ?? competition.accentColor;
+    const rgb = color ? hexToRgbParts(color) : null;
+    if (!rgb) return undefined;
+    return {
+      // Physical borderRight, not a logical borderInlineStart — this RTL
+      // layout has a documented bug with logical inline properties
+      // misbehaving (see CLAUDE.md), so this codebase sticks to physical
+      // properties throughout.
+      borderRight: `3px solid rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.7)`,
+      backgroundColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.14)`,
+    };
+  }
+
   async function resetToDefault(competition: CompetitionWithPricing) {
     setSavingId(competition.id);
     setErrorId(null);
@@ -76,10 +122,17 @@ export default function RegistrationCutoffEditor({ competitions }: Props) {
             const saving = savingId === competition.id;
 
             return (
-              <tr key={competition.id}>
+              <tr key={competition.id} style={rowStyle(competition)}>
                 <td>
-                  <span className="en" lang="en">
-                    {competition.name}
+                  <span className={styles.nameCell}>
+                    {competition.logo && (
+                      <span className={styles.logoSlot}>
+                        <Image src={competition.logo} alt="" width={32} height={28} className={styles.logo} />
+                      </span>
+                    )}
+                    <span className="en" lang="en">
+                      {competition.name}
+                    </span>
                   </span>
                 </td>
                 <td>

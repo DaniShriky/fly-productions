@@ -7,7 +7,13 @@
 export const COMPETITION_ACCENT_COLORS: Record<string, string> = {
   "dance-star-international": "#b98cf5", // light purple
   "eilat-dance-international": "#f5a35c", // light orange
-  "star-of-the-dance": "#f0615f", // light red
+  // Blue, not the original red — per Dani, 2026-10-06, changed site-wide
+  // (studio manager's registration flow: DanceEntryForm's glow,
+  // DanceEntriesTable, CompetitionDanceList, RegistrationNotice). A
+  // different shade than art-fantasy's own blue (#3fbce9) below. The admin's
+  // RegistrationCutoffEditor keeps the original red specifically — see its
+  // own ADMIN_ROW_COLOR_OVERRIDES.
+  "star-of-the-dance": "#4f8fc7",
   "mega-star": "#f5c542", // gold
   "mega-star-religious": "#f5c542", // gold
   "super-star-eilat": "#f5c542", // gold

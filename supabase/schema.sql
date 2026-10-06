@@ -644,3 +644,95 @@ create policy "Admin updates own row" on admins
 -- schema's established habit of only ever granting exactly the columns a
 -- normal client write is supposed to touch.
 grant update (name, profile_image_path) on admins to authenticated;
+
+-- Round 13 (2026-10-06, Dani): two related gaps in the submission lock.
+--
+-- 1) Music can genuinely still be uploaded up to 10 days before the event
+--    (see getMusicSubmissionCutoffIso) — but "Manager updates own unpaid
+--    registration" requires submitted_at is null, so a manager had no way
+--    to add a song to an already-submitted dance at all. This narrow RPC
+--    is the one exception: it touches only song_file_path/
+--    song_duration_seconds, still requires payment_status = 'unpaid', but
+--    doesn't care whether submitted_at is set.
+create function manager_upload_song(
+  p_registration_id uuid,
+  p_song_file_path text,
+  p_song_duration_seconds numeric
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  update registrations
+  set song_file_path = p_song_file_path,
+      song_duration_seconds = p_song_duration_seconds
+  where id = p_registration_id
+    and studio_manager_id = auth.uid()
+    and payment_status = 'unpaid';
+
+  if not found then
+    raise exception 'Registration not found, not yours, or already paid';
+  end if;
+end;
+$$;
+
+grant execute on function manager_upload_song(uuid, text, numeric) to authenticated;
+
+-- 2) An admin had no way to fix a dance's own details at all (only payment
+--    status/late-payment exception, via admin_update_registration_payment)
+--    — specifically needed for an already-submitted dance, since that's
+--    exactly when a studio manager can no longer fix it herself. Mirrors
+--    the manager's own upsertDanceEntry field set minus competition_id
+--    (reassigning a dance to a different competition is out of scope here,
+--    same restriction the manager herself has) and the payment-related
+--    columns (those stay admin_update_registration_payment's job).
+create function admin_update_registration_details(
+  p_id uuid,
+  p_dance_name text,
+  p_category text,
+  p_participant_count integer,
+  p_step_division text,
+  p_dance_style text,
+  p_dancer_name text,
+  p_choreographer_name text,
+  p_dance_level text,
+  p_manager_name text,
+  p_studio_name text,
+  p_city text,
+  p_wants_video boolean,
+  p_wants_stills boolean
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not is_admin() then
+    raise exception 'Only an admin can edit a dance''s details';
+  end if;
+
+  update registrations
+  set
+    dance_name = p_dance_name,
+    category = p_category,
+    participant_count = p_participant_count,
+    step_division = p_step_division,
+    dance_style = p_dance_style,
+    dancer_name = p_dancer_name,
+    choreographer_name = p_choreographer_name,
+    dance_level = p_dance_level,
+    manager_name = p_manager_name,
+    studio_name = p_studio_name,
+    city = p_city,
+    wants_video = p_wants_video,
+    wants_stills = p_wants_stills
+  where id = p_id;
+end;
+$$;
+
+grant execute on function admin_update_registration_details(
+  uuid, text, text, integer, text, text, text, text, text, text, text, text, boolean, boolean
+) to authenticated;

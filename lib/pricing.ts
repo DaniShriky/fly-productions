@@ -167,13 +167,19 @@ export function computeRecordingFee(wantsVideo: boolean, wantsStills: boolean): 
   return (wantsVideo ? computeRecordingFeeForType() : 0) + (wantsStills ? computeRecordingFeeForType() : 0);
 }
 
-// Total price for one dance entry: per-participant price × participant count
-// for group categories (solo/duet/trio_quartet are already flat per-dance
-// fees in the real pricing, not multiplied by a "quantity"), plus any
-// over-time surcharge, plus the recording fee if this entry ordered video
-// and/or stills (0 if not — caller resolves the actual fee via
-// computeRecordingFee and passes it in, since it depends on sibling entries,
-// not just this one).
+// Total price for one dance entry: per-participant price × participant
+// count, for EVERY category — corrected 2026-10-06 (Dani): duet/trio_quartet
+// are priced per dancer same as groups are (325₪/dancer for a duet is 650₪
+// total for the two of them, 275₪/dancer for a trio/quartet varies by
+// whether it's 3 or 4), not a single flat per-dance fee the way this used
+// to assume. Solo is unaffected either way since its participantCount is
+// always 1. Plus any over-time surcharge (computeSurcharge has its own,
+// still-correct, separate multiply-or-flat rule — group categories are
+// per-participant there too, but solo/duet/trio_quartet's time-overage
+// surcharge really is a flat amount regardless of headcount, per the real
+// flyer), plus the recording fee if this entry ordered video and/or stills
+// (0 if not — caller resolves the actual fee via computeRecordingFee and
+// passes it in, since it depends on sibling entries, not just this one).
 export function computeTotalPrice(
   priceTiers: PriceTiers | undefined,
   category: RegistrationCategory,
@@ -185,6 +191,6 @@ export function computeTotalPrice(
   if (base == null) return null;
 
   const surcharge = computeSurcharge(category, durationSeconds, participantCount);
-  const danceFee = isGroupCategory(category) ? base * participantCount + surcharge : base + surcharge;
+  const danceFee = base * participantCount + surcharge;
   return danceFee + recordingFee;
 }

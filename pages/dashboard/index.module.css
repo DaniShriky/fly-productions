@@ -23,7 +23,13 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+/* A sibling of .stickyHeader/.main (per Dani, 2026-10-06: this needs to
+   scroll away naturally with the page instead of being toggled by JS inside
+   the sticky bar, which caused a layout jump) — same horizontal padding as
+   .stickyHeader/.main below it so its text lines up with the rest of the
+   page instead of running edge to edge. */
 .pageHeader {
+  padding: 16px 5% 0;
   margin-bottom: 8px;
   text-align: center;
 }

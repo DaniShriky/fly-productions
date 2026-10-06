@@ -1,19 +1,23 @@
-/* Blue, not gold — this is a status/deadline reminder (informational), not a
-   money amount or a selection, so it uses the same blue as the stepper's
-   process indicator rather than the site's gold "selection/primary" accent. */
+/* Themed per-competition (per Dani, 2026-10-06) via --notice-accent/
+   --notice-rgb, set inline from competition.accentColor — same
+   rgba(var(--x-rgb), alpha) technique as DanceEntryForm's own glow, since
+   CSS color-mix() isn't supported everywhere. The literal blue values here
+   are the fallback for a competition with no accentColor yet, not a fixed
+   color anymore — this used to always be blue regardless of which
+   competition was selected. */
 .notice {
-  background: linear-gradient(135deg, rgba(127, 184, 230, 0.12), rgba(127, 184, 230, 0.03) 65%);
-  border: 1px solid rgba(127, 184, 230, 0.3);
+  background: linear-gradient(135deg, rgba(var(--notice-rgb, 127, 184, 230), 0.12), rgba(var(--notice-rgb, 127, 184, 230), 0.03) 65%);
+  border: 1px solid rgba(var(--notice-rgb, 127, 184, 230), 0.3);
   border-radius: 14px;
   padding: 18px 20px;
   margin-bottom: 20px;
   font-size: 14px;
   color: #f3f1ec;
-  box-shadow: 0 16px 36px -26px rgba(127, 184, 230, 0.45);
+  box-shadow: 0 16px 36px -26px rgba(var(--notice-rgb, 127, 184, 230), 0.45);
 }
 
 .notice strong {
-  color: #7fb8e6;
+  color: var(--notice-accent, #7fb8e6);
 }
 
 .row {
@@ -34,7 +38,7 @@
 
 .icon {
   flex: 0 0 auto;
-  color: #7fb8e6;
+  color: var(--notice-accent, #7fb8e6);
   margin-top: 2px;
 }
 
@@ -64,7 +68,7 @@
 .divider {
   height: 1px;
   margin: 14px 0;
-  background: linear-gradient(90deg, rgba(127, 184, 230, 0.3), transparent 85%);
+  background: linear-gradient(90deg, rgba(var(--notice-rgb, 127, 184, 230), 0.3), transparent 85%);
 }
 
 .secondary {

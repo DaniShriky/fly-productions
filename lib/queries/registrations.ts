@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { DanceLevel, Registration, RegistrationCategory } from "@/types/registration";
+import { sanitizeFileName } from "@/lib/sanitizeFileName";
 
 type RegistrationRow = {
   id: string;
@@ -164,10 +165,36 @@ export async function submitRegistrations(
 // supabase/schema.sql). Called on form submit, not on file selection, so
 // changing your mind before submitting doesn't leave orphaned uploads.
 export async function uploadDanceMusic(client: SupabaseClient, studioManagerId: string, file: File): Promise<string> {
-  const path = `${studioManagerId}/${crypto.randomUUID()}-${file.name}`;
+  // The real original filename often has spaces/parentheses (e.g. a song
+  // exported as "Fly productions - Dance (128k).mp3") — Supabase Storage
+  // rejects those in the object key itself with "Invalid key", found
+  // 2026-10-06. sanitizeFileName keeps the name readable in the stored path
+  // (still shown to the manager via songFileName) without hitting that.
+  const path = `${studioManagerId}/${crypto.randomUUID()}-${sanitizeFileName(file.name)}`;
   const { error } = await client.storage.from("dance-music").upload(path, file);
   if (error) throw error;
   return path;
+}
+
+// Runs as the manager_upload_song() SQL function (security definer) so it
+// can write song_file_path/song_duration_seconds even on an already-
+// submitted registration, where "Manager updates own unpaid registration"'s
+// own submitted_at is null requirement would otherwise block it entirely —
+// per Dani, 2026-10-06: music can genuinely still be uploaded up to 10 days
+// before the event (see getMusicSubmissionCutoffIso), independent of
+// whether the dance itself has been submitted.
+export async function uploadSongForRegistration(
+  client: SupabaseClient,
+  registrationId: string,
+  songFilePath: string,
+  songDurationSeconds: number
+): Promise<void> {
+  const { error } = await client.rpc("manager_upload_song", {
+    p_registration_id: registrationId,
+    p_song_file_path: songFilePath,
+    p_song_duration_seconds: Math.round(songDurationSeconds),
+  });
+  if (error) throw error;
 }
 
 // The bucket is private, so playback needs a signed URL rather than a public

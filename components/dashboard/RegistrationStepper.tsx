@@ -38,6 +38,11 @@ export default function RegistrationStepper({ active, onSelect }: Props) {
               <span className={`${styles.circle} ${isActive ? styles.circleActive : ""} ${isDone ? styles.circleDone : ""}`}>
                 {isDone ? <CheckIcon size={16} /> : step}
               </span>
+              {/* On mobile (see RegistrationStepper.module.css), only the
+                  active step's own label stays visible, right under its own
+                  circle, moving with it as the active step changes — per
+                  Dani, 2026-10-06, instead of one separate caption line
+                  below the whole stepper. */}
               <span className={`${styles.label} ${isActive ? styles.labelActive : ""}`}>{label}</span>
             </button>
           </div>

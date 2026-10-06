@@ -1,6 +1,8 @@
+import { CSSProperties } from "react";
 import { CompetitionWithPricing } from "@/lib/queries/competitionsWithPricing";
 import { daysUntil, formatDateHe, isEarlyPricing } from "@/lib/pricing";
 import { getGeneralRegistrationCutoffIso, getVideoOrderCutoffIso } from "@/lib/getCompetitionDays";
+import { hexToRgbParts } from "@/lib/hexToRgbParts";
 import { CalendarIcon, ClockIcon } from "./icons";
 import CountdownTimer from "./CountdownTimer";
 import styles from "./RegistrationNotice.module.css";
@@ -38,8 +40,21 @@ export default function RegistrationNotice({ competition }: { competition?: Comp
   const tenDayCutoffDaysLeft = tenDayCutoffIso ? daysUntil(tenDayCutoffIso) : null;
   const tenDayCutoffPassed = tenDayCutoffDaysLeft != null && tenDayCutoffDaysLeft <= 0;
 
+  // Per Dani, 2026-10-06: this notice should read as "belonging to" whichever
+  // competition is selected, same accent color as DanceEntryForm's glow and
+  // CompetitionDanceList — rather than every competition sharing the one
+  // fixed blue it used before. Falls back to that original blue (the CSS's
+  // own default) when a competition has no accentColor yet.
+  const rgb = competition.accentColor ? hexToRgbParts(competition.accentColor) : null;
+  const noticeStyle: CSSProperties | undefined = rgb
+    ? ({
+        "--notice-accent": competition.accentColor,
+        "--notice-rgb": `${rgb.r}, ${rgb.g}, ${rgb.b}`,
+      } as CSSProperties)
+    : undefined;
+
   return (
-    <div className={styles.notice}>
+    <div className={styles.notice} style={noticeStyle}>
       <div className={styles.row}>
         <div className={styles.titleLine}>
           <span className={styles.icon}>

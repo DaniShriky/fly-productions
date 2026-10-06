@@ -12,10 +12,32 @@
   overflow-x: auto;
 }
 
+/* Per Dani, 2026-10-06: title + filter pills share one row instead of the
+   filters sitting alone above the table — "רשימת הריקודים (N)" on the
+   reading-start (right) side, filters trailing on the left. */
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.panelTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #f3f1ec;
+}
+
+.panelTitleCount {
+  font-weight: 600;
+  color: #9c9a93;
+}
+
 .filters {
   display: flex;
   gap: 8px;
-  margin-bottom: 16px;
 }
 
 .filterButton {
@@ -186,8 +208,9 @@
 
 .mediaOrderRow {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
   margin-top: 6px;
 }
 
@@ -195,6 +218,21 @@
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.songFileInfo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.songFileName {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  color: #d8d6cf;
 }
 
 .playButton {
@@ -241,6 +279,31 @@
   white-space: nowrap;
 }
 
+.missingSongCell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+/* A <label> wrapping a hidden file input, styled as a small text link —
+   per Dani, 2026-10-06, lets a manager add a song even to an already-
+   submitted dance (manager_upload_song doesn't care about submitted_at,
+   only payment_status — see supabase/schema.sql). */
+.uploadSongLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #7fb8e6;
+  cursor: pointer;
+}
+
+.uploadSongLabel:hover {
+  color: #a4cdef;
+}
+
 .priceLine {
   white-space: nowrap;
 }
@@ -273,7 +336,9 @@
 }
 
 .orderedBadge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-size: 14px;
   font-weight: 700;
   padding: 3px 10px;
@@ -283,8 +348,35 @@
   white-space: nowrap;
 }
 
+/* Submission-status badge (replaces the edit/delete icons once a dance is
+   locked) — same green as .paid, with a checkmark so it reads as a positive
+   confirmation rather than just another status label. */
+.submittedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: rgba(63, 174, 100, 0.15);
+  color: #3fae64;
+  box-shadow: 0 0 10px rgba(63, 174, 100, 0.15);
+  white-space: nowrap;
+}
+
+/* Now applied to an inner <span>, not the <td> itself — per Dani,
+   2026-10-06: setting display:flex directly on the <td> stopped it
+   stretching to the row's full height like a normal table cell, so its
+   border-bottom painted partway up the row (wherever the flex content's
+   own shrink-to-fit height ended) instead of at the row's real bottom edge,
+   with the row's own background showing through the gap below it — looked
+   like a stray line with empty space under it. The <td> now stays a plain
+   table-cell (default vertical-align: middle centers this within the row),
+   and only this inner wrapper is a flex row for the icon buttons/badge. */
 .actions {
-  display: flex;
+  display: inline-flex;
+  align-items: center;
   flex-wrap: wrap;
   gap: 6px;
 }
@@ -345,13 +437,46 @@
   padding-top: 0;
 }
 
+/* Now a <button>, not a plain <div> — per Dani, 2026-10-06, this header is
+   the click-to-expand toggle for its dance's breakdown below, same pattern
+   as the admin payments table's row. Reset to look like the plain div it
+   replaced, just full-width and clickable. */
 .breakdownDanceHeader {
   display: flex;
-  align-items: baseline;
-  gap: 6px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
   font-weight: 700;
   color: #f3f1ec;
-  margin-bottom: 4px;
+  text-align: inherit;
+  cursor: pointer;
+}
+
+.breakdownHeaderEnd {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  font-weight: 700;
+  color: #f5c542;
+}
+
+.expandChevron {
+  display: flex;
+  color: #9c9a93;
+  transition: transform 0.2s ease;
+}
+
+.expandChevronOpen {
+  transform: rotate(180deg);
+}
+
+.breakdownDetails {
+  margin-top: 6px;
 }
 
 .breakdownLineRow {
@@ -391,6 +516,70 @@
 
 .missingWarning strong {
   color: #f28b82;
+}
+
+/* A fixed toast for action failures (delete/playback/song-upload) — per
+   Dani, 2026-10-06, the old inline box at the top of the table was easy to
+   miss once there are enough rows to scroll past it. Same bottom-left
+   fixed-toast pattern as LiveNotifications.module.css's .stack/.toast,
+   duplicated rather than shared since LiveNotifications is specifically
+   for realtime-subscription-driven events, a different trigger than this
+   component's own local action failures. */
+.errorToast {
+  position: fixed;
+  z-index: 200;
+  bottom: 20px;
+  /* Right, not left (unlike LiveNotifications' toasts) — per Dani,
+     2026-10-06: the AccessibilityWidget's own floating button already sits
+     bottom-left and was getting covered by this. */
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 360px;
+  background: linear-gradient(165deg, #1f1416, #16100f 70%);
+  border: 1px solid rgba(242, 139, 130, 0.4);
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-shadow: 0 16px 36px -16px rgba(0, 0, 0, 0.7), 0 0 20px -8px rgba(242, 139, 130, 0.3);
+  font-size: 14px;
+  color: #f3f1ec;
+  animation: errorToastIn 0.25s ease;
+}
+
+.errorToastMessage {
+  flex: 1;
+  line-height: 1.4;
+}
+
+.errorToastClose {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: none;
+  color: #9c9a93;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.errorToastClose:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+@keyframes errorToastIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .breakdownTitle {
@@ -502,12 +691,35 @@
     flex: 0 0 auto;
   }
 
-  .table td.actions {
+  /* .actionsCell is the <td> itself; .actions (set in DanceEntriesTable.tsx)
+     is an inner <span> wrapping the edit/delete icons or the "הוגש" badge —
+     split apart 2026-10-06 to fix a stray-border/vertical-centering bug
+     from setting display:flex directly on a <td> (see that commit's
+     comment), so this mobile override now targets the outer cell by its
+     own class instead of relying on .actions still being on the <td>. */
+  .table td.actionsCell {
     justify-content: flex-end;
   }
 
-  .table td.actions::before {
+  .table td.actionsCell::before {
     content: none;
+  }
+
+  /* The generic ".table td { display: flex; justify-content: space-between }"
+     above assumes a cell has exactly one content element to sit opposite its
+     label — the ריקוד cell (dance name + choreographer/dancer/day sublines
+     + a tag row) and the מחיר cell (per-participant line + total line +
+     optional recording-fee note) each have several sibling <div>s instead,
+     which that rule laid out as separate flex items side by side instead of
+     stacked — cramped and overflowing the card, per Dani, 2026-10-06. This
+     stacks the label above the content as normal block flow instead. */
+  .table td.stackedCell {
+    display: block;
+  }
+
+  .table td.stackedCell::before {
+    display: block;
+    margin-bottom: 4px;
   }
 
   .table tfoot tr {

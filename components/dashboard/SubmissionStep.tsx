@@ -56,6 +56,11 @@ function ManualPaymentPopup({ onClose }: { onClose: () => void }) {
 export default function SubmissionStep({ entries, onSubmit }: Props) {
   const draftEntries = entries.filter((e) => !e.submittedAt);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  // Per Dani, 2026-10-06: a manager shouldn't be able to approve the
+  // תקנון without having actually opened it at least once first — tracked
+  // purely client-side (opening the link in a new tab doesn't prove she
+  // read it, but it's the honest-effort signal available here).
+  const [hasViewedTakanon, setHasViewedTakanon] = useState(false);
   const [mediaConsent, setMediaConsent] = useState<MediaConsent | "">("");
   // Free text, not number, so the field can be genuinely empty while typing
   // instead of snapping to 0 — parsed/validated below. Self-reported, not
@@ -75,6 +80,14 @@ export default function SubmissionStep({ entries, onSubmit }: Props) {
   // floors at 1, and the first click from an empty field lands on 1.
   function adjustTotalParticipantCount(delta: number) {
     setTotalParticipantCount((prev) => String(Math.max(1, (Number(prev) || 0) + delta)));
+  }
+
+  function handleAcceptTermsClick() {
+    if (!hasViewedTakanon) {
+      alert("לפני אישור התקנון יש לצפות בו - לחצו על \"תקנון הפסטיבל\" למעלה כדי לפתוח אותו.");
+      return;
+    }
+    setAcceptedTerms(true);
   }
 
   async function handleSubmitClick() {
@@ -106,15 +119,24 @@ export default function SubmissionStep({ entries, onSubmit }: Props) {
         <>
           <div className={styles.questionCard}>
             <p className={styles.question}>
-              קראתי את תקנון הפסטיבל ואני מאשר/ת את השתתפותנו בהתאם לכללי התקנון{" "}
-              <span className={styles.required}>*</span>
+              קראתי את{" "}
+              <a
+                href="/documents/takanon.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.takanonLink}
+                onClick={() => setHasViewedTakanon(true)}
+              >
+                תקנון הפסטיבל
+              </a>{" "}
+              ואני מאשר/ת את השתתפותנו בהתאם לכללי התקנון <span className={styles.required}>*</span>
             </p>
             <label className={styles.radioOption}>
               <input
                 type="radio"
                 name="accepted-terms"
                 checked={acceptedTerms}
-                onChange={() => setAcceptedTerms(true)}
+                onChange={handleAcceptTermsClick}
               />
               מאשר/ת
             </label>

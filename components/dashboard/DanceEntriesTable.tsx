@@ -1,6 +1,7 @@
-import { Fragment, useState } from "react";
+import { CSSProperties, Fragment, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { CompetitionWithPricing } from "@/lib/queries/competitionsWithPricing";
+import { hexToRgbParts } from "@/lib/hexToRgbParts";
 import { Registration } from "@/types/registration";
 import {
   computePrice,
@@ -13,8 +14,7 @@ import {
 } from "@/lib/pricing";
 import { getDanceMusicUrl } from "@/lib/queries/registrations";
 import { supabaseBrowserClient } from "@/lib/supabaseBrowserClient";
-import { PHONE, PHONE_TEL_URL, WHATSAPP_URL } from "@/lib/contact";
-import { EditIcon, DeleteIcon } from "./icons";
+import { EditIcon, DeleteIcon, CheckIcon, VideoCameraIcon, UploadIcon, CloseIcon } from "./icons";
 import styles from "./DanceEntriesTable.module.css";
 
 type Filter = "all" | "unpaid" | "paid";
@@ -24,12 +24,22 @@ type Props = {
   competitions: CompetitionWithPricing[];
   onEdit: (entry: Registration) => void;
   onDelete: (id: string) => Promise<void>;
+  // Per Dani, 2026-10-06: music can still be added up to 10 days before the
+  // event even once a dance is locked by submission — unlike onEdit/onDelete,
+  // this works regardless of isEditable.
+  onSongUpload: (id: string, file: File, durationSeconds: number) => Promise<void>;
 };
 
-const COLUMN_COUNT = 7;
+const COLUMN_COUNT = 8;
 
-function isGroup(category: Registration["category"]): boolean {
-  return category === "group_small" || category === "group_large";
+// Corrected 2026-10-06 (Dani): every non-solo category is priced per
+// participant, not just the true "group" judging categories — a duet's
+// 325₪/dancer is 650₪ total for the two of them, a trio/quartet's 275₪/
+// dancer varies by headcount, same as groups already did. Solo is the only
+// flat one (and its participantCount is always 1 anyway). See
+// computeTotalPrice's comment in lib/pricing.ts for the actual calculation.
+function isPricedPerParticipant(category: Registration["category"]): boolean {
+  return category !== "solo";
 }
 
 // The table is tight on space, so the parenthetical detail (age range,
@@ -39,6 +49,27 @@ function shortLabel(label: string): string {
   return label.split(" (")[0];
 }
 
+// Storage paths are "{studioManagerId}/{uuid}-{originalFileName}" (see
+// uploadDanceMusic) — strips the folder and uuid prefix to recover the
+// name the manager actually uploaded, shown per Dani, 2026-10-06, so it's
+// obvious a song was in fact saved, not just that *a* file exists.
+function songFileName(path: string): string {
+  const afterSlash = path.split("/").pop() ?? path;
+  return afterSlash.replace(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-/i, "");
+}
+
+// Supabase/Postgrest errors (RLS denials, the manager_upload_song RPC's own
+// `raise exception`, a network failure) all carry a `.message` — surfacing
+// it, not just a generic "failed, try again," is what actually lets Dani
+// and a manager tell a real permissions/data problem apart from a flaky
+// network blip, per Dani, 2026-10-06.
+function errorDetail(err: unknown): string | null {
+  if (err && typeof err === "object" && "message" in err && typeof err.message === "string" && err.message) {
+    return err.message;
+  }
+  return null;
+}
+
 function formatDuration(seconds: number): string {
   return `${Math.floor(seconds / 60)}:${String(Math.round(seconds % 60)).padStart(2, "0")}`;
 }
@@ -46,6 +77,23 @@ function formatDuration(seconds: number): string {
 function mediaOrdersLabel(entry: Registration): string | null {
   const parts = [entry.wantsVideo && "וידאו", entry.wantsStills && "סטילס"].filter(Boolean);
   return parts.length > 0 ? parts.join(" + ") : null;
+}
+
+// Per Dani, 2026-10-06: every competition's group of rows gets its own
+// accent color (same one used in RegistrationCutoffEditor/the dance-entry
+// form's glow) so the groups are easy to tell apart at a glance, not just by
+// reading the "תחרות" column. Same rgba-from-hex-parts technique throughout
+// this codebase, since CSS color-mix() isn't supported everywhere.
+function rowStyle(competition: CompetitionWithPricing | undefined): CSSProperties | undefined {
+  const rgb = competition?.accentColor ? hexToRgbParts(competition.accentColor) : null;
+  if (!rgb) return undefined;
+  return {
+    // Physical borderRight, not a logical borderInlineStart — this RTL
+    // layout has a documented bug with logical inline properties
+    // misbehaving (see CLAUDE.md).
+    borderRight: `3px solid rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.7)`,
+    backgroundColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.14)`,
+  };
 }
 
 function PlayIcon() {
@@ -64,18 +112,34 @@ function StopIcon() {
   );
 }
 
-export default function DanceEntriesTable({ entries, competitions, onEdit, onDelete }: Props) {
+export default function DanceEntriesTable({ entries, competitions, onEdit, onDelete, onSongUpload }: Props) {
   const [filter, setFilter] = useState<Filter>("all");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [loadingAudioId, setLoadingAudioId] = useState<string | null>(null);
+  const [uploadingSongId, setUploadingSongId] = useState<string | null>(null);
+  // Reads the picked file's duration via a hidden <audio> element before
+  // uploading — same technique DanceEntryForm uses. One shared ref is
+  // enough since only one song can realistically be uploaded at a time.
+  const durationProbeRef = useRef<HTMLAudioElement>(null);
   // Both handlers below used to have try/finally with no catch — a failed
   // delete or a failed signed-URL fetch (network, RLS, a since-deleted file)
   // threw silently with nothing shown, the loading state just reverting to
   // normal as if nothing had happened. Same bug class as the profile-save
   // fix; see project_dance_form_silent_failures memory.
   const [actionError, setActionError] = useState<string | null>(null);
+
+  // Per Dani, 2026-10-06: this used to sit inline at the top of the table,
+  // easy to miss once there are enough rows to scroll past it — now a fixed
+  // toast (same visual pattern as LiveNotifications' own toasts) that's
+  // visible regardless of scroll position, with both a close button and an
+  // auto-dismiss.
+  useEffect(() => {
+    if (!actionError) return;
+    const timer = setTimeout(() => setActionError(null), 8000);
+    return () => clearTimeout(timer);
+  }, [actionError]);
 
   const filtered = entries.filter((e) => filter === "all" || e.paymentStatus === filter);
 
@@ -87,7 +151,8 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
       await onDelete(id);
     } catch (err) {
       console.error("Dance delete failed:", err);
-      setActionError("המחיקה נכשלה - נסו שוב, ואם זה ממשיך לקרות צרו איתנו קשר.");
+      const detail = errorDetail(err);
+      setActionError(`המחיקה נכשלה - נסו שוב, ואם זה ממשיך לקרות צרו איתנו קשר.${detail ? ` (${detail})` : ""}`);
     } finally {
       setDeletingId(null);
     }
@@ -113,9 +178,53 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
       setPlayingId(entry.id);
     } catch (err) {
       console.error("Song playback failed:", err);
-      setActionError("לא הצלחנו לטעון את השיר - נסו שוב.");
+      const detail = errorDetail(err);
+      setActionError(`לא הצלחנו לטעון את השיר - נסו שוב.${detail ? ` (${detail})` : ""}`);
     } finally {
       setLoadingAudioId(null);
+    }
+  }
+
+  // Reads the file's real duration client-side (no server-side audio
+  // processing — same technique as DanceEntryForm) before handing off to
+  // onSongUpload, which does the actual storage upload + save. Previously
+  // this silently did nothing if the duration probe wasn't ready yet, and
+  // had no timeout — a file whose metadata never loaded (corrupt file,
+  // unsupported codec) would hang forever with no error and no upload,
+  // which is exactly what Dani reported, 2026-10-06. Now: the probe-missing
+  // case shows an error instead of returning silently, and a 10s timeout
+  // means an unreadable file still gets uploaded (just without a known
+  // duration) rather than blocking indefinitely.
+  async function handleSongFilePicked(entry: Registration, file: File) {
+    const probe = durationProbeRef.current;
+    if (!probe) {
+      setActionError("העלאת השיר נכשלה - נסו שוב, ואם זה ממשיך לקרות רעננו את הדף.");
+      return;
+    }
+
+    setUploadingSongId(entry.id);
+    setActionError(null);
+    try {
+      const durationSeconds = await new Promise<number | undefined>((resolve) => {
+        const timeout = setTimeout(() => resolve(undefined), 10000);
+        const url = URL.createObjectURL(file);
+        probe.onloadedmetadata = () => {
+          clearTimeout(timeout);
+          resolve(probe.duration);
+        };
+        probe.onerror = () => {
+          clearTimeout(timeout);
+          resolve(undefined);
+        };
+        probe.src = url;
+      });
+      await onSongUpload(entry.id, file, durationSeconds ?? 0);
+    } catch (err) {
+      console.error("Song upload failed:", err);
+      const detail = errorDetail(err);
+      setActionError(`העלאת השיר נכשלה - נסו שוב.${detail ? ` (${detail})` : ""}`);
+    } finally {
+      setUploadingSongId(null);
     }
   }
 
@@ -173,19 +282,27 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
   return (
     <div>
       <div className={styles.panel}>
-        {actionError && <div className={styles.missingWarning}>{actionError}</div>}
+        {/* Hidden — used only to read a newly-picked song file's real
+            duration via the browser, same technique as DanceEntryForm. */}
+        <audio ref={durationProbeRef} hidden />
 
-        <div className={styles.filters}>
-          {(["all", "unpaid", "paid"] as Filter[]).map((f) => (
-            <button
-              key={f}
-              type="button"
-              className={`${styles.filterButton} ${filter === f ? styles.filterActive : ""}`}
-              onClick={() => setFilter(f)}
-            >
-              {f === "all" ? "הכל" : f === "unpaid" ? "טרם שולם" : "שולם"}
-            </button>
-          ))}
+        <div className={styles.headerRow}>
+          <h2 className={styles.panelTitle}>
+            רשימת הריקודים <span className={styles.panelTitleCount}>({filtered.length})</span>
+          </h2>
+
+          <div className={styles.filters}>
+            {(["all", "unpaid", "paid"] as Filter[]).map((f) => (
+              <button
+                key={f}
+                type="button"
+                className={`${styles.filterButton} ${filter === f ? styles.filterActive : ""}`}
+                onClick={() => setFilter(f)}
+              >
+                {f === "all" ? "הכל" : f === "unpaid" ? "טרם שולם" : "שולם"}
+              </button>
+            ))}
+          </div>
         </div>
 
         <table className={styles.table}>
@@ -194,10 +311,11 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
             <th>תחרות</th>
             <th>ריקוד</th>
             <th>קטגוריה</th>
-            <th>מוזיקה והזמנות</th>
+            <th>קובץ מוזיקה</th>
+            <th>הזמנות וידאו וסטילס</th>
             <th>מחיר</th>
             <th>סטטוס תשלום</th>
-            <th></th>
+            <th>סטטוס הגשה</th>
           </tr>
         </thead>
         <tbody>
@@ -208,7 +326,7 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
                     reads as "one column, shown once" in an actual table
                     layout, which the responsive card view (display:block)
                     doesn't have, so mobile gets this explicit header instead. */}
-                <tr className={styles.groupHeaderRow}>
+                <tr className={styles.groupHeaderRow} style={rowStyle(group.competition)}>
                   <td colSpan={COLUMN_COUNT} className={styles.groupHeader}>
                     <span className={styles.groupHeaderName}>
                       {group.competition?.logo && (
@@ -239,7 +357,10 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
 
                   return (
                     <Fragment key={entry.id}>
-                      <tr className={index === 0 ? styles.groupStartRow : undefined}>
+                      <tr
+                        className={index === 0 ? styles.groupStartRow : undefined}
+                        style={rowStyle(group.competition)}
+                      >
                         {index === 0 && (
                           <td rowSpan={group.entries.length} className={styles.competitionCell} data-label="תחרות">
                             <div className={styles.competitionCellCard}>
@@ -258,7 +379,7 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
                             </div>
                           </td>
                         )}
-                        <td data-label="ריקוד">
+                        <td data-label="ריקוד" className={styles.stackedCell}>
                           <div className={styles.danceName}>{entry.danceName}</div>
                           <div className={styles.subLine}>כוריאוגרף/ית: {entry.choreographerName}</div>
                           {entry.dancerName && <div className={styles.subLine}>רקדנית: {entry.dancerName}</div>}
@@ -295,7 +416,7 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
                           {shortLabel(displayCategoryLabel(entry.category, entry.participantCount))} · {entry.participantCount} ·{" "}
                           רמה {entry.danceLevel}
                         </td>
-                        <td data-label="מוזיקה והזמנות">
+                        <td data-label="קובץ מוזיקה">
                           {entry.songFilePath ? (
                             <div className={styles.audioRow}>
                               <button
@@ -308,12 +429,48 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
                               >
                                 {playingId === entry.id ? <StopIcon /> : <PlayIcon />}
                               </button>
-                              {entry.songDurationSeconds != null && (
-                                <span className={styles.priceLine}>{formatDuration(entry.songDurationSeconds)}</span>
-                              )}
+                              <span className={styles.songFileInfo}>
+                                {/* Per Dani, 2026-10-06: makes it obvious a
+                                    song was actually saved, not just that
+                                    *a* file exists. */}
+                                <span className={styles.songFileName}>{songFileName(entry.songFilePath)}</span>
+                                {entry.songDurationSeconds != null && (
+                                  <span className={styles.priceLine}>{formatDuration(entry.songDurationSeconds)}</span>
+                                )}
+                              </span>
                             </div>
                           ) : (
-                            <div className={styles.missingBadge}>⚠ חסר שיר</div>
+                            <div className={styles.missingSongCell}>
+                              <div className={styles.missingBadge}>⚠ חסר קובץ</div>
+                              {/* Works regardless of isEditable — per Dani,
+                                  2026-10-06, music can still be added up to
+                                  10 days before the event even once the
+                                  dance itself is locked by submission. Only
+                                  gated on payment, matching
+                                  manager_upload_song's own RLS condition. */}
+                              {entry.paymentStatus === "unpaid" && (
+                                <label className={styles.uploadSongLabel}>
+                                  {uploadingSongId === entry.id ? (
+                                    "מעלה..."
+                                  ) : (
+                                    <>
+                                      <UploadIcon size={13} /> הוספת שיר
+                                    </>
+                                  )}
+                                  <input
+                                    type="file"
+                                    accept="audio/*"
+                                    hidden
+                                    disabled={uploadingSongId === entry.id}
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      e.target.value = "";
+                                      if (file) handleSongFilePicked(entry, file);
+                                    }}
+                                  />
+                                </label>
+                              )}
+                            </div>
                           )}
                           {playingId === entry.id && audioUrl && (
                             <audio
@@ -327,17 +484,24 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
                               }}
                             />
                           )}
-                          {mediaOrdersLabel(entry) && (
+                        </td>
+                        <td data-label="הזמנות וידאו וסטילס">
+                          {mediaOrdersLabel(entry) ? (
                             <div className={styles.mediaOrderRow}>
-                              <span className={styles.orderedBadge}>הוזמן</span>
+                              <span className={styles.orderedBadge}>
+                                <VideoCameraIcon size={13} />
+                                הוזמן
+                              </span>
                               <span className={styles.subLine}>{mediaOrdersLabel(entry)}</span>
                             </div>
+                          ) : (
+                            "—"
                           )}
                         </td>
-                        <td data-label="מחיר">
+                        <td data-label="מחיר" className={styles.stackedCell}>
                           {price == null ? (
                             "—"
-                          ) : isGroup(entry.category) ? (
+                          ) : isPricedPerParticipant(entry.category) ? (
                             <>
                               <div className={styles.priceLine}>{formatPrice(perParticipantPrice!)}₪ / משתתפ/ת</div>
                               <div className={styles.priceTotalLine}>{formatPrice(price)}₪ סה"כ</div>
@@ -345,42 +509,60 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
                           ) : (
                             <div className={styles.priceLine}>{formatPrice(price)}₪</div>
                           )}
+                          {/* The total above already includes the recording
+                              fee (computeTotalPrice adds it in) — per Dani,
+                              2026-10-06, this makes that visible instead of
+                              leaving the jump from base×count to the total
+                              unexplained. */}
+                          {recordingFeeOf(entry) > 0 && (
+                            <div className={styles.subLine}>
+                              (כולל {formatPrice(recordingFeeOf(entry))}₪{" "}
+                              {entry.wantsVideo && entry.wantsStills ? "וידאו + סטילס" : entry.wantsVideo ? "וידאו" : "סטילס"})
+                            </div>
+                          )}
                         </td>
                         <td data-label="סטטוס תשלום">
                           <span className={`${styles.statusBadge} ${isUnpaid ? styles.unpaid : styles.paid}`}>
                             {isUnpaid ? "טרם שולם" : "שולם"}
                           </span>
                         </td>
-                        <td className={styles.actions} data-label="פעולות">
-                          {isEditable ? (
-                            <>
-                              <button
-                                type="button"
-                                className={styles.iconButton}
-                                title="עריכה"
-                                aria-label="עריכה"
-                                onClick={() => onEdit(entry)}
-                              >
-                                <EditIcon />
-                              </button>
-                              <button
-                                type="button"
-                                className={`${styles.iconButton} ${styles.deleteIconButton}`}
-                                title="מחיקה"
-                                aria-label="מחיקה"
-                                disabled={deletingId === entry.id}
-                                onClick={() => handleDelete(entry.id)}
-                              >
-                                <DeleteIcon />
-                              </button>
-                            </>
-                          ) : (
-                            // Explains the missing buttons specifically for the new
-                            // locked-by-submission case — the existing paid-and-locked
-                            // case already reads clearly enough from the "שולם" badge
-                            // alone, so this only shows when submission is the reason.
-                            entry.submittedAt && <span className={styles.tag}>הוגש</span>
-                          )}
+                        <td data-label="סטטוס הגשה" className={styles.actionsCell}>
+                          <span className={styles.actions}>
+                            {isEditable ? (
+                              <>
+                                <button
+                                  type="button"
+                                  className={styles.iconButton}
+                                  title="עריכה"
+                                  aria-label="עריכה"
+                                  onClick={() => onEdit(entry)}
+                                >
+                                  <EditIcon />
+                                </button>
+                                <button
+                                  type="button"
+                                  className={`${styles.iconButton} ${styles.deleteIconButton}`}
+                                  title="מחיקה"
+                                  aria-label="מחיקה"
+                                  disabled={deletingId === entry.id}
+                                  onClick={() => handleDelete(entry.id)}
+                                >
+                                  <DeleteIcon />
+                                </button>
+                              </>
+                            ) : (
+                              // A dance can be "not editable" either because it's
+                              // locked by submission or because it's already paid
+                              // — in this product paid always implies submitted
+                              // first, so submittedAt covers both cases.
+                              entry.submittedAt && (
+                                <span className={styles.submittedBadge}>
+                                  <CheckIcon size={11} />
+                                  הוגש
+                                </span>
+                              )
+                            )}
+                          </span>
                         </td>
                       </tr>
                     </Fragment>
@@ -408,83 +590,35 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
                 </div>
               )}
 
-              <p className={styles.breakdownTitle}>פירוט התשלום</p>
-              {/* A full itemized breakdown per dance — not just one total —
-                  so it reads like a real receipt: what each charge actually
-                  is, not just the final number. */}
-              <div className={styles.globalBreakdown}>
-                {filtered.map((entry) => {
-                  const competition = competitions.find((c) => c.id === entry.competitionId);
-                  const perParticipantPrice = perParticipantPriceOf(entry);
-                  const groupDance = isGroup(entry.category);
-                  const base = perParticipantPrice != null ? perParticipantPrice * (groupDance ? entry.participantCount : 1) : null;
-                  const surcharge = computeSurcharge(entry.category, entry.songDurationSeconds, entry.participantCount);
-                  const videoFee = entry.wantsVideo ? computeRecordingFeeForType() : 0;
-                  const stillsFee = entry.wantsStills ? computeRecordingFeeForType() : 0;
-                  const total = priceOf(entry);
-
-                  return (
-                    <div key={entry.id} className={styles.breakdownGroup}>
-                      <div className={styles.breakdownDanceHeader}>
-                        <span>{entry.danceName}</span>
-                        <span className={styles.subLine}>
-                          (<span className="en" lang="en">{competition?.name ?? "—"}</span>)
-                        </span>
-                      </div>
-
-                      {base != null && (
-                        <div className={styles.breakdownLineRow}>
-                          <span>
-                            {displayCategoryLabel(entry.category, entry.participantCount)}
-                            {groupDance && ` · ${formatPrice(perParticipantPrice!)}₪ × ${entry.participantCount}`}
-                          </span>
-                          <span>{formatPrice(base)}₪</span>
-                        </div>
-                      )}
-                      {surcharge > 0 && (
-                        <div className={styles.breakdownLineRow}>
-                          <span>תוספת חריגת זמן בשיר</span>
-                          <span>{formatPrice(surcharge)}₪</span>
-                        </div>
-                      )}
-                      {videoFee > 0 && (
-                        <div className={styles.breakdownLineRow}>
-                          <span>צילום וידאו</span>
-                          <span>{formatPrice(videoFee)}₪</span>
-                        </div>
-                      )}
-                      {stillsFee > 0 && (
-                        <div className={styles.breakdownLineRow}>
-                          <span>צילום סטילס</span>
-                          <span>{formatPrice(stillsFee)}₪</span>
-                        </div>
-                      )}
-
-                      <div className={styles.breakdownSubtotal}>
-                        <span>סה&quot;כ לריקוד</span>
-                        <span>{total != null ? `${formatPrice(total)}₪` : "—"}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-                <div className={`${styles.breakdownRow} ${styles.breakdownTotal}`}>
-                  <span>סה&quot;כ ({filtered.length} ריקודים)</span>
-                  <span>{formatPrice(grandTotal)}₪</span>
-                </div>
+              {/* The old itemized per-dance breakdown lived here — removed
+                  per Dani, 2026-10-06, since the מחיר column itself already
+                  shows each dance's per-participant price and total, making
+                  this a duplicate. Keeping just the one combined total
+                  line, since that's the one number genuinely not shown
+                  anywhere else in the table. */}
+              <div className={`${styles.breakdownRow} ${styles.breakdownTotal}`}>
+                <span>סה&quot;כ ({filtered.length} ריקודים)</span>
+                <span>{formatPrice(grandTotal)}₪</span>
               </div>
-              <p className={styles.payInstructions}>
-                התשלום מתבצע ידנית - העברה בנקאית, המחאה, או מזומן. לתיאום תשלום עבור כל הריקודים יחד, צרו קשר עם
-                המשרד: <a href={PHONE_TEL_URL}>{PHONE}</a> או ב-
-                <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
-                  WhatsApp
-                </a>
-                .
-              </p>
             </td>
           </tr>
         </tfoot>
       </table>
       </div>
+
+      {actionError && (
+        <div className={styles.errorToast} role="alert">
+          <span className={styles.errorToastMessage}>{actionError}</span>
+          <button
+            type="button"
+            className={styles.errorToastClose}
+            onClick={() => setActionError(null)}
+            aria-label="סגירה"
+          >
+            <CloseIcon size={11} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -16,6 +16,26 @@
   white-space: nowrap;
 }
 
+.nameCell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logoSlot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 32px;
+  height: 28px;
+}
+
+.logo {
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
 .table th {
   color: #9c9a93;
   font-weight: 600;

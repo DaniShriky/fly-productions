@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { StudioManager, StudioManagerStatus } from "@/types/studioManager";
+import { sanitizeFileName } from "@/lib/sanitizeFileName";
 
 type StudioManagerRow = {
   id: string;
@@ -158,7 +159,10 @@ export async function resolveCompetitionTypeRequest(
 // supabase/schema.sql). Returns the new path; callers still need to save it
 // onto the studio_managers row themselves via updateOwnProfilePhoto.
 export async function uploadProfilePhoto(client: SupabaseClient, studioManagerId: string, file: File): Promise<string> {
-  const path = `${studioManagerId}/${crypto.randomUUID()}-${file.name}`;
+  // See the matching comment in lib/queries/registrations.ts's
+  // uploadDanceMusic — an original filename with spaces/parentheses fails
+  // Supabase Storage's key validation outright ("Invalid key").
+  const path = `${studioManagerId}/${crypto.randomUUID()}-${sanitizeFileName(file.name)}`;
   const { error } = await client.storage.from("profile-photos").upload(path, file);
   if (error) throw error;
   return path;
