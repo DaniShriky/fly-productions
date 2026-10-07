@@ -77,8 +77,17 @@ function shortLabel(label: string): string {
 // obvious a song was in fact saved, not just that *a* file exists.
 function songFileName(path: string): string {
   const afterSlash = path.split("/").pop() ?? path;
-  return afterSlash.replace(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-/i, "");
+  const name = afterSlash.replace(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-/i, "");
+  // Collapses a run of underscores down to one — a few older uploads (from
+  // before sanitizeFileName itself was fixed to do this, 2026-10-07) still
+  // have the long stretch of them baked into their actual stored path, and
+  // this is what rendered as a stray horizontal line in the UI. Applying it
+  // here too (not just at upload time) fixes the display for those
+  // already-stored files without needing to re-upload anything.
+  return name.replace(/_{2,}/g, "_");
 }
+
+const SONG_NAME_MAX_LENGTH = 36;
 
 function formatDuration(seconds: number): string {
   return `${Math.floor(seconds / 60)}:${String(Math.round(seconds % 60)).padStart(2, "0")}`;
@@ -150,6 +159,10 @@ export default function DanceEntriesTable({
   const [loadingAudioId, setLoadingAudioId] = useState<string | null>(null);
   const [uploadingSongId, setUploadingSongId] = useState<string | null>(null);
   const [removingSongId, setRemovingSongId] = useState<string | null>(null);
+  // Which row's (truncated) filename is currently shown in full — per Dani,
+  // 2026-10-07: click the "..." to reveal the whole name instead of it
+  // always wrapping across lines.
+  const [expandedSongId, setExpandedSongId] = useState<string | null>(null);
   // Reads the picked file's duration via a hidden <audio> element before
   // uploading — same technique DanceEntryForm uses. One shared ref is
   // enough since only one song can realistically be uploaded at a time.
@@ -483,12 +496,26 @@ export default function DanceEntriesTable({
                           {entry.songFilePath ? (
                             <div className={styles.songCard}>
                               {/* Per Dani, 2026-10-06/07: its own full-width
-                                  line, nothing sharing the row with it — a
-                                  narrow column squeezed between icons used
-                                  to collapse this down to just "...", which
-                                  was the whole problem. Wraps instead of
-                                  truncating, so the real name always shows. */}
-                              <span className={styles.songFileName}>{songFileName(entry.songFilePath)}</span>
+                                  line, nothing sharing the row with it. A
+                                  genuinely long name is truncated with "..."
+                                  rather than left to wrap indefinitely —
+                                  click it to see the whole thing. */}
+                              {(() => {
+                                const fullName = songFileName(entry.songFilePath);
+                                const expanded = expandedSongId === entry.id;
+                                const isLong = fullName.length > SONG_NAME_MAX_LENGTH;
+                                return (
+                                  <button
+                                    type="button"
+                                    className={styles.songFileName}
+                                    disabled={!isLong}
+                                    onClick={() => setExpandedSongId(expanded ? null : entry.id)}
+                                    title={isLong ? (expanded ? "לחצו לקיצור" : "לחצו לשם המלא") : undefined}
+                                  >
+                                    {isLong && !expanded ? `${fullName.slice(0, SONG_NAME_MAX_LENGTH)}...` : fullName}
+                                  </button>
+                                );
+                              })()}
 
                               {uploadingSongId === entry.id ? (
                                 <span className={styles.seekTime}>מעלה...</span>

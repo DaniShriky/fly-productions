@@ -280,11 +280,32 @@
    "...", with no part of the real filename visible at all. Wraps onto a
    second line instead when it needs to, which stays fully readable
    regardless of how little horizontal room the column has. */
+/* A <button> now (click-to-expand a long name) — reset to look like plain
+   text by default, same as the <span> it replaced. */
 .songFileName {
   display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  text-align: inherit;
   font-size: 13px;
   color: #d8d6cf;
   word-break: break-word;
+  cursor: default;
+}
+
+.songFileName:not(:disabled) {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 255, 255, 0.25);
+  text-underline-offset: 2px;
+}
+
+.songFileName:not(:disabled):hover {
+  color: #fff;
 }
 
 /* Custom seek bar — per Dani, 2026-10-07: the native <audio controls>

@@ -6,6 +6,13 @@
 // original filename gets folded into a storage path (dance music, profile
 // photos) — replaces anything that isn't alphanumeric/dot/hyphen/underscore
 // with an underscore, keeping the name still readable.
+//
+// The `+` (collapse a whole *run* of invalid characters into one
+// underscore) matters — found 2026-10-07 when a name with several
+// consecutive spaces/punctuation marks turned into a long stretch of
+// individual underscores that rendered as what looked like a stray
+// horizontal line in the UI (each invalid character was getting its own
+// underscore before this).
 export function sanitizeFileName(name: string): string {
-  return name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+  return name.replace(/[^a-zA-Z0-9.\-_]+/g, "_");
 }
