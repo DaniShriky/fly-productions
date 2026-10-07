@@ -1,0 +1,115 @@
+.groupTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #9c9a93;
+  margin-bottom: 12px;
+}
+
+/* Same card language as CompetitionPicker.module.css (duplicated rather
+   than shared across CSS modules — not idiomatic in this codebase), minus
+   the date line, which doesn't matter for "filter my own history by
+   competition" the way it does for "which competition am I entering a new
+   dance into". */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  align-items: stretch;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  }
+}
+
+@media (min-width: 1440px) {
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(165deg, #131317, #101014 70%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 16px 12px;
+  box-shadow: 0 12px 24px -18px rgba(0, 0, 0, 0.8);
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px -18px rgba(0, 0, 0, 0.9);
+}
+
+.cardActive {
+  background: linear-gradient(165deg, rgba(245, 197, 66, 0.16), rgba(245, 197, 66, 0.04));
+  border-color: #f5c542;
+  box-shadow: 0 0 0 1px rgba(245, 197, 66, 0.3), 0 16px 32px -16px rgba(245, 197, 66, 0.25);
+}
+
+.logoSlot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  height: 38px;
+}
+
+.logo {
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+.name {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.25;
+  min-height: 2.5em;
+  color: #d8d6cf;
+  text-align: center;
+}
+
+.cardActive .name {
+  color: #f5c542;
+}
+
+.danceCount {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #9c9a93;
+  white-space: nowrap;
+}
+
+.cardActive .danceCount {
+  background: rgba(245, 197, 66, 0.14);
+  color: #f5c542;
+}
+
+.check {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f5c542, #e0a84a);
+  color: #050505;
+  box-shadow: 0 0 0 3px #050505, 0 0 12px rgba(245, 197, 66, 0.6);
+}

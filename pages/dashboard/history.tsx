@@ -5,6 +5,7 @@ import type { GetServerSideProps } from "next";
 import Nav from "@/components/shared/Nav";
 import Footer from "@/components/shared/Footer";
 import DanceEntriesTable from "@/components/dashboard/DanceEntriesTable";
+import HistoryCompetitionFilter from "@/components/dashboard/HistoryCompetitionFilter";
 import { requireApprovedManager } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabaseServerClient";
 import { CompetitionWithPricing, getCompetitionsWithPricing } from "@/lib/queries/competitionsWithPricing";
@@ -33,6 +34,9 @@ type Props = {
 // historical record — so onEdit/onDelete are simply left unset).
 export default function DashboardHistory({ competitions, registrations, manager }: Props) {
   const [entries, setEntries] = useState(registrations);
+  const [competitionFilter, setCompetitionFilter] = useState<string | "all">("all");
+  const visibleEntries =
+    competitionFilter === "all" ? entries : entries.filter((e) => e.competitionId === competitionFilter);
 
   // Per Dani, 2026-10-06 (same as the live flow): a song can still be added
   // up to 10 days before the event even once a dance is locked by
@@ -64,9 +68,16 @@ export default function DashboardHistory({ competitions, registrations, manager 
       </header>
 
       <main className={styles.main}>
+        <HistoryCompetitionFilter
+          competitions={competitions}
+          entries={entries}
+          selectedId={competitionFilter}
+          onSelect={setCompetitionFilter}
+        />
+
         <div className={styles.wideTable}>
           <DanceEntriesTable
-            entries={entries}
+            entries={visibleEntries}
             competitions={competitions}
             onSongUpload={handleSongUpload}
             showSubmissionColumn={false}

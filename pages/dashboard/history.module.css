@@ -32,6 +32,9 @@
   color: #9c9a93;
 }
 
+/* No extra margin-top here — HistoryCompetitionFilter's own .grid already
+   has margin-bottom, so stacking a second gap on top of it just left too
+   much empty space between the filter cards and the table. */
 .wideTable {
-  margin-top: 24px;
+  margin-top: 0;
 }
