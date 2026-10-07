@@ -11,6 +11,7 @@ import { supabaseBrowserClient } from "@/lib/supabaseBrowserClient";
 import { StudioManager } from "@/types/studioManager";
 import CameraCaptureModal from "@/components/shared/CameraCaptureModal";
 import PhotoSourceSheet from "@/components/shared/PhotoSourceSheet";
+import PhotoCropModal from "@/components/shared/PhotoCropModal";
 import styles from "./ProfileEditForm.module.css";
 
 const OTHER_CITY = "אחר";
@@ -69,6 +70,10 @@ export default function ProfileEditForm({
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoSheetOpen, setPhotoSheetOpen] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);
+  // A gallery pick or a camera capture both land here first — neither
+  // uploads directly, so both get the same pan/zoom crop step before
+  // anything is sent to Storage.
+  const [cropFile, setCropFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -98,15 +103,20 @@ export default function ProfileEditForm({
     }
   }
 
-  async function handlePhotoChange(e: ChangeEvent<HTMLInputElement>) {
+  function handlePhotoChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
-    await uploadPhoto(file);
+    setCropFile(file);
   }
 
-  async function handlePhotoCaptured(file: File) {
+  function handlePhotoCaptured(file: File) {
     setCameraOpen(false);
+    setCropFile(file);
+  }
+
+  async function handleCropConfirm(file: File) {
+    setCropFile(null);
     await uploadPhoto(file);
   }
 
@@ -181,6 +191,7 @@ export default function ProfileEditForm({
         />
       )}
       {cameraOpen && <CameraCaptureModal onCapture={handlePhotoCaptured} onClose={() => setCameraOpen(false)} />}
+      {cropFile && <PhotoCropModal file={cropFile} onConfirm={handleCropConfirm} onClose={() => setCropFile(null)} />}
 
       <p className={styles.requiredHint}>
         <span className={styles.required}>*</span> שדה חובה
