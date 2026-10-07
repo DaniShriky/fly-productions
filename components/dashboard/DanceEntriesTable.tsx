@@ -127,6 +127,16 @@ export default function DanceEntriesTable({
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  // Drives the custom seek bar below — per Dani, 2026-10-07: the native
+  // <audio controls> widget used to replace the filename with its own
+  // compact bar once playing. currentTime comes from the <audio>'s own
+  // onTimeUpdate; fallbackDuration only matters for the rare case
+  // entry.songDurationSeconds wasn't captured at upload time (duration
+  // probe failed) — the real <audio> element's own metadata fills that in
+  // once it loads.
+  const [currentTime, setCurrentTime] = useState(0);
+  const [fallbackDuration, setFallbackDuration] = useState<number | null>(null);
+  const audioElRef = useRef<HTMLAudioElement>(null);
   const [loadingAudioId, setLoadingAudioId] = useState<string | null>(null);
   const [uploadingSongId, setUploadingSongId] = useState<string | null>(null);
   // Reads the picked file's duration via a hidden <audio> element before
@@ -183,6 +193,8 @@ export default function DanceEntriesTable({
 
     setLoadingAudioId(entry.id);
     setActionError(null);
+    setCurrentTime(0);
+    setFallbackDuration(null);
     try {
       const url = await getDanceMusicUrl(supabaseBrowserClient, entry.songFilePath);
       setAudioUrl(url);
@@ -452,8 +464,36 @@ export default function DanceEntriesTable({
                                     song was actually saved, not just that
                                     *a* file exists. */}
                                 <span className={styles.songFileName}>{songFileName(entry.songFilePath)}</span>
-                                {entry.songDurationSeconds != null && (
-                                  <span className={styles.priceLine}>{formatDuration(entry.songDurationSeconds)}</span>
+                                {playingId === entry.id ? (
+                                  // Per Dani, 2026-10-07: a real seekable
+                                  // scrubber instead of the native <audio
+                                  // controls> widget (below), which used to
+                                  // replace this whole area with its own
+                                  // bar once playing.
+                                  <span className={styles.seekRow}>
+                                    <input
+                                      type="range"
+                                      className={styles.seekBar}
+                                      min={0}
+                                      max={entry.songDurationSeconds ?? fallbackDuration ?? 0}
+                                      step={0.1}
+                                      value={currentTime}
+                                      onChange={(e) => {
+                                        const value = Number(e.target.value);
+                                        setCurrentTime(value);
+                                        if (audioElRef.current) audioElRef.current.currentTime = value;
+                                      }}
+                                      aria-label="מיקום בשיר"
+                                    />
+                                    <span className={styles.seekTime}>
+                                      {formatDuration(currentTime)} /{" "}
+                                      {formatDuration(entry.songDurationSeconds ?? fallbackDuration ?? 0)}
+                                    </span>
+                                  </span>
+                                ) : (
+                                  entry.songDurationSeconds != null && (
+                                    <span className={styles.priceLine}>{formatDuration(entry.songDurationSeconds)}</span>
+                                  )
                                 )}
                               </span>
                             </div>
@@ -491,11 +531,15 @@ export default function DanceEntriesTable({
                             </div>
                           )}
                           {playingId === entry.id && audioUrl && (
+                            // No `controls` — the seek bar above is the real
+                            // UI; this just drives actual playback.
                             <audio
-                              className={styles.audioPlayer}
+                              ref={audioElRef}
                               src={audioUrl}
-                              controls
                               autoPlay
+                              hidden
+                              onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
+                              onLoadedMetadata={(e) => setFallbackDuration(e.currentTarget.duration)}
                               onEnded={() => {
                                 setPlayingId(null);
                                 setAudioUrl(null);

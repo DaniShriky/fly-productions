@@ -235,12 +235,41 @@
 }
 
 .songFileName {
-  max-width: 140px;
+  max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 13px;
   color: #d8d6cf;
+}
+
+/* Custom seek bar — per Dani, 2026-10-07: the native <audio controls>
+   widget this replaced took over the whole cell with its own compact bar
+   once playing, crowding out the filename above (which, combined with its
+   old 140px cap, could truncate down to almost nothing visible). This way
+   the filename always stays put and the scrubber sits in the same spot the
+   static duration text used to. */
+.seekRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.seekBar {
+  flex: 1;
+  min-width: 60px;
+  max-width: 140px;
+  height: 3px;
+  accent-color: var(--form-accent, #f5c542);
+  cursor: pointer;
+}
+
+.seekTime {
+  flex: 0 0 auto;
+  font-size: 12px;
+  color: #9c9a93;
+  white-space: nowrap;
 }
 
 .playButton {
@@ -265,13 +294,6 @@
 .playButton:disabled {
   opacity: 0.5;
   cursor: default;
-}
-
-.audioPlayer {
-  display: block;
-  height: 32px;
-  max-width: 220px;
-  margin-top: 6px;
 }
 
 /* A real warning, not just a neutral "no song yet" note — Dani asked for it
