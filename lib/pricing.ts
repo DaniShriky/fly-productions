@@ -64,6 +64,37 @@ export const DANCE_STYLES = [
   "רגאטון",
 ];
 
+// Normalizes a free-text "אחר" dance-style guess so trivial differences —
+// extra/missing spaces, a different geresh/apostrophe glyph, a final vs.
+// regular Hebrew letter form — don't stop it from matching a real
+// DANCE_STYLES entry. Per Dani, 2026-10-07: typing "היפהופ" (no space)
+// should still land on the real "היפ הופ" option. Deliberately NOT
+// fuzzy/typo-tolerant beyond this — anything looser risks silently
+// matching the wrong style instead of correctly staying a genuine "אחר".
+const FINAL_TO_REGULAR_HEBREW_LETTER: Record<string, string> = {
+  ך: "כ",
+  ם: "מ",
+  ן: "נ",
+  ף: "פ",
+  ץ: "צ",
+};
+
+function normalizeDanceStyleForMatch(value: string): string {
+  return value
+    .trim()
+    .replace(/['’׳´`]/g, "'")
+    .replace(/\s+/g, "")
+    .replace(/[ךםןףץ]/g, (ch) => FINAL_TO_REGULAR_HEBREW_LETTER[ch]);
+}
+
+// The real DANCE_STYLES entry a free-text "אחר" guess actually matches once
+// normalized, or null if it doesn't match any of them.
+export function matchDanceStyle(value: string): string | null {
+  const normalized = normalizeDanceStyleForMatch(value);
+  if (!normalized) return null;
+  return DANCE_STYLES.find((style) => normalizeDanceStyleForMatch(style) === normalized) ?? null;
+}
+
 // The category field was removed from the form (per Dani, 2026-10-03) — the
 // participant count alone now determines it, instead of asking for both and
 // risking them disagreeing. Thresholds straight from the flyer: 1=solo,

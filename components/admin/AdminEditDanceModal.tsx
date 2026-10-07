@@ -1,7 +1,7 @@
 import { FormEvent, useState } from "react";
 import { AdminRegistration, updateRegistrationDetailsAdmin } from "@/lib/queries/adminRegistrations";
 import { supabaseBrowserClient } from "@/lib/supabaseBrowserClient";
-import { DANCE_LEVELS, DANCE_STYLES, STEP_DIVISIONS, categoryFromParticipantCount } from "@/lib/pricing";
+import { DANCE_LEVELS, DANCE_STYLES, STEP_DIVISIONS, categoryFromParticipantCount, matchDanceStyle } from "@/lib/pricing";
 import { CloseIcon, MinusIcon, PlusIcon } from "@/components/dashboard/icons";
 import styles from "./AdminEditDanceModal.module.css";
 
@@ -46,6 +46,18 @@ export default function AdminEditDanceModal({ entry, onClose, onSaved }: Props) 
 
   function adjustCount(delta: number) {
     setParticipantCount((prev) => String(Math.max(1, (Number(prev) || 0) + delta)));
+  }
+
+  // Same auto-snap as DanceEntryForm's own handleCustomStyleChange — see
+  // matchDanceStyle in lib/pricing.ts.
+  function handleCustomStyleChange(value: string) {
+    const matched = matchDanceStyle(value);
+    if (matched) {
+      setDanceStyle(matched);
+      setCustomDanceStyle("");
+    } else {
+      setCustomDanceStyle(value);
+    }
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -186,7 +198,7 @@ export default function AdminEditDanceModal({ entry, onClose, onSaved }: Props) 
           {danceStyle === OTHER_STYLE && (
             <label className={styles.field}>
               <span>איזה סגנון?</span>
-              <input required value={customDanceStyle} onChange={(e) => setCustomDanceStyle(e.target.value)} />
+              <input required value={customDanceStyle} onChange={(e) => handleCustomStyleChange(e.target.value)} />
             </label>
           )}
 

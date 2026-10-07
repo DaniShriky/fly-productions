@@ -19,6 +19,7 @@ import {
   formatDateHe,
   formatPrice,
   isEarlyPricing,
+  matchDanceStyle,
 } from "@/lib/pricing";
 import {
   CameraIcon,
@@ -308,12 +309,15 @@ export default function DanceEntryForm({
     setParticipantCount((prev) => String(Math.max(1, (Number(prev) || 0) + delta)));
   }
 
-  // If what she typed under "אחר" turns out to exactly match a real style
-  // that's already in the list, snap back to that real option instead of
-  // saving a duplicate free-text copy of it — avoids the same style existing
-  // as two different-looking values in the data (one picked, one typed).
+  // If what she typed under "אחר" turns out to match a real style that's
+  // already in the list — even with extra/missing spaces or a different
+  // geresh/final-letter form (matchDanceStyle normalizes those away, see
+  // lib/pricing.ts) — snap back to that real option instead of saving a
+  // duplicate free-text copy of it, so the same style doesn't end up
+  // existing as two different-looking values in the data (one picked, one
+  // typed).
   function handleCustomStyleChange(value: string) {
-    const matched = DANCE_STYLES.find((style) => style === value.trim());
+    const matched = matchDanceStyle(value);
     if (matched) {
       setDanceStyle(matched);
       setCustomDanceStyle("");
