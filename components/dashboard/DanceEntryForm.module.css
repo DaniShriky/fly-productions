@@ -654,6 +654,13 @@
   display: flex;
   align-items: baseline;
   gap: 8px;
+  /* Caps how far the leader line stretches — per Dani, 2026-10-07: without
+     this, flex: 1 on the label (below) grew it to the row's full width,
+     pushing the price all the way to the far edge of the card instead of
+     staying reasonably close to its label. Doesn't apply to
+     .priceBreakdownTotal (overridden below), which is meant to span the
+     whole highlighted box. */
+  max-width: 320px;
 }
 
 /* A dotted leader line (receipt/table-of-contents style) connecting the
@@ -671,6 +678,7 @@
 }
 
 .priceBreakdownTotal {
+  max-width: none;
   margin-top: 6px;
   /* Wider side padding (was 16px) — per Dani: pulls the label/price in from
      the box's own border, which as a side effect also brings them closer
