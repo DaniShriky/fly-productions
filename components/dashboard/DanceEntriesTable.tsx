@@ -482,51 +482,13 @@ export default function DanceEntriesTable({
                         <td data-label="קובץ מוזיקה">
                           {entry.songFilePath ? (
                             <div className={styles.songCard}>
-                              <div className={styles.songHeaderRow}>
-                                {/* Per Dani, 2026-10-06: makes it obvious a
-                                    song was actually saved, not just that
-                                    *a* file exists. Above the player row
-                                    (2026-10-07) so it's never crowded out by
-                                    it. */}
-                                <span className={styles.songFileName}>{songFileName(entry.songFilePath)}</span>
-                                {/* Same unpaid-only gate as the upload flow
-                                    below — music stays editable up to
-                                    payment regardless of isEditable/
-                                    submittedAt (manager_upload_song/
-                                    manager_remove_song in supabase/schema.sql). */}
-                                {entry.paymentStatus === "unpaid" && (
-                                  <span className={styles.songActions}>
-                                    <label
-                                      className={styles.songIconButton}
-                                      title="החלפת קובץ"
-                                      aria-label="החלפת קובץ"
-                                    >
-                                      <UploadIcon size={12} />
-                                      <input
-                                        type="file"
-                                        accept="audio/*"
-                                        hidden
-                                        disabled={uploadingSongId === entry.id}
-                                        onChange={(e) => {
-                                          const file = e.target.files?.[0];
-                                          e.target.value = "";
-                                          if (file) handleSongFilePicked(entry, file);
-                                        }}
-                                      />
-                                    </label>
-                                    <button
-                                      type="button"
-                                      className={`${styles.songIconButton} ${styles.songDeleteButton}`}
-                                      title="מחיקת קובץ"
-                                      aria-label="מחיקת קובץ"
-                                      disabled={removingSongId === entry.id}
-                                      onClick={() => handleRemoveSong(entry)}
-                                    >
-                                      <DeleteIcon size={12} />
-                                    </button>
-                                  </span>
-                                )}
-                              </div>
+                              {/* Per Dani, 2026-10-06/07: its own full-width
+                                  line, nothing sharing the row with it — a
+                                  narrow column squeezed between icons used
+                                  to collapse this down to just "...", which
+                                  was the whole problem. Wraps instead of
+                                  truncating, so the real name always shows. */}
+                              <span className={styles.songFileName}>{songFileName(entry.songFilePath)}</span>
 
                               {uploadingSongId === entry.id ? (
                                 <span className={styles.seekTime}>מעלה...</span>
@@ -572,6 +534,47 @@ export default function DanceEntriesTable({
                                     entry.songDurationSeconds != null && (
                                       <span className={styles.seekTime}>{formatDuration(entry.songDurationSeconds)}</span>
                                     )
+                                  )}
+                                  {/* Same unpaid-only gate as the upload flow
+                                      below — music stays editable up to
+                                      payment regardless of isEditable/
+                                      submittedAt (manager_upload_song/
+                                      manager_remove_song in
+                                      supabase/schema.sql). Moved here
+                                      (2026-10-07) from a header row shared
+                                      with the filename, which was crowding
+                                      it out. */}
+                                  {entry.paymentStatus === "unpaid" && (
+                                    <span className={styles.songActions}>
+                                      <label
+                                        className={styles.songIconButton}
+                                        title="החלפת קובץ"
+                                        aria-label="החלפת קובץ"
+                                      >
+                                        <UploadIcon size={12} />
+                                        <input
+                                          type="file"
+                                          accept="audio/*"
+                                          hidden
+                                          disabled={uploadingSongId === entry.id}
+                                          onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            e.target.value = "";
+                                            if (file) handleSongFilePicked(entry, file);
+                                          }}
+                                        />
+                                      </label>
+                                      <button
+                                        type="button"
+                                        className={`${styles.songIconButton} ${styles.songDeleteButton}`}
+                                        title="מחיקת קובץ"
+                                        aria-label="מחיקת קובץ"
+                                        disabled={removingSongId === entry.id}
+                                        onClick={() => handleRemoveSong(entry)}
+                                      >
+                                        <DeleteIcon size={12} />
+                                      </button>
+                                    </span>
                                   )}
                                 </div>
                               )}

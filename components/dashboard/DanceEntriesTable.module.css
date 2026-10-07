@@ -232,13 +232,6 @@
   min-width: 0;
 }
 
-.songHeaderRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
 .songActions {
   display: flex;
   flex: 0 0 auto;
@@ -282,13 +275,16 @@
   gap: 6px;
 }
 
+/* No max-width/ellipsis (there used to be one) — per Dani, 2026-10-07: a
+   narrow column squeezed between icons kept collapsing this down to just
+   "...", with no part of the real filename visible at all. Wraps onto a
+   second line instead when it needs to, which stays fully readable
+   regardless of how little horizontal room the column has. */
 .songFileName {
-  max-width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: block;
   font-size: 13px;
   color: #d8d6cf;
+  word-break: break-word;
 }
 
 /* Custom seek bar — per Dani, 2026-10-07: the native <audio controls>
