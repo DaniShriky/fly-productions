@@ -281,7 +281,6 @@ export default function DanceEntryForm({
   // non-solo category (see computeTotalPrice's comment, lib/pricing.ts).
   const isGroup = count >= 5;
   const baseSubtotal = perParticipantPrice != null ? perParticipantPrice * (isSolo ? 1 : count) : null;
-  const wantsRecording = wantsVideo || wantsStills;
 
   // Video and stills are two independent services, flat 150₪ each regardless
   // of how many dances order them (see computeRecordingFeeForType's comment).
@@ -1000,19 +999,6 @@ export default function DanceEntryForm({
                   </span>
                   <span className={styles.checkboxPrice}>150 ₪</span>
                 </label>
-                {/* The general pricing-rule explanation paragraph that used to
-                    live here was removed per Dani, 2026-10-03 — this direct
-                    per-dance cost readout (only once a service is actually
-                    selected) stays, since it's live feedback rather than
-                    boilerplate explanation. */}
-                {wantsRecording && (
-                  <p className={styles.durationHint}>
-                    <strong>
-                      העלות עבור הריקוד הזה: {formatPrice(recordingFee)}₪
-                      {wantsVideo && wantsStills && ` (וידאו ${formatPrice(videoFee)}₪ + סטילס ${formatPrice(stillsFee)}₪)`}
-                    </strong>
-                  </p>
-                )}
               </div>
             </div>
 
