@@ -209,7 +209,7 @@ export default function SubmissionStep({ entries, onSubmit }: Props) {
               onClick={handleSubmitClick}
               disabled={!canSubmit || submitting}
             >
-              {submitting ? "שולחת..." : "הגשה"}
+              {submitting ? "שולחים..." : "הגשה"}
             </button>
           </div>
         </>

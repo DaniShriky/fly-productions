@@ -45,10 +45,10 @@ export default function Register({ competitions }: InferGetStaticPropsType<typeo
 
     if (error) {
       if (error.code === "23505") {
-        setInsertError("כבר נרשמת בעבר עם אימייל זה.");
+        setInsertError("כבר נרשמתם בעבר עם אימייל זה.");
         return;
       }
-      setInsertError("משהו השתבש בשמירת הפרטים. נסי שוב.");
+      setInsertError("משהו השתבש בשמירת הפרטים. נסו שוב.");
       return;
     }
 

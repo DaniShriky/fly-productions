@@ -194,7 +194,7 @@ export default function ProfileEditForm({
             }}
           >
             <option value="" disabled>
-              בחרי יישוב
+              בחרו יישוב
             </option>
             {ISRAELI_CITIES.map((c) => (
               <option key={c} value={c}>
@@ -249,7 +249,7 @@ export default function ProfileEditForm({
         {saved && <span className={styles.savedNote}>הפרטים נשמרו</span>}
         {error && <span className={styles.errorNote}>{error}</span>}
         <button type="submit" className={styles.submit} disabled={saving}>
-          {saving ? "שומרת..." : "שמירת שינויים"}
+          {saving ? "שומרים..." : "שמירת שינויים"}
         </button>
       </div>
     </form>

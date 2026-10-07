@@ -50,7 +50,7 @@ export default function Dashboard({ competitions, registrations, manager: initia
 
   function handleStepSelect(step: RegistrationStep) {
     if (activeStep === 1 && step !== 1 && step1Dirty) {
-      if (!confirm("יש לך ריקוד שמילאת שעדיין לא נשמר. לעזוב בכל זאת?")) return;
+      if (!confirm("יש לכם ריקוד שמילאתם שעדיין לא נשמר. לעזוב בכל זאת?")) return;
     }
     setActiveStep(step);
   }
@@ -181,7 +181,7 @@ export default function Dashboard({ competitions, registrations, manager: initia
           JS, so there's no layout jump. Only RegistrationStepper itself
           stays pinned once scrolled past. */}
       <header className={styles.pageHeader}>
-        <p className={styles.pageSubtitle}>כאן תוכלי לעקוב אחרי ההרשמה שלך ולנהל את הריקודים לתחרויות.</p>
+        <p className={styles.pageSubtitle}>כאן תוכלו לעקוב אחרי ההרשמה שלכם ולנהל את הריקודים לתחרויות.</p>
       </header>
 
       <div className={styles.stickyHeader} style={{ top: navHeight }}>

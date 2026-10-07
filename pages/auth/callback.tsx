@@ -53,7 +53,7 @@ export default function AuthCallback({ competitions }: InferGetStaticPropsType<t
         return;
       }
       if (destination.kind === "rejected") {
-        setMessage("הבקשה שלך נדחתה. לפרטים נוספים, אנא צרי קשר איתנו.");
+        setMessage("הבקשה שלכם נדחתה. לפרטים נוספים, אנא צרו קשר איתנו.");
         return;
       }
       setMessage("לא מצאנו חשבון עם כתובת האימייל הזו - יש להירשם קודם.");
@@ -68,13 +68,13 @@ export default function AuthCallback({ competitions }: InferGetStaticPropsType<t
   return (
     <>
       <Head>
-        <title>מתחברת... - FLY Productions</title>
+        <title>מתחברים... - FLY Productions</title>
       </Head>
 
       <Nav competitions={competitions} />
 
-      <AuthPageShell title="מתחברת...">
-        <p className={authStyles.hint}>{message ?? "רק רגע, מעבירים אותך..."}</p>
+      <AuthPageShell title="מתחברים...">
+        <p className={authStyles.hint}>{message ?? "רק רגע, מעבירים אתכם..."}</p>
         {message && (
           <p className={authStyles.hint}>
             <Link href="/login">חזרה לכניסת מנהלים</Link>

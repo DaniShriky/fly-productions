@@ -64,7 +64,7 @@ export default function OtpEmailForm({ mode, onVerified }: Props) {
       });
       if (alreadyRegistered) {
         setLoading(false);
-        setError("כבר נרשמת בעבר עם אימייל זה - אפשר להתחבר דרך ‘כניסת מנהלים’ בתפריט.");
+        setError("כבר נרשמתם בעבר עם אימייל זה - אפשר להתחבר דרך ‘כניסת מנהלים’ בתפריט.");
         return;
       }
     }
@@ -79,8 +79,8 @@ export default function OtpEmailForm({ mode, onVerified }: Props) {
     if (error) {
       setError(
         mode === "login"
-          ? "לא הצלחנו לשלוח קוד. ודאי שנרשמת קודם, או נסי להירשם."
-          : "לא הצלחנו לשלוח קוד. נסי שוב בעוד רגע."
+          ? "לא הצלחנו לשלוח קוד. ודאו שנרשמתם קודם, או נסו להירשם."
+          : "לא הצלחנו לשלוח קוד. נסו שוב בעוד רגע."
       );
       return;
     }
@@ -106,7 +106,7 @@ export default function OtpEmailForm({ mode, onVerified }: Props) {
     setResending(false);
 
     if (error) {
-      setError("לא הצלחנו לשלוח קוד חדש. נסי שוב בעוד רגע.");
+      setError("לא הצלחנו לשלוח קוד חדש. נסו שוב בעוד רגע.");
       return;
     }
     setResent(true);
@@ -127,7 +127,7 @@ export default function OtpEmailForm({ mode, onVerified }: Props) {
     setLoading(false);
 
     if (error || !data.user) {
-      setError("הקוד שגוי או פג תוקף. נסי שוב.");
+      setError("הקוד שגוי או פג תוקף. נסו שוב.");
       return;
     }
 
@@ -151,7 +151,7 @@ export default function OtpEmailForm({ mode, onVerified }: Props) {
         </label>
         {error && <p className={styles.error}>{error}</p>}
         <button type="submit" className={styles.submit} disabled={loading}>
-          {loading ? "שולחת..." : "שליחת קוד"}
+          {loading ? "שולחים..." : "שליחת קוד"}
         </button>
       </form>
     );
@@ -181,7 +181,7 @@ export default function OtpEmailForm({ mode, onVerified }: Props) {
       </button>
       <div className={styles.secondaryRow}>
         <button type="button" className={styles.secondary} onClick={handleResend} disabled={resending || cooldownLeft > 0}>
-          {resending ? "שולחת..." : cooldownLeft > 0 ? `שליחה חוזרת בעוד ${cooldownLeft} שניות` : "שליחת קוד מחדש"}
+          {resending ? "שולחים..." : cooldownLeft > 0 ? `שליחה חוזרת בעוד ${cooldownLeft} שניות` : "שליחת קוד מחדש"}
         </button>
         {resent && <span className={styles.resentNote}>✓ קוד חדש נשלח</span>}
       </div>

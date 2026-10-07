@@ -29,7 +29,7 @@ export default function Login({ competitions }: InferGetStaticPropsType<typeof g
       return;
     }
     if (destination.kind === "not_found") {
-      setStatusMessage("לא מצאנו את הפרטים שלך. אנא צרי קשר איתנו.");
+      setStatusMessage("לא מצאנו את הפרטים שלכם. אנא צרו קשר איתנו.");
       return;
     }
     if (destination.kind === "approved") {
@@ -42,7 +42,7 @@ export default function Login({ competitions }: InferGetStaticPropsType<typeof g
       return;
     }
 
-    setStatusMessage("הבקשה שלך נדחתה. לפרטים נוספים, אנא צרי קשר איתנו.");
+    setStatusMessage("הבקשה שלכם נדחתה. לפרטים נוספים, אנא צרו קשר איתנו.");
   }
 
   return (
@@ -64,7 +64,7 @@ export default function Login({ competitions }: InferGetStaticPropsType<typeof g
             </div>
             <GoogleSignInButton />
             <p className={authStyles.hint}>
-              עדיין לא נרשמת? <Link href="/register">הרשמה כמנהלת סטודיו/להקה</Link>
+              עדיין לא נרשמתם? <Link href="/register">הרשמה כמנהלת סטודיו/להקה</Link>
             </p>
           </>
         )}

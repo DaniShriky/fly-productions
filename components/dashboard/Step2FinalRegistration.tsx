@@ -121,7 +121,7 @@ export default function Step2FinalRegistration({
   // RegistrationStepper's own tabs (see onDirtyChange/pages/dashboard/index.tsx),
   // since this button is a second way off step 1 that needs the same guard.
   function handleNextClick() {
-    if (hasUnsavedChanges && !confirm("יש לך ריקוד שמילאת שעדיין לא נשמר. לעזוב בכל זאת?")) return;
+    if (hasUnsavedChanges && !confirm("יש לכם ריקוד שמילאתם שעדיין לא נשמר. לעזוב בכל זאת?")) return;
     onNext();
   }
 
@@ -132,7 +132,7 @@ export default function Step2FinalRegistration({
   // it's excluded rather than prompting pointlessly.
   function handleCompetitionSelect(id: string) {
     if (id !== selectedCompetitionId && hasUnsavedChanges) {
-      if (!confirm("יש לך ריקוד שמילאת שעדיין לא נשמר. לעזוב בכל זאת?")) return;
+      if (!confirm("יש לכם ריקוד שמילאתם שעדיין לא נשמר. לעזוב בכל זאת?")) return;
     }
     setSelectedCompetitionId(id);
     setEditingEntry(null);

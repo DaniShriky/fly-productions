@@ -99,7 +99,7 @@ export default function RegistrationDetailsForm({ onSubmit, initialValues }: Pro
         </span>
         <select required value={city} onChange={(e) => setCity(e.target.value)}>
           <option value="" disabled>
-            בחרי יישוב
+            בחרו יישוב
           </option>
           {ISRAELI_CITIES.map((c) => (
             <option key={c} value={c}>

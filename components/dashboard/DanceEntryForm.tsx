@@ -1075,7 +1075,7 @@ export default function DanceEntryForm({
                   ביטול
                 </button>
                 <button type="submit" className={styles.submitButton} disabled={submitting}>
-                  {submitting ? "שולחת..." : editingEntry ? "שמירת שינויים" : "הוספה"}
+                  {submitting ? "שולחים..." : editingEntry ? "שמירת שינויים" : "הוספה"}
                 </button>
               </div>
             </div>
