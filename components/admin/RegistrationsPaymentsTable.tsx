@@ -127,7 +127,7 @@ export default function RegistrationsPaymentsTable({ initialRegistrations, compe
   });
 
   if (registrations.length === 0) {
-    return <p>עדיין לא נוספו ריקודים על ידי אף מנהלת.</p>;
+    return <p>עדיין לא נוספו ריקודים על ידי אף מנהל/ת.</p>;
   }
 
   return (
@@ -136,7 +136,7 @@ export default function RegistrationsPaymentsTable({ initialRegistrations, compe
         <input
           type="search"
           className={styles.searchInput}
-          placeholder="חיפוש לפי סטודיו, מנהלת, ריקוד, יישוב או טלפון..."
+          placeholder="חיפוש לפי סטודיו, מנהל/ת, ריקוד, יישוב או טלפון..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />

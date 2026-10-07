@@ -64,7 +64,7 @@ export default function Login({ competitions }: InferGetStaticPropsType<typeof g
             </div>
             <GoogleSignInButton />
             <p className={authStyles.hint}>
-              עדיין לא נרשמתם? <Link href="/register">הרשמה כמנהלת סטודיו/להקה</Link>
+              עדיין לא נרשמתם? <Link href="/register">הרשמה כמנהל/ת סטודיו/להקה</Link>
             </p>
           </>
         )}

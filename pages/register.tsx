@@ -58,12 +58,12 @@ export default function Register({ competitions }: InferGetStaticPropsType<typeo
   return (
     <>
       <Head>
-        <title>הרשמת מנהלת סטודיו/להקה - FLY Productions</title>
+        <title>הרשמת מנהל/ת סטודיו/להקה - FLY Productions</title>
       </Head>
 
       <Nav competitions={competitions} />
 
-      <AuthPageShell title="הרשמת מנהלת סטודיו/להקה" step={{ current: step === "details" ? 1 : 2, total: 2 }}>
+      <AuthPageShell title="הרשמת מנהל/ת סטודיו/להקה" step={{ current: step === "details" ? 1 : 2, total: 2 }}>
         {step === "details" ? (
           <RegistrationDetailsForm onSubmit={handleDetailsSubmit} initialValues={details ?? undefined} />
         ) : (

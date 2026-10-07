@@ -191,7 +191,7 @@ export default function AdminEditDanceModal({ entry, onClose, onSaved }: Props) 
           )}
 
           <label className={styles.field}>
-            <span>שם מנהלת הלהקה</span>
+            <span>שם מנהל/ת הלהקה</span>
             <input required value={managerName} onChange={(e) => setManagerName(e.target.value)} />
           </label>
 

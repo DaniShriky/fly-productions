@@ -133,7 +133,7 @@ export default function DanceEntryForm({
   const [customDanceStyle, setCustomDanceStyle] = useState("");
   const [dancerName, setDancerName] = useState("");
   // Pre-filled from the manager's own profile (editable — see
-  // StepHeader/groupTitle "פרטי המנהלת" below), not read-only: Dani wants
+  // StepHeader/groupTitle "פרטי מנהל/ת סטודיו" below), not read-only: Dani wants
   // these changeable per dance (e.g. a guest choreographer entering under a
   // different studio name), so they're plain controlled inputs, not derived.
   const [managerName, setManagerName] = useState(manager.managerName ?? "");
@@ -541,7 +541,7 @@ export default function DanceEntryForm({
             <div className={styles.grid}>
               <label className={styles.field}>
                 <span>
-                  שם מנהלת סטודיו <span className={styles.required}>*</span>
+                  שם מנהל/ת סטודיו <span className={styles.required}>*</span>
                 </span>
                 <input
                   required
