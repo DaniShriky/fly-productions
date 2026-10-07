@@ -79,13 +79,25 @@
 
 /* Subtle column dividers — per Dani, 2026-10-07. Physical border-left (not
    a logical border-inline-start — this RTL layout has a documented bug
-   with logical properties misbehaving, see CLAUDE.md), skipping the first
-   cell in each row so there's no stray edge-of-table line. Reset back off
-   on mobile (below) — once columns stack into full-width rows inside each
+   with logical properties misbehaving, see CLAUDE.md). Reset back off on
+   mobile (below) — once columns stack into full-width rows inside each
    card, a left border there would just read as a stray tick mark, not a
-   column divider. */
-.table th:not(:first-child),
-.table td:not(:first-child) {
+   column divider.
+
+   tbody uses :not(.competitionCell) rather than :not(:first-child) —
+   found 2026-10-08: the תחרות column is a single rowSpan'd cell that only
+   actually exists in a group's *first* row (every other dance in that
+   group has no competition <td> of its own at all), so :not(:first-child)
+   left the divider missing for every row after the first in a multi-dance
+   group, e.g. a solo entry that happened to be the 2nd+ dance under its
+   competition. :not([colspan]) excludes the groupHeaderRow/
+   breakdownFooterCell cells, which each span the whole row alone and
+   shouldn't get a stray line either. */
+.table th:not(:first-child) {
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.table td:not(.competitionCell):not([colspan]) {
   border-left: 1px solid rgba(255, 255, 255, 0.06);
 }
 
