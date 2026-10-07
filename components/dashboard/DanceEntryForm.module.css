@@ -654,7 +654,7 @@
   align-items: center;
   gap: 8px;
   color: var(--form-accent, #f5c542);
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
   margin-bottom: 16px;
 }
@@ -676,19 +676,19 @@
 /* Secondary relative to the price next to it — the item's own name/
    description, not the number that matters most on this row. */
 .priceBreakdownLabel {
-  font-size: 14px;
+  font-size: 16px;
   color: #a9a7a0;
 }
 
 .priceBreakdownValue {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 600;
   color: #f3f1ec;
 }
 
 .priceExplain {
   color: #7a7872;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 /* Always part of the same card (no border/background box of its own) —
@@ -710,13 +710,13 @@
 }
 
 .priceSummaryTotal span:first-child {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 700;
   color: #f3f1ec;
 }
 
 .priceSummaryTotal span:last-child {
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 800;
   color: var(--form-accent, #f5c542);
   text-shadow: 0 0 20px rgba(var(--form-rgb, 245, 197, 66), 0.35);

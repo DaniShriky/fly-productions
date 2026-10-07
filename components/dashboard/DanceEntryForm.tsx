@@ -1040,13 +1040,17 @@ export default function DanceEntryForm({
               at all, just the flat ₪0 total below. categoryFromParticipant-
               Count(0) resolves to "solo" (0 <= 1), so showing this section
               at count === 0 would otherwise fabricate a "קטגוריה לתמחור:
-              סולו" breakdown before anything's actually been chosen (fixed
-              2026-10-07, kept here). The קטגוריה row itself is no longer
-              shown even once count > 0 — per Dani's reference design it
-              isn't a priced line item, just every other row's data/logic
-              is unchanged. */}
+              סולו" breakdown before anything's actually been chosen. The
+              קטגוריה row was briefly dropped from this card (2026-10-07)
+              then restored the same day — per Dani, it helps explain why
+              the price differs between categories, even though it isn't
+              itself a priced line item. */}
           {count > 0 && (
             <div className={styles.priceBreakdown}>
+              <div className={styles.priceBreakdownRow}>
+                <span className={styles.priceBreakdownLabel}>קטגוריה לתמחור</span>
+                <span className={styles.priceBreakdownValue}>{displayCategoryLabel(resolvedCategory, count)}</span>
+              </div>
               {baseSubtotal != null && (
                 <div className={styles.priceBreakdownRow}>
                   <span className={styles.priceBreakdownLabel}>
