@@ -615,9 +615,17 @@ export default function DanceEntryForm({
 
         {step2Reached && !step2Open && (
           <p className={styles.managerSummary}>
-            <span className="en" lang="en">{danceName}</span> · {displayCategoryLabel(resolvedCategory, count)} ·{" "}
-            {resolvedDanceStyle}
-            {preferredDay && <> · יום מועדף: {dayOptions.find((d) => d.date === preferredDay)?.label}</>}
+            {/* Each segment supplies its own leading " · ", same as
+                preferredDay already did — count > 0 avoids the same fake
+                "סולו" fabrication fixed in the price breakdown below
+                (categoryFromParticipantCount(0) also resolves to "solo"),
+                and resolvedDanceStyle is skipped the same way once nothing's
+                picked yet, instead of leaving a dangling "·" with nothing
+                after it. */}
+            <span className="en" lang="en">{danceName}</span>
+            {count > 0 && ` · ${displayCategoryLabel(resolvedCategory, count)}`}
+            {resolvedDanceStyle && ` · ${resolvedDanceStyle}`}
+            {preferredDay && ` · יום מועדף: ${dayOptions.find((d) => d.date === preferredDay)?.label}`}
           </p>
         )}
 
