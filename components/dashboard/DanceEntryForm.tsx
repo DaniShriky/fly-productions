@@ -1005,71 +1005,75 @@ export default function DanceEntryForm({
                 </label>
               </div>
             </div>
-
-            {surcharge > 0 && (
-              <p className={styles.surchargeNote}>
-                שימו לב: משך השיר חורג ממגבלת הזמן ({isGroup ? "3" : "2"}{" "}
-                דקות) - נוספה תוספת תשלום של <strong>{formatPrice(surcharge)}₪</strong> בהתאם לתקנון (אחרת יש הורדת ניקוד במקום).
-              </p>
-            )}
-
-            <div className={styles.footer}>
-              <div className={styles.priceBreakdown}>
-                <div className={styles.priceBreakdownRow}>
-                  <span>קטגוריה לתמחור</span>
-                  <span>{displayCategoryLabel(resolvedCategory, count)}</span>
-                </div>
-                {baseSubtotal != null && (
-                  <div className={styles.priceBreakdownRow}>
-                    <span>
-                      מחיר בסיס{!isSolo ? ` (${formatPrice(perParticipantPrice!)}₪ × ${count} משתתפים)` : ""}
-                      {isGroup && competition.priceTiers && (
-                        <span className={styles.priceExplain}>
-                          {" "}
-                          · {isEarlyPricing(competition.priceTiers) ? "מחיר מוקדם" : "מחיר רגיל"}
-                        </span>
-                      )}
-                    </span>
-                    <span>{formatPrice(baseSubtotal)}₪</span>
-                  </div>
-                )}
-                {surcharge > 0 && (
-                  <div className={styles.priceBreakdownRow}>
-                    <span>תוספת חריגת זמן בשיר</span>
-                    <span>{formatPrice(surcharge)}₪</span>
-                  </div>
-                )}
-                {videoFee > 0 && (
-                  <div className={styles.priceBreakdownRow}>
-                    <span>צילום וידאו</span>
-                    <span>{formatPrice(videoFee)}₪</span>
-                  </div>
-                )}
-                {stillsFee > 0 && (
-                  <div className={styles.priceBreakdownRow}>
-                    <span>צילום סטילס</span>
-                    <span>{formatPrice(stillsFee)}₪</span>
-                  </div>
-                )}
-                {totalPrice != null && (
-                  <div className={`${styles.priceBreakdownRow} ${styles.priceBreakdownTotal}`}>
-                    <span>מחיר כולל</span>
-                    <span>{formatPrice(totalPrice)}₪</span>
-                  </div>
-                )}
-              </div>
-              {submitError && <p className={styles.submitError}>{submitError}</p>}
-
-              <div className={styles.actions}>
-                <button type="button" className={styles.cancelButton} onClick={onClose}>
-                  ביטול
-                </button>
-                <button type="submit" className={styles.submitButton} disabled={submitting}>
-                  {submitting ? "שולחים..." : editingEntry ? "שמירת שינויים" : "הוספה"}
-                </button>
-              </div>
-            </div>
           </div>
+        </div>
+      </div>
+
+      {/* Price breakdown + submit/cancel moved out here (was nested inside
+          step 3's collapsible body) — per Dani, 2026-10-07: it should stay
+          visible no matter which step is open/closed, not just while
+          step 3 happens to be expanded. */}
+      {surcharge > 0 && (
+        <p className={styles.surchargeNote}>
+          שימו לב: משך השיר חורג ממגבלת הזמן ({isGroup ? "3" : "2"}{" "}
+          דקות) - נוספה תוספת תשלום של <strong>{formatPrice(surcharge)}₪</strong> בהתאם לתקנון (אחרת יש הורדת ניקוד במקום).
+        </p>
+      )}
+
+      <div className={styles.footer}>
+        <div className={styles.priceBreakdown}>
+          <div className={styles.priceBreakdownRow}>
+            <span>קטגוריה לתמחור</span>
+            <span>{displayCategoryLabel(resolvedCategory, count)}</span>
+          </div>
+          {baseSubtotal != null && (
+            <div className={styles.priceBreakdownRow}>
+              <span>
+                מחיר בסיס{!isSolo ? ` (${formatPrice(perParticipantPrice!)}₪ × ${count} משתתפים)` : ""}
+                {isGroup && competition.priceTiers && (
+                  <span className={styles.priceExplain}>
+                    {" "}
+                    · {isEarlyPricing(competition.priceTiers) ? "מחיר מוקדם" : "מחיר רגיל"}
+                  </span>
+                )}
+              </span>
+              <span>{formatPrice(baseSubtotal)}₪</span>
+            </div>
+          )}
+          {surcharge > 0 && (
+            <div className={styles.priceBreakdownRow}>
+              <span>תוספת חריגת זמן בשיר</span>
+              <span>{formatPrice(surcharge)}₪</span>
+            </div>
+          )}
+          {videoFee > 0 && (
+            <div className={styles.priceBreakdownRow}>
+              <span>צילום וידאו</span>
+              <span>{formatPrice(videoFee)}₪</span>
+            </div>
+          )}
+          {stillsFee > 0 && (
+            <div className={styles.priceBreakdownRow}>
+              <span>צילום סטילס</span>
+              <span>{formatPrice(stillsFee)}₪</span>
+            </div>
+          )}
+          {totalPrice != null && (
+            <div className={`${styles.priceBreakdownRow} ${styles.priceBreakdownTotal}`}>
+              <span>מחיר כולל</span>
+              <span>{formatPrice(totalPrice)}₪</span>
+            </div>
+          )}
+        </div>
+        {submitError && <p className={styles.submitError}>{submitError}</p>}
+
+        <div className={styles.actions}>
+          <button type="button" className={styles.cancelButton} onClick={onClose}>
+            ביטול
+          </button>
+          <button type="submit" className={styles.submitButton} disabled={submitting}>
+            {submitting ? "שולחים..." : editingEntry ? "שמירת שינויים" : "הוספה"}
+          </button>
         </div>
       </div>
     </form>
