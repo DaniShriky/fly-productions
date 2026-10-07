@@ -43,8 +43,10 @@ export default function HistoryCompetitionFilter({ competitions, entries, select
               <CheckIcon size={13} />
             </span>
           )}
-          <span className={styles.logoSlot} />
-          <span className={styles.name}>הכל</span>
+          <span className={styles.logoSlot}>
+            <Image src="/images/fly-logo.png" alt="" width={32} height={32} className={styles.logo} />
+          </span>
+          <span className={styles.name}>כל תחרויות המחול</span>
           <span className={styles.danceCount}>
             {entries.length} {entries.length === 1 ? "ריקוד" : "ריקודים"}
           </span>
