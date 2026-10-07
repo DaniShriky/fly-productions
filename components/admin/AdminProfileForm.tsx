@@ -3,6 +3,7 @@ import { updateOwnAdmin } from "@/lib/queries/admins";
 import { uploadProfilePhoto, getProfilePhotoUrl } from "@/lib/queries/studioManagers";
 import { supabaseBrowserClient } from "@/lib/supabaseBrowserClient";
 import { Admin } from "@/types/admin";
+import CameraCaptureModal from "@/components/shared/CameraCaptureModal";
 import styles from "./AdminProfileForm.module.css";
 
 function CameraIcon() {
@@ -29,6 +30,7 @@ export default function AdminProfileForm({ admin, onSaved }: { admin: Admin; onS
   const [name, setName] = useState(admin.name ?? "");
   const [profileImagePath, setProfileImagePath] = useState(admin.profileImagePath);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,10 +38,9 @@ export default function AdminProfileForm({ admin, onSaved }: { admin: Admin; onS
 
   const photoUrl = profileImagePath ? getProfilePhotoUrl(supabaseBrowserClient, profileImagePath) : null;
 
-  async function handlePhotoChange(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  // Shared by the plain file-picker input and CameraCaptureModal's capture
+  // callback — both end up with a File, just from a different source.
+  async function uploadPhoto(file: File) {
     setUploadingPhoto(true);
     setPhotoError(null);
     try {
@@ -52,8 +53,19 @@ export default function AdminProfileForm({ admin, onSaved }: { admin: Admin; onS
       setPhotoError("העלאת התמונה נכשלה - נסו שוב.");
     } finally {
       setUploadingPhoto(false);
-      e.target.value = "";
     }
+  }
+
+  async function handlePhotoChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    await uploadPhoto(file);
+  }
+
+  async function handlePhotoCaptured(file: File) {
+    setCameraOpen(false);
+    await uploadPhoto(file);
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -88,9 +100,19 @@ export default function AdminProfileForm({ admin, onSaved }: { admin: Admin; onS
           </span>
           <input type="file" accept="image/*" onChange={handlePhotoChange} disabled={uploadingPhoto} hidden />
         </label>
-        <p className={styles.avatarHint}>{uploadingPhoto ? "מעלה תמונה..." : "לחצו על התמונה כדי להחליף אותה"}</p>
+        <p className={styles.avatarHint}>{uploadingPhoto ? "מעלה תמונה..." : "לחצו על התמונה כדי להעלות קובץ"}</p>
+        <button
+          type="button"
+          className={styles.cameraLink}
+          onClick={() => setCameraOpen(true)}
+          disabled={uploadingPhoto}
+        >
+          או לצלם תמונה חדשה
+        </button>
         {photoError && <p className={styles.errorNote}>{photoError}</p>}
       </div>
+
+      {cameraOpen && <CameraCaptureModal onCapture={handlePhotoCaptured} onClose={() => setCameraOpen(false)} />}
 
       <label className={styles.field}>
         <span>שם</span>
@@ -101,7 +123,7 @@ export default function AdminProfileForm({ admin, onSaved }: { admin: Admin; onS
         {saved && <span className={styles.savedNote}>הפרטים נשמרו</span>}
         {error && <span className={styles.errorNote}>{error}</span>}
         <button type="submit" className={styles.submit} disabled={saving}>
-          {saving ? "שומר..." : "שמירת שינויים"}
+          {saving ? "שומרים..." : "שמירת שינויים"}
         </button>
       </div>
     </form>

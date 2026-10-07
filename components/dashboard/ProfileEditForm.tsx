@@ -9,6 +9,7 @@ import {
 import { emitProfileUpdated } from "@/lib/profileUpdateEvent";
 import { supabaseBrowserClient } from "@/lib/supabaseBrowserClient";
 import { StudioManager } from "@/types/studioManager";
+import CameraCaptureModal from "@/components/shared/CameraCaptureModal";
 import styles from "./ProfileEditForm.module.css";
 
 const OTHER_CITY = "אחר";
@@ -65,6 +66,7 @@ export default function ProfileEditForm({
   }, [manager.pendingPreferredCompetitionType, manager.preferredCompetitionType]);
   const [profileImagePath, setProfileImagePath] = useState(manager.profileImagePath);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -72,10 +74,9 @@ export default function ProfileEditForm({
 
   const photoUrl = profileImagePath ? getProfilePhotoUrl(supabaseBrowserClient, profileImagePath) : null;
 
-  async function handlePhotoChange(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  // Shared by the plain file-picker input and CameraCaptureModal's capture
+  // callback — both end up with a File, just from a different source.
+  async function uploadPhoto(file: File) {
     setUploadingPhoto(true);
     setPhotoError(null);
     try {
@@ -91,8 +92,19 @@ export default function ProfileEditForm({
       setPhotoError("העלאת התמונה נכשלה - נסו שוב.");
     } finally {
       setUploadingPhoto(false);
-      e.target.value = "";
     }
+  }
+
+  async function handlePhotoChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    await uploadPhoto(file);
+  }
+
+  async function handlePhotoCaptured(file: File) {
+    setCameraOpen(false);
+    await uploadPhoto(file);
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -144,14 +156,24 @@ export default function ProfileEditForm({
         </label>
         <div>
           <p className={styles.avatarHint}>
-            {uploadingPhoto ? "מעלה תמונה..." : "לחצו על התמונה כדי להחליף אותה"}
+            {uploadingPhoto ? "מעלה תמונה..." : "לחצו על התמונה כדי להעלות קובץ"}
           </p>
+          <button
+            type="button"
+            className={styles.cameraLink}
+            onClick={() => setCameraOpen(true)}
+            disabled={uploadingPhoto}
+          >
+            או לצלם תמונה חדשה
+          </button>
           {photoError && <p className={styles.errorNote}>{photoError}</p>}
           <p className={styles.email} dir="ltr">
             {manager.email}
           </p>
         </div>
       </div>
+
+      {cameraOpen && <CameraCaptureModal onCapture={handlePhotoCaptured} onClose={() => setCameraOpen(false)} />}
 
       <p className={styles.requiredHint}>
         <span className={styles.required}>*</span> שדה חובה
