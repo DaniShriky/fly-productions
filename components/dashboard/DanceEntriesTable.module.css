@@ -702,12 +702,43 @@
   padding: 4px 0;
 }
 
+/* Copied from DanceEntryForm.module.css's .priceSummaryTotal — per Dani,
+   2026-10-08: "ממש תעתיק את העיצוב משלב 1" (literally copy step 1's
+   design). Same glowing top highlight line (::before, fading at both ends
+   with a soft box-shadow) instead of a plain border-top, rounded box, and
+   a much bigger amount — same gold color as before, just the treatment and
+   font size changed. */
 .breakdownTotal {
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
-  margin-top: 6px;
-  padding-top: 8px;
+  position: relative;
+  margin-top: 10px;
+  padding: 18px 20px;
+  border-radius: 14px;
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.15));
+  overflow: hidden;
+}
+
+.breakdownTotal::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 12%;
+  left: 12%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #f5c542, transparent);
+  box-shadow: 0 0 10px 1px rgba(245, 197, 66, 0.6);
+}
+
+.breakdownTotal span:first-child {
+  font-size: 17px;
   font-weight: 700;
+  color: #f3f1ec;
+}
+
+.breakdownTotal span:last-child {
+  font-size: 28px;
+  font-weight: 800;
   color: #f5c542;
+  text-shadow: 0 0 20px rgba(245, 197, 66, 0.35);
 }
 
 .payInstructions {
