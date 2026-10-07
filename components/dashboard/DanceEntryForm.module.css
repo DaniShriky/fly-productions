@@ -386,6 +386,10 @@
   display: flex;
   align-items: stretch;
   width: 100%;
+  /* Just two +/- buttons around a 1-2 digit count — stretching it to the
+     full grid column (same width as a real text field like שם הריקוד)
+     left a lot of empty space inside it. */
+  max-width: 140px;
   box-sizing: border-box;
   background: #101014;
   border: 1px solid rgba(255, 255, 255, 0.12);
