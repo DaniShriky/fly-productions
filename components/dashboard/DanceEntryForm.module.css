@@ -644,18 +644,39 @@
 
 .priceBreakdownRow {
   display: flex;
-  justify-content: space-between;
-  gap: 12px;
+  align-items: baseline;
+  gap: 8px;
+}
+
+/* A dotted leader line (receipt/table-of-contents style) connecting the
+   label to its price, per Dani, 2026-10-07 — the label is blockified by
+   being a flex item, so its border-bottom spans the row's full remaining
+   width (growing via flex: 1) rather than just hugging its own text. */
+.priceBreakdownRow span:first-child {
+  flex: 1;
+  min-width: 0;
+  border-bottom: 1px dotted rgba(255, 255, 255, 0.25);
+}
+
+.priceBreakdownRow span:last-child {
+  flex: 0 0 auto;
 }
 
 .priceBreakdownTotal {
   margin-top: 6px;
-  padding: 12px 16px;
+  /* Wider side padding (was 16px) — per Dani: pulls the label/price in from
+     the box's own border, which as a side effect also brings them closer
+     together since there's less row width left for the gap between them. */
+  padding: 12px 28px;
   border-radius: 10px;
   background: rgba(var(--form-rgb, 245, 197, 66), 0.12);
   border: 1px solid rgba(var(--form-rgb, 245, 197, 66), 0.35);
   font-weight: 700;
   font-size: 17px;
+}
+
+.priceBreakdownTotal span:first-child {
+  border-bottom: none;
 }
 
 .priceBreakdownTotal span:first-child {
