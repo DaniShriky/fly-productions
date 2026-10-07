@@ -694,10 +694,12 @@
 /* Redesigned per Dani's reference image, 2026-10-08: a thin glowing
    highlight line across the top edge (an ::before pseudo-element, not a
    plain border — a solid border can't fade out at its ends the way a
-   gradient + soft box-shadow can) instead of the flat gold wash + solid
-   border-top this replaced. Rounded on every corner now, reading as its
-   own soft box inside the card — accent color kept as-is (gold), only the
-   treatment changed. */
+   gradient + soft box-shadow can) instead of the previous solid
+   border-top. Rounded on every corner now, reading as its own soft box
+   inside the card. The background wash is the ORIGINAL one (reverted
+   2026-10-08 — a later edit swapped it for a plain neutral gradient, which
+   wasn't asked for and didn't match); only the top-edge treatment and
+   corners actually changed. */
 .priceSummaryTotal {
   position: relative;
   display: flex;
@@ -707,7 +709,10 @@
   margin-top: 14px;
   padding: 18px 20px;
   border-radius: 14px;
-  background: linear-gradient(165deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.15));
+  /* "to right" (not "to left") so the gold wash is strongest on the left —
+     where the amount itself sits in this RTL row (label first/right via
+     space-between, amount last/left) — instead of behind the label. */
+  background: linear-gradient(to right, rgba(var(--form-rgb, 245, 197, 66), 0.1), transparent 70%);
   overflow: hidden;
 }
 

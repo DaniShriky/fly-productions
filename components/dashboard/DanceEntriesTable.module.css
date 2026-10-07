@@ -716,16 +716,28 @@
 
 /* Copied from DanceEntryForm.module.css's .priceSummaryTotal — per Dani,
    2026-10-08: "ממש תעתיק את העיצוב משלב 1" (literally copy step 1's
-   design). Same glowing top highlight line (::before, fading at both ends
-   with a soft box-shadow) instead of a plain border-top, rounded box, and
-   a much bigger amount — same gold color as before, just the treatment and
-   font size changed. */
+   design), kept in sync with that file's own background revert the same
+   day. Same glowing top highlight line (::before, fading at both ends with
+   a soft box-shadow) instead of a plain border-top, rounded box, and a
+   much bigger amount — same gold color as before, just the treatment and
+   font size changed.
+
+   max-width here (step 1's own version doesn't need one — that card is
+   already narrow) is the other half of the same request: this cell spans
+   the whole table via colSpan, so without a cap the label/amount ended up
+   pushed to opposite edges of the entire table instead of sitting
+   reasonably close together. Block box under direction: rtl stays flush to
+   the right (the inline-start side) once capped, no extra alignment rule
+   needed. */
 .breakdownTotal {
   position: relative;
+  max-width: 440px;
   margin-top: 10px;
   padding: 18px 20px;
   border-radius: 14px;
-  background: linear-gradient(165deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.15));
+  /* Same gold wash as step 1's .priceSummaryTotal — "to right" so it's
+     strongest on the left, where the amount sits in this RTL row. */
+  background: linear-gradient(to right, rgba(245, 197, 66, 0.1), transparent 70%);
   overflow: hidden;
 }
 
