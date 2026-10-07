@@ -22,17 +22,25 @@ export default function PhotoCropModal({ file, onConfirm, onClose }: Props) {
   const [working, setWorking] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    return () => URL.revokeObjectURL(imageUrl);
-  }, [imageUrl]);
+  // Revoking only at these explicit exit points (not via a mount-effect
+  // cleanup) is deliberate: React 18 Strict Mode double-invokes effects in
+  // dev, which was revoking this blob URL almost immediately after
+  // creating it — the image never finished loading, just an empty crop
+  // circle. These handlers only ever run once, on a real user action, so
+  // they don't hit that.
+  function closeAndRevoke() {
+    URL.revokeObjectURL(imageUrl);
+    onClose();
+  }
 
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") closeAndRevoke();
     }
     document.addEventListener("keydown", handleKey);
     return () => document.removeEventListener("keydown", handleKey);
-  }, [onClose]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- closeAndRevoke closes over imageUrl/onClose, both stable for this modal's lifetime
+  }, []);
 
   async function handleConfirm() {
     if (!croppedAreaPixels) return;
@@ -40,6 +48,7 @@ export default function PhotoCropModal({ file, onConfirm, onClose }: Props) {
     setError(null);
     try {
       const cropped = await cropImageToFile(imageUrl, croppedAreaPixels);
+      URL.revokeObjectURL(imageUrl);
       onConfirm(cropped);
     } catch (err) {
       console.error("Photo crop failed:", err);
@@ -50,7 +59,7 @@ export default function PhotoCropModal({ file, onConfirm, onClose }: Props) {
   }
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
+    <div className={styles.overlay} onClick={closeAndRevoke}>
       <div className={styles.card} role="dialog" aria-label="מיקום תמונת הפרופיל" onClick={(e) => e.stopPropagation()}>
         <h2>מיקום התמונה</h2>
 
@@ -85,7 +94,7 @@ export default function PhotoCropModal({ file, onConfirm, onClose }: Props) {
         {error && <p className={styles.error}>{error}</p>}
 
         <div className={styles.actions}>
-          <button type="button" className={styles.secondaryBtn} onClick={onClose} disabled={working}>
+          <button type="button" className={styles.secondaryBtn} onClick={closeAndRevoke} disabled={working}>
             ביטול
           </button>
           <button type="button" className={styles.primaryBtn} onClick={handleConfirm} disabled={working}>
