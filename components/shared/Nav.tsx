@@ -254,9 +254,8 @@ export default function Nav({ competitions }: { competitions: Competition[] }) {
                   </span>
                   <span className={styles.menuItemText}>
                     <span className="en" lang="en">{c.name}</span>
-                    <span className={styles.sub}>
-                      <span dir="ltr" lang="en">{getCompetitionDateLabel(c.date)}</span> · {c.location}
-                    </span>
+                    <span className={styles.sub} dir="ltr" lang="en">{getCompetitionDateLabel(c.date)}</span>
+                    <span className={styles.sub}>{c.location}</span>
                   </span>
                 </Link>
               ))}
