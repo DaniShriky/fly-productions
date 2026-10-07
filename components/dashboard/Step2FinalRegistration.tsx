@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { CompetitionWithPricing } from "@/lib/queries/competitionsWithPricing";
 import { DanceEntryInput } from "@/lib/queries/registrations";
+import { isRegistrationTemporarilyClosed } from "@/lib/closedCompetitions";
 import { Registration } from "@/types/registration";
 import { StudioManager } from "@/types/studioManager";
 import StepHeader from "./StepHeader";
@@ -82,8 +83,16 @@ export default function Step2FinalRegistration({
       ? competitions
       : competitions.filter((c) => (manager.preferredCompetitionType === "מגזר דתי" ? c.isReligious : !c.isReligious));
 
+  // Per Dani, 2026-10-07: skips a temporarily-closed competition (Eilat's
+  // two, right now — see lib/closedCompetitions.ts) when picking the
+  // default, so step 1 doesn't land on an unregisterable one just because
+  // of array order. Falls back to the first one regardless if every single
+  // competition happened to be closed, rather than showing nothing.
+  const defaultCompetitionId =
+    pickableCompetitions.find((c) => !isRegistrationTemporarilyClosed(c.slug))?.id ?? pickableCompetitions[0]?.id ?? "";
+
   const [selectedCompetitionId, setSelectedCompetitionId] = useState(
-    initialEditEntry?.competitionId ?? pickableCompetitions[0]?.id ?? ""
+    initialEditEntry?.competitionId ?? defaultCompetitionId
   );
   const [mode, setMode] = useState<"list" | "form">(() => {
     if (initialEditEntry) return "form";
@@ -143,6 +152,13 @@ export default function Step2FinalRegistration({
   // Re-selecting the already-active competition is a no-op either way, so
   // it's excluded rather than prompting pointlessly.
   function handleCompetitionSelect(id: string) {
+    // Defense in depth — CompetitionPicker's own closed cards already
+    // ignore clicks and never call this, but refusing here too means
+    // nothing can ever land a manager on a temporarily-closed competition's
+    // form, regardless of how onSelect ends up getting called.
+    const target = pickableCompetitions.find((c) => c.id === id);
+    if (target && isRegistrationTemporarilyClosed(target.slug)) return;
+
     if (id !== selectedCompetitionId && hasUnsavedChanges) {
       if (!confirm("יש לכם ריקוד שמילאתם שעדיין לא נשמר. לעזוב בכל זאת?")) return;
     }

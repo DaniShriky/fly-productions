@@ -1,8 +1,9 @@
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Image from "next/image";
 import { CompetitionWithPricing } from "@/lib/queries/competitionsWithPricing";
 import { Registration } from "@/types/registration";
 import { getCompetitionDateLabel } from "@/lib/getCompetitionDays";
+import { isRegistrationTemporarilyClosed } from "@/lib/closedCompetitions";
 import { CheckIcon } from "./icons";
 import styles from "./CompetitionPicker.module.css";
 
@@ -29,27 +30,44 @@ type Props = {
 // pill-shaped tabs inside DanceEntryForm did. Redesigned as a card grid so it
 // reads clearly even once there are 5+ competitions to choose from.
 export default function CompetitionPicker({ competitions, selectedId, onSelect, entries, notice }: Props) {
+  // Per Dani, 2026-10-07: Eilat's competitions aren't open for registration
+  // yet — the cards below gray them out and ignore clicks instead, and this
+  // is the friendly fallback message for that click (auto-dismisses).
+  const [closedNotice, setClosedNotice] = useState(false);
+
+  useEffect(() => {
+    if (!closedNotice) return;
+    const timer = setTimeout(() => setClosedNotice(false), 4500);
+    return () => clearTimeout(timer);
+  }, [closedNotice]);
+
   return (
     <div>
       <p className={styles.groupTitle}>בחירת תחרות</p>
       {notice}
+      {closedNotice && (
+        <p className={styles.closedNotice}>ההרשמה לתחרות הזו עוד לא נפתחה - תיפתח בקרוב! 💃</p>
+      )}
       <div className={styles.grid}>
         {competitions.map((c) => {
           const active = c.id === selectedId;
+          const closed = isRegistrationTemporarilyClosed(c.slug);
           const danceCount = entries.filter((e) => e.competitionId === c.id).length;
           return (
             <button
               key={c.id}
               type="button"
-              className={`${styles.card} ${active ? styles.cardActive : ""}`}
-              onClick={() => onSelect(c.id)}
+              className={`${styles.card} ${active ? styles.cardActive : ""} ${closed ? styles.cardClosed : ""}`}
+              onClick={() => (closed ? setClosedNotice(true) : onSelect(c.id))}
               aria-pressed={active}
+              aria-disabled={closed}
             >
               {active && (
                 <span className={styles.check}>
                   <CheckIcon size={13} />
                 </span>
               )}
+              {closed && <span className={styles.comingSoonBadge}>בקרוב</span>}
               {/* Fixed-height slot regardless of whether this competition has
                   a logo yet (not every one does) — otherwise a card without
                   one would be shorter than its neighbors, per Dani,
@@ -67,9 +85,11 @@ export default function CompetitionPicker({ competitions, selectedId, onSelect, 
                   same height — only its content is conditional (an empty,
                   invisible badge for a competition with no dances yet reads
                   as cleaner than that card simply being shorter). */}
-              <span className={styles.danceCount} style={danceCount === 0 ? { visibility: "hidden" } : undefined}>
-                {danceCount} {danceCount === 1 ? "ריקוד רשום" : "ריקודים רשומים"}
-              </span>
+              {!closed && (
+                <span className={styles.danceCount} style={danceCount === 0 ? { visibility: "hidden" } : undefined}>
+                  {danceCount} {danceCount === 1 ? "ריקוד רשום" : "ריקודים רשומים"}
+                </span>
+              )}
             </button>
           );
         })}
