@@ -1022,46 +1022,60 @@ export default function DanceEntryForm({
 
       <div className={styles.footer}>
         <div className={styles.priceBreakdown}>
-          <div className={styles.priceBreakdownRow}>
-            <span>קטגוריה לתמחור</span>
-            <span>{displayCategoryLabel(resolvedCategory, count)}</span>
-          </div>
-          {baseSubtotal != null && (
-            <div className={styles.priceBreakdownRow}>
-              <span>
-                מחיר בסיס{!isSolo ? ` (${formatPrice(perParticipantPrice!)}₪ × ${count} משתתפים)` : ""}
-                {isGroup && competition.priceTiers && (
-                  <span className={styles.priceExplain}>
-                    {" "}
-                    · {isEarlyPricing(competition.priceTiers) ? "מחיר מוקדם" : "מחיר רגיל"}
+          {count > 0 ? (
+            <>
+              <div className={styles.priceBreakdownRow}>
+                <span>קטגוריה לתמחור</span>
+                <span>{displayCategoryLabel(resolvedCategory, count)}</span>
+              </div>
+              {baseSubtotal != null && (
+                <div className={styles.priceBreakdownRow}>
+                  <span>
+                    מחיר בסיס{!isSolo ? ` (${formatPrice(perParticipantPrice!)}₪ × ${count} משתתפים)` : ""}
+                    {isGroup && competition.priceTiers && (
+                      <span className={styles.priceExplain}>
+                        {" "}
+                        · {isEarlyPricing(competition.priceTiers) ? "מחיר מוקדם" : "מחיר רגיל"}
+                      </span>
+                    )}
                   </span>
-                )}
-              </span>
-              <span>{formatPrice(baseSubtotal)}₪</span>
-            </div>
-          )}
-          {surcharge > 0 && (
-            <div className={styles.priceBreakdownRow}>
-              <span>תוספת חריגת זמן בשיר</span>
-              <span>{formatPrice(surcharge)}₪</span>
-            </div>
-          )}
-          {videoFee > 0 && (
-            <div className={styles.priceBreakdownRow}>
-              <span>צילום וידאו</span>
-              <span>{formatPrice(videoFee)}₪</span>
-            </div>
-          )}
-          {stillsFee > 0 && (
-            <div className={styles.priceBreakdownRow}>
-              <span>צילום סטילס</span>
-              <span>{formatPrice(stillsFee)}₪</span>
-            </div>
-          )}
-          {totalPrice != null && (
+                  <span>{formatPrice(baseSubtotal)}₪</span>
+                </div>
+              )}
+              {surcharge > 0 && (
+                <div className={styles.priceBreakdownRow}>
+                  <span>תוספת חריגת זמן בשיר</span>
+                  <span>{formatPrice(surcharge)}₪</span>
+                </div>
+              )}
+              {videoFee > 0 && (
+                <div className={styles.priceBreakdownRow}>
+                  <span>צילום וידאו</span>
+                  <span>{formatPrice(videoFee)}₪</span>
+                </div>
+              )}
+              {stillsFee > 0 && (
+                <div className={styles.priceBreakdownRow}>
+                  <span>צילום סטילס</span>
+                  <span>{formatPrice(stillsFee)}₪</span>
+                </div>
+              )}
+              {totalPrice != null && (
+                <div className={`${styles.priceBreakdownRow} ${styles.priceBreakdownTotal}`}>
+                  <span>מחיר כולל</span>
+                  <span>{formatPrice(totalPrice)}₪</span>
+                </div>
+              )}
+            </>
+          ) : (
+            // Nothing picked yet (participant count still empty) —
+            // categoryFromParticipantCount(0) would otherwise resolve to
+            // "solo" (0 <= 1), showing a fabricated "קטגוריה לתמחור: סולו"
+            // / base-price breakdown before she's actually chosen anything.
+            // Per Dani, 2026-10-07: just a flat 0, no invented breakdown.
             <div className={`${styles.priceBreakdownRow} ${styles.priceBreakdownTotal}`}>
               <span>מחיר כולל</span>
-              <span>{formatPrice(totalPrice)}₪</span>
+              <span>0₪</span>
             </div>
           )}
         </div>

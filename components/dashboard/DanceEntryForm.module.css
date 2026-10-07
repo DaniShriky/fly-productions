@@ -634,12 +634,20 @@
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+/* Now that this lives in the standalone footer (not nested inside a
+   .stepCard anymore — see DanceEntryForm.tsx), it gets its own card frame
+   instead of relying on the step card around it for visual grouping. Per
+   Dani, 2026-10-07: "נקי ומסודר בעיצוב שלו". */
 .priceBreakdown {
   display: flex;
   flex-direction: column;
   gap: 5px;
   font-size: 14px;
   color: #d8d6cf;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px 18px;
+  background: rgba(255, 255, 255, 0.015);
 }
 
 .priceBreakdownRow {
