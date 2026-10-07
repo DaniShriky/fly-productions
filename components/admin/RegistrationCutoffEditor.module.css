@@ -16,6 +16,15 @@
   white-space: nowrap;
 }
 
+/* Subtle column dividers — per Dani, 2026-10-07. Physical border-left (not
+   a logical border-inline-start — this RTL layout has a documented bug
+   with logical properties misbehaving, see CLAUDE.md), skipping the first
+   cell in each row so there's no stray edge-of-table line. */
+.table th:not(:first-child),
+.table td:not(:first-child) {
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+}
+
 .nameCell {
   display: flex;
   align-items: center;
