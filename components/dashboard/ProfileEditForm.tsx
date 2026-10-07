@@ -193,10 +193,6 @@ export default function ProfileEditForm({
       {cameraOpen && <CameraCaptureModal onCapture={handlePhotoCaptured} onClose={() => setCameraOpen(false)} />}
       {cropFile && <PhotoCropModal file={cropFile} onConfirm={handleCropConfirm} onClose={() => setCropFile(null)} />}
 
-      <p className={styles.requiredHint}>
-        <span className={styles.required}>*</span> שדה חובה
-      </p>
-
       <div className={styles.grid}>
         <label className={styles.field}>
           <span>
