@@ -63,7 +63,7 @@ export default function PendingApprovalsTable({ initialManagers }: { initialMana
             <th>שם הסטודיו/הלהקה</th>
             <th>טלפון</th>
             <th>אימייל</th>
-            <th>מאיפה שמעה</th>
+            <th>מאיפה שמעו</th>
             <th>סוג תחרויות</th>
             <th></th>
           </tr>

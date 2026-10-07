@@ -10,7 +10,7 @@ export type RegistrationDetails = {
   phone: string;
   city: string;
   referralSource: string;
-  preferredCompetitionType: "regular" | "religious";
+  preferredCompetitionType: "regular" | "religious" | "both";
 };
 
 type Props = {
@@ -42,7 +42,7 @@ export default function RegistrationDetailsForm({ onSubmit, initialValues }: Pro
     initialValues && !ISRAELI_CITIES.includes(initialValues.city) ? initialValues.city : ""
   );
   const [referralSource, setReferralSource] = useState(initialValues?.referralSource ?? "");
-  const [preferredCompetitionType, setPreferredCompetitionType] = useState<"regular" | "religious">(
+  const [preferredCompetitionType, setPreferredCompetitionType] = useState<"regular" | "religious" | "both">(
     initialValues?.preferredCompetitionType ?? "regular"
   );
 
@@ -120,7 +120,7 @@ export default function RegistrationDetailsForm({ onSubmit, initialValues }: Pro
       )}
 
       <label className={styles.field}>
-        <span>מאיפה שמעת עלינו?</span>
+        <span>מאיפה שמעתם עלינו?</span>
         <input value={referralSource} onChange={(e) => setReferralSource(e.target.value)} />
       </label>
 
@@ -143,6 +143,15 @@ export default function RegistrationDetailsForm({ onSubmit, initialValues }: Pro
             onChange={() => setPreferredCompetitionType("religious")}
           />
           מגזר דתי
+        </label>
+        <label className={styles.radio}>
+          <input
+            type="radio"
+            name="preferredCompetitionType"
+            checked={preferredCompetitionType === "both"}
+            onChange={() => setPreferredCompetitionType("both")}
+          />
+          שניהם
         </label>
       </fieldset>
 

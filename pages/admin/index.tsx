@@ -5,12 +5,17 @@ import Nav from "@/components/shared/Nav";
 import Footer from "@/components/shared/Footer";
 import PendingApprovalsTable from "@/components/admin/PendingApprovalsTable";
 import CompetitionTypeRequestsTable from "@/components/admin/CompetitionTypeRequestsTable";
+import ApprovedManagersTable from "@/components/admin/ApprovedManagersTable";
 import RegistrationsPaymentsTable from "@/components/admin/RegistrationsPaymentsTable";
 import RegistrationCutoffEditor from "@/components/admin/RegistrationCutoffEditor";
 import AdminTabs, { AdminTab } from "@/components/admin/AdminTabs";
 import { requireAdmin } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabaseServerClient";
-import { getPendingCompetitionTypeRequests, getPendingStudioManagers } from "@/lib/queries/studioManagers";
+import {
+  getApprovedStudioManagers,
+  getPendingCompetitionTypeRequests,
+  getPendingStudioManagers,
+} from "@/lib/queries/studioManagers";
 import { getAllCompetitions } from "@/lib/queries/competitions";
 import { getAllRegistrationsForAdmin } from "@/lib/queries/adminRegistrations";
 import { getCompetitionsWithPricing } from "@/lib/queries/competitionsWithPricing";
@@ -27,6 +32,7 @@ export default function AdminIndex({
   competitions,
   managers,
   competitionTypeRequests,
+  approvedManagers,
   registrations,
   competitionsWithPricing,
   adminName,
@@ -108,6 +114,8 @@ export default function AdminIndex({
           </>
         )}
 
+        {activeTab === "managers" && <ApprovedManagersTable initialManagers={approvedManagers} />}
+
         {activeTab === "registrations" && (
           <RegistrationsPaymentsTable initialRegistrations={registrations} competitions={competitionsWithPricing} />
         )}
@@ -129,19 +137,22 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [managers, competitionTypeRequests, competitions, registrations, competitionsWithPricing, admin] = await Promise.all([
-    getPendingStudioManagers(supabase),
-    getPendingCompetitionTypeRequests(supabase),
-    getAllCompetitions(),
-    getAllRegistrationsForAdmin(supabase),
-    getCompetitionsWithPricing(supabase),
-    getOwnAdmin(supabase, user!.id),
-  ]);
+  const [managers, competitionTypeRequests, approvedManagers, competitions, registrations, competitionsWithPricing, admin] =
+    await Promise.all([
+      getPendingStudioManagers(supabase),
+      getPendingCompetitionTypeRequests(supabase),
+      getApprovedStudioManagers(supabase),
+      getAllCompetitions(),
+      getAllRegistrationsForAdmin(supabase),
+      getCompetitionsWithPricing(supabase),
+      getOwnAdmin(supabase, user!.id),
+    ]);
 
   return {
     props: {
       managers,
       competitionTypeRequests,
+      approvedManagers,
       competitions,
       registrations,
       competitionsWithPricing,

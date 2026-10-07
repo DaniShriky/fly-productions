@@ -65,6 +65,29 @@ export async function getPendingStudioManagers(client: SupabaseClient): Promise<
   return (data as StudioManagerRow[]).map(toStudioManager);
 }
 
+// Admin dashboard's "מנהלי סטודיו רשומים" tab — every manager Dani has
+// already approved, so she can see who's registered and remove one if
+// needed.
+export async function getApprovedStudioManagers(client: SupabaseClient): Promise<StudioManager[]> {
+  const { data, error } = await client
+    .from("studio_managers")
+    .select("*")
+    .eq("status", "approved")
+    .order("studio_name", { ascending: true });
+
+  if (error) throw error;
+  return (data as StudioManagerRow[]).map(toStudioManager);
+}
+
+// Admin-only (see "Admin deletes any row" in supabase/schema.sql, Round
+// 15). Fails with a foreign-key violation (Postgres error code 23503) if
+// this manager still has registrations or a past submission — callers
+// should surface that distinctly rather than as a generic error.
+export async function deleteStudioManager(client: SupabaseClient, id: string): Promise<void> {
+  const { error } = await client.from("studio_managers").delete().eq("id", id);
+  if (error) throw error;
+}
+
 export async function getOwnStudioManager(client: SupabaseClient, userId: string): Promise<StudioManager | null> {
   const { data, error } = await client.from("studio_managers").select("*").eq("id", userId).maybeSingle();
 

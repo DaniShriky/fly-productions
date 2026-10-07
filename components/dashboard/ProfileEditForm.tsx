@@ -235,6 +235,15 @@ export default function ProfileEditForm({
           />
           מגזר דתי
         </label>
+        <label className={styles.radio}>
+          <input
+            type="radio"
+            name="preferredCompetitionType"
+            checked={selectedCompetitionType === "שניהם"}
+            onChange={() => setSelectedCompetitionType("שניהם")}
+          />
+          שניהם
+        </label>
         {manager.pendingPreferredCompetitionType && (
           <p className={styles.approvalWarning}>
             יש בקשה ממתינה לאישור מנהל האתר לשינוי ל<strong>{manager.pendingPreferredCompetitionType}</strong>.

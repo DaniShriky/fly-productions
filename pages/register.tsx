@@ -40,7 +40,12 @@ export default function Register({ competitions }: InferGetStaticPropsType<typeo
       email,
       city: details.city,
       referral_source: details.referralSource || null,
-      preferred_competition_type: details.preferredCompetitionType === "religious" ? "מגזר דתי" : "חילוני",
+      preferred_competition_type:
+        details.preferredCompetitionType === "both"
+          ? "שניהם"
+          : details.preferredCompetitionType === "religious"
+          ? "מגזר דתי"
+          : "חילוני",
     });
 
     if (error) {

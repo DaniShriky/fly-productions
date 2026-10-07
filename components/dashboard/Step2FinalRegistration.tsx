@@ -65,10 +65,13 @@ export default function Step2FinalRegistration({
   // competition's own details, so an existing dance from before her
   // preference changed (or was set by an admin exception) still opens and
   // edits correctly either way. Falls back to secular the same way
-  // ProfileEditForm already does when no preference is set yet.
-  const pickableCompetitions = competitions.filter((c) =>
-    manager.preferredCompetitionType === "מגזר דתי" ? c.isReligious : !c.isReligious
-  );
+  // ProfileEditForm already does when no preference is set yet. A manager
+  // who wants both sectors (per Dani, 2026-10-07) sees every competition,
+  // unfiltered.
+  const pickableCompetitions =
+    manager.preferredCompetitionType === "שניהם"
+      ? competitions
+      : competitions.filter((c) => (manager.preferredCompetitionType === "מגזר דתי" ? c.isReligious : !c.isReligious));
 
   const [selectedCompetitionId, setSelectedCompetitionId] = useState(
     initialEditEntry?.competitionId ?? pickableCompetitions[0]?.id ?? ""

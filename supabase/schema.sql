@@ -773,3 +773,24 @@ end;
 $$;
 
 grant execute on function admin_update_studio_manager_status(uuid, text) to authenticated;
+
+-- Round 15 (2026-10-07, Dani): admin dashboard needs a way to see every
+-- already-approved studio manager and remove one if needed (duplicate or
+-- mistaken signup, etc.). There was no DELETE policy at all on
+-- studio_managers before this (not even for admins), so a direct client
+-- .delete() would silently match zero rows under RLS. A plain RLS policy +
+-- table grant is enough here, unlike Round 14's status-column fix — there's
+-- no "Manager deletes own row" policy to collide with, so this admin-only
+-- policy can't be (ab)used by a manager to delete herself.
+--
+-- Deleting a manager who still has registrations/dances (or a past
+-- registration_submissions row) fails with a foreign-key violation — both
+-- tables reference studio_managers(id) with the default RESTRICT behavior
+-- rather than cascading, so her dance history can't be silently wiped out
+-- by this. The admin UI (ApprovedManagersTable) surfaces that as a clear
+-- "can't delete, still has registrations" message instead of a raw
+-- Postgres error.
+create policy "Admin deletes any row" on studio_managers
+  for delete using (is_admin());
+
+grant delete on studio_managers to authenticated;

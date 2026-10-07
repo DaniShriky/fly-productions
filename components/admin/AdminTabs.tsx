@@ -1,11 +1,12 @@
 import styles from "./AdminTabs.module.css";
 
-export type AdminTab = "pending" | "registrations" | "dates";
+export type AdminTab = "pending" | "managers" | "registrations" | "dates";
 
 type TabDef = { tab: AdminTab; label: string };
 
 const TABS: TabDef[] = [
   { tab: "pending", label: "בקשות ממתינות" },
+  { tab: "managers", label: "מנהלי סטודיו" },
   { tab: "registrations", label: "ריקודים ותשלומים" },
   { tab: "dates", label: "מועדי הרשמה" },
 ];
