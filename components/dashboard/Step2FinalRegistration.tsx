@@ -56,8 +56,17 @@ export default function Step2FinalRegistration({
   onNext,
   onDirtyChange,
 }: Props) {
+  // Per Dani, 2026-10-07: this step is about the current round being built
+  // right now — a dance that's already been submitted shouldn't still show
+  // up here (the picker's "X ריקודים רשומים" count, or the list below it),
+  // the same way it was already dropped from step 2's own summary table.
+  // DanceEntryForm below still gets the full, unfiltered `entries` — its
+  // choreographer/dancer-name suggestions and duplicate-name checks are
+  // meant to look across everything, not just this round.
+  const currentRoundEntries = entries.filter((e) => !e.submittedAt);
+
   function hasEntriesFor(competitionId: string) {
-    return entries.some((e) => e.competitionId === competitionId);
+    return currentRoundEntries.some((e) => e.competitionId === competitionId);
   }
 
   // Only affects which competitions are offered as *new* picks — never
@@ -150,7 +159,7 @@ export default function Step2FinalRegistration({
         competitions={pickableCompetitions}
         selectedId={selectedCompetitionId}
         onSelect={handleCompetitionSelect}
-        entries={entries}
+        entries={currentRoundEntries}
         notice={competition && <RegistrationNotice competition={competition} />}
       />
 
@@ -177,7 +186,7 @@ export default function Step2FinalRegistration({
       ) : (
         <CompetitionDanceList
           competition={competition}
-          allEntries={entries}
+          allEntries={currentRoundEntries}
           onAdd={openAdd}
           onEdit={openEdit}
           onDelete={handleDelete}
