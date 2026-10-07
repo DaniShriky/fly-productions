@@ -20,6 +20,15 @@
   height: 64px;
   border-radius: 50%;
   cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+}
+
+.avatarWrap:disabled {
+  opacity: 0.7;
+  cursor: default;
 }
 
 .avatarPhoto {
@@ -64,26 +73,6 @@
   font-size: 13px;
   color: #9c9a93;
   margin-bottom: 4px;
-}
-
-.cameraLink {
-  display: block;
-  background: none;
-  border: none;
-  padding: 0;
-  font-size: 13px;
-  color: #f5c542;
-  text-decoration: underline;
-  margin-bottom: 6px;
-}
-
-.cameraLink:hover:not(:disabled) {
-  color: #fff;
-}
-
-.cameraLink:disabled {
-  opacity: 0.6;
-  cursor: default;
 }
 
 .email {

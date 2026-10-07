@@ -1,9 +1,10 @@
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useRef, useState } from "react";
 import { updateOwnAdmin } from "@/lib/queries/admins";
 import { uploadProfilePhoto, getProfilePhotoUrl } from "@/lib/queries/studioManagers";
 import { supabaseBrowserClient } from "@/lib/supabaseBrowserClient";
 import { Admin } from "@/types/admin";
 import CameraCaptureModal from "@/components/shared/CameraCaptureModal";
+import PhotoSourceSheet from "@/components/shared/PhotoSourceSheet";
 import styles from "./AdminProfileForm.module.css";
 
 function CameraIcon() {
@@ -30,7 +31,9 @@ export default function AdminProfileForm({ admin, onSaved }: { admin: Admin; onS
   const [name, setName] = useState(admin.name ?? "");
   const [profileImagePath, setProfileImagePath] = useState(admin.profileImagePath);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoSheetOpen, setPhotoSheetOpen] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -88,7 +91,12 @@ export default function AdminProfileForm({ admin, onSaved }: { admin: Admin; onS
   return (
     <form className={styles.card} onSubmit={handleSubmit}>
       <div className={styles.header}>
-        <label className={styles.avatarWrap}>
+        <button
+          type="button"
+          className={styles.avatarWrap}
+          onClick={() => setPhotoSheetOpen(true)}
+          disabled={uploadingPhoto}
+        >
           {photoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element -- manager-uploaded, arbitrary external-ish URL from Supabase Storage, not a static site asset
             <img src={photoUrl} alt="" className={styles.avatarPhoto} />
@@ -98,20 +106,19 @@ export default function AdminProfileForm({ admin, onSaved }: { admin: Admin; onS
           <span className={styles.avatarEditBadge}>
             <CameraIcon />
           </span>
-          <input type="file" accept="image/*" onChange={handlePhotoChange} disabled={uploadingPhoto} hidden />
-        </label>
-        <p className={styles.avatarHint}>{uploadingPhoto ? "מעלה תמונה..." : "לחצו על התמונה כדי להעלות קובץ"}</p>
-        <button
-          type="button"
-          className={styles.cameraLink}
-          onClick={() => setCameraOpen(true)}
-          disabled={uploadingPhoto}
-        >
-          או לצלם תמונה חדשה
         </button>
+        <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoChange} disabled={uploadingPhoto} hidden />
+        <p className={styles.avatarHint}>{uploadingPhoto ? "מעלה תמונה..." : "לחצו על התמונה כדי לשנות אותה"}</p>
         {photoError && <p className={styles.errorNote}>{photoError}</p>}
       </div>
 
+      {photoSheetOpen && (
+        <PhotoSourceSheet
+          onChooseFile={() => fileInputRef.current?.click()}
+          onTakePhoto={() => setCameraOpen(true)}
+          onClose={() => setPhotoSheetOpen(false)}
+        />
+      )}
       {cameraOpen && <CameraCaptureModal onCapture={handlePhotoCaptured} onClose={() => setCameraOpen(false)} />}
 
       <label className={styles.field}>

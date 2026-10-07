@@ -188,3 +188,13 @@ export function CameraIcon({ size = 18 }: { size?: number }) {
     </svg>
   );
 }
+
+export function GalleryIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="3" width="20" height="18" rx="2" />
+      <circle cx="8" cy="9" r="2" />
+      <path d="M22 16l-5.5-5.5a1.5 1.5 0 0 0-2.1 0L5 19" />
+    </svg>
+  );
+}

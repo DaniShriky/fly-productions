@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 import { ISRAELI_CITIES } from "@/lib/cities";
 import {
   getProfilePhotoUrl,
@@ -10,6 +10,7 @@ import { emitProfileUpdated } from "@/lib/profileUpdateEvent";
 import { supabaseBrowserClient } from "@/lib/supabaseBrowserClient";
 import { StudioManager } from "@/types/studioManager";
 import CameraCaptureModal from "@/components/shared/CameraCaptureModal";
+import PhotoSourceSheet from "@/components/shared/PhotoSourceSheet";
 import styles from "./ProfileEditForm.module.css";
 
 const OTHER_CITY = "אחר";
@@ -66,7 +67,9 @@ export default function ProfileEditForm({
   }, [manager.pendingPreferredCompetitionType, manager.preferredCompetitionType]);
   const [profileImagePath, setProfileImagePath] = useState(manager.profileImagePath);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoSheetOpen, setPhotoSheetOpen] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -142,7 +145,12 @@ export default function ProfileEditForm({
   return (
     <form className={styles.card} onSubmit={handleSubmit}>
       <div className={styles.header}>
-        <label className={styles.avatarWrap}>
+        <button
+          type="button"
+          className={styles.avatarWrap}
+          onClick={() => setPhotoSheetOpen(true)}
+          disabled={uploadingPhoto}
+        >
           {photoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element -- manager-uploaded, arbitrary external-ish URL from Supabase Storage, not a static site asset
             <img src={photoUrl} alt="" className={styles.avatarPhoto} />
@@ -152,20 +160,12 @@ export default function ProfileEditForm({
           <span className={styles.avatarEditBadge}>
             <CameraIcon />
           </span>
-          <input type="file" accept="image/*" onChange={handlePhotoChange} disabled={uploadingPhoto} hidden />
-        </label>
+        </button>
+        <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoChange} disabled={uploadingPhoto} hidden />
         <div>
           <p className={styles.avatarHint}>
-            {uploadingPhoto ? "מעלה תמונה..." : "לחצו על התמונה כדי להעלות קובץ"}
+            {uploadingPhoto ? "מעלה תמונה..." : "לחצו על התמונה כדי לשנות אותה"}
           </p>
-          <button
-            type="button"
-            className={styles.cameraLink}
-            onClick={() => setCameraOpen(true)}
-            disabled={uploadingPhoto}
-          >
-            או לצלם תמונה חדשה
-          </button>
           {photoError && <p className={styles.errorNote}>{photoError}</p>}
           <p className={styles.email} dir="ltr">
             {manager.email}
@@ -173,6 +173,13 @@ export default function ProfileEditForm({
         </div>
       </div>
 
+      {photoSheetOpen && (
+        <PhotoSourceSheet
+          onChooseFile={() => fileInputRef.current?.click()}
+          onTakePhoto={() => setCameraOpen(true)}
+          onClose={() => setPhotoSheetOpen(false)}
+        />
+      )}
       {cameraOpen && <CameraCaptureModal onCapture={handlePhotoCaptured} onClose={() => setCameraOpen(false)} />}
 
       <p className={styles.requiredHint}>
