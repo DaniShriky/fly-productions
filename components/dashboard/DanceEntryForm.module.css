@@ -691,22 +691,35 @@
   font-size: 13px;
 }
 
-/* Always part of the same card (no border/background box of its own) —
-   just a top divider plus a subtle gold wash to set it apart, and the
-   total itself is the single most visually dominant element in the card. */
+/* Redesigned per Dani's reference image, 2026-10-08: a thin glowing
+   highlight line across the top edge (an ::before pseudo-element, not a
+   plain border — a solid border can't fade out at its ends the way a
+   gradient + soft box-shadow can) instead of the flat gold wash + solid
+   border-top this replaced. Rounded on every corner now, reading as its
+   own soft box inside the card — accent color kept as-is (gold), only the
+   treatment changed. */
 .priceSummaryTotal {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
   margin-top: 14px;
-  padding: 14px 12px;
-  border-top: 1px solid rgba(var(--form-rgb, 245, 197, 66), 0.3);
-  /* "to right" (not "to left") so the gold wash is strongest on the left —
-     where the amount itself sits in this RTL row (label first/right via
-     space-between, amount last/left) — instead of behind the label. */
-  background: linear-gradient(to right, rgba(var(--form-rgb, 245, 197, 66), 0.1), transparent 70%);
-  border-radius: 0 0 8px 8px;
+  padding: 18px 20px;
+  border-radius: 14px;
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.15));
+  overflow: hidden;
+}
+
+.priceSummaryTotal::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 12%;
+  left: 12%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--form-accent, #f5c542), transparent);
+  box-shadow: 0 0 10px 1px rgba(var(--form-rgb, 245, 197, 66), 0.6);
 }
 
 .priceSummaryTotal span:first-child {
