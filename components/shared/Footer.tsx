@@ -45,6 +45,8 @@ export default function Footer() {
 
       <div className={styles.legal}>
         <Link href="/accessibility">הצהרת נגישות</Link>
+        <span className={styles.legalDivider}>·</span>
+        <Link href="/terms">תנאי שימוש</Link>
       </div>
     </footer>
   );

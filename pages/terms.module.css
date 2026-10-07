@@ -1,0 +1,90 @@
+.wrap {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 60px 5% 80px;
+}
+
+.wrap h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.updated {
+  font-size: 0.95rem;
+  color: #9c9a93;
+  margin-bottom: 30px;
+}
+
+.wrap section {
+  margin-top: 34px;
+}
+
+.wrap h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.wrap p,
+.wrap li {
+  font-size: 1.05rem;
+  color: #cfcdc6;
+  line-height: 1.8;
+}
+
+.wrap p {
+  margin-bottom: 10px;
+}
+
+.wrap p:last-child {
+  margin-bottom: 0;
+}
+
+.wrap ul {
+  list-style: none;
+  /* Physical padding, not a logical padding-inline-start — this RTL layout
+     has a documented bug with logical properties misbehaving (see
+     CLAUDE.md). */
+  padding-right: 4px;
+  margin: 6px 0 10px;
+}
+
+.wrap li {
+  margin-bottom: 6px;
+}
+
+.contact {
+  margin-top: 10px;
+  padding: 18px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+}
+
+.contact p {
+  margin-bottom: 4px;
+}
+
+.contact a {
+  color: #7fb8e6;
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .wrap {
+    padding: 30px 5% 50px;
+  }
+
+  .wrap h1 {
+    font-size: 1.4rem;
+  }
+
+  .wrap h2 {
+    font-size: 1.1rem;
+  }
+
+  .wrap p,
+  .wrap li {
+    font-size: 1rem;
+  }
+}

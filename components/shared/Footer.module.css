@@ -25,6 +25,12 @@
   text-decoration: underline;
 }
 
+.legalDivider {
+  font-size: 0.85rem;
+  color: #9c9a93;
+  margin: 0 8px;
+}
+
 /* Pinned with `order` (not `direction`) so contact info stays on the
    left, the logo stays centered, and the follow/social block stays on
    the right, regardless of page direction — see the same trick in
