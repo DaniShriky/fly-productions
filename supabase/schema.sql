@@ -680,38 +680,6 @@ $$;
 
 grant execute on function manager_upload_song(uuid, text, numeric) to authenticated;
 
--- Round 16 (2026-10-07, Dani): managers needed a way to remove a dance's
--- uploaded song too, not just add/replace one — same gap as
--- manager_upload_song above (a direct client .update() can't touch
--- song_file_path once submitted_at is set, since "Manager updates own
--- unpaid registration" requires submitted_at is null), so this is the same
--- narrow security-definer exception, just clearing the two columns instead
--- of setting them. Doesn't delete the underlying object from the
--- "dance-music" storage bucket — an orphaned file there is harmless, and
--- the client would need the old path before this clears it to do that
--- cleanup itself if it's ever worth adding.
-create function manager_remove_song(p_registration_id uuid)
-returns void
-language plpgsql
-security definer
-set search_path = public
-as $$
-begin
-  update registrations
-  set song_file_path = null,
-      song_duration_seconds = null
-  where id = p_registration_id
-    and studio_manager_id = auth.uid()
-    and payment_status = 'unpaid';
-
-  if not found then
-    raise exception 'Registration not found, not yours, or already paid';
-  end if;
-end;
-$$;
-
-grant execute on function manager_remove_song(uuid) to authenticated;
-
 -- 2) An admin had no way to fix a dance's own details at all (only payment
 --    status/late-payment exception, via admin_update_registration_payment)
 --    — specifically needed for an already-submitted dance, since that's
@@ -826,3 +794,43 @@ create policy "Admin deletes any row" on studio_managers
   for delete using (is_admin());
 
 grant delete on studio_managers to authenticated;
+
+-- Round 16 (2026-10-07, Dani): managers needed a way to remove a dance's
+-- uploaded song too, not just add/replace one — same gap as
+-- manager_upload_song (Round 13) already had: a direct client .update()
+-- can't touch song_file_path once submitted_at is set, since "Manager
+-- updates own unpaid registration" requires submitted_at is null. Same
+-- narrow security-definer exception, just clearing the two columns instead
+-- of setting them.
+create function manager_remove_song(p_registration_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  update registrations
+  set song_file_path = null,
+      song_duration_seconds = null
+  where id = p_registration_id
+    and studio_manager_id = auth.uid()
+    and payment_status = 'unpaid';
+
+  if not found then
+    raise exception 'Registration not found, not yours, or already paid';
+  end if;
+end;
+$$;
+
+grant execute on function manager_remove_song(uuid) to authenticated;
+
+-- The RPC above only clears the DB reference — per Dani, the actual file
+-- should disappear from Storage too, not just become orphaned. That's a
+-- plain client call (removeSongForRegistration in
+-- lib/queries/registrations.ts, same split as uploadDanceMusic/
+-- uploadSongForRegistration already have for adding a song: one plain
+-- Storage call, one RPC for the DB side), which needs its own DELETE
+-- policy — "Manager uploads/reads own music" (Round 11-ish, above) never
+-- had a delete counterpart.
+create policy "Manager deletes own music" on storage.objects
+  for delete using (bucket_id = 'dance-music' and (storage.foldername(name))[1] = auth.uid()::text);

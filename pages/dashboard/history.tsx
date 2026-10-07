@@ -58,8 +58,8 @@ export default function DashboardHistory({ competitions, registrations, manager 
 
   // Counterpart to handleSongUpload above — see its matching comment on
   // pages/dashboard/index.tsx.
-  async function handleSongRemove(id: string) {
-    await removeSongForRegistration(supabaseBrowserClient, id);
+  async function handleSongRemove(id: string, songFilePath: string) {
+    await removeSongForRegistration(supabaseBrowserClient, id, songFilePath);
     setEntries((current) =>
       current.map((e) => (e.id === id ? { ...e, songFilePath: undefined, songDurationSeconds: undefined } : e))
     );

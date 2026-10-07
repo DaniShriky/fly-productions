@@ -37,8 +37,12 @@ type Props = {
   // Per Dani, 2026-10-07: replacing an existing song reuses onSongUpload
   // itself (same upload, just already-has-a-file instead of missing-one);
   // this is specifically for removing one, same unpaid-only gate as
-  // onSongUpload (see manager_remove_song in supabase/schema.sql).
-  onSongRemove: (id: string) => Promise<void>;
+  // onSongUpload (see manager_remove_song in supabase/schema.sql). Takes
+  // the storage path too — per Dani, the file should actually be deleted
+  // from Storage, not just unlinked from the registration, and this
+  // component doesn't otherwise talk to Storage directly (that's always
+  // been the caller's job, same as onSongUpload's raw File).
+  onSongRemove: (id: string, songFilePath: string) => Promise<void>;
   // Per Dani, 2026-10-07: the live registration flow's own summary table
   // (pages/dashboard/index.tsx step 2) only ever shows this round's
   // still-unsubmitted dances — "סטטוס הגשה" would be the same for every
@@ -259,6 +263,7 @@ export default function DanceEntriesTable({
   }
 
   async function handleRemoveSong(entry: Registration) {
+    if (!entry.songFilePath) return;
     if (!confirm("למחוק את קובץ השיר? הפעולה לא הפיכה - יהיה צריך להעלות קובץ חדש.")) return;
     // Stop playback first if this is the one currently playing — otherwise
     // it'd keep playing a file the row no longer shows as attached.
@@ -269,7 +274,7 @@ export default function DanceEntriesTable({
     setRemovingSongId(entry.id);
     setActionError(null);
     try {
-      await onSongRemove(entry.id);
+      await onSongRemove(entry.id, entry.songFilePath);
     } catch (err) {
       console.error("Song removal failed:", err);
       const detail = errorDetail(err);

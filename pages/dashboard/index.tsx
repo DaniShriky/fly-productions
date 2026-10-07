@@ -108,10 +108,11 @@ export default function Dashboard({ competitions, registrations, manager: initia
   }
 
   // Per Dani, 2026-10-07: the counterpart to handleSongUpload above — same
-  // unpaid-only gate (manager_remove_song in supabase/schema.sql), doesn't
-  // touch the Storage object itself, just the registration's own reference.
-  async function handleSongRemove(id: string) {
-    await removeSongForRegistration(supabaseBrowserClient, id);
+  // unpaid-only gate (manager_remove_song in supabase/schema.sql), and
+  // actually deletes the Storage object too (removeSongForRegistration's
+  // own job), not just the registration's reference to it.
+  async function handleSongRemove(id: string, songFilePath: string) {
+    await removeSongForRegistration(supabaseBrowserClient, id, songFilePath);
     setEntries((current) =>
       current.map((e) => (e.id === id ? { ...e, songFilePath: undefined, songDurationSeconds: undefined } : e))
     );

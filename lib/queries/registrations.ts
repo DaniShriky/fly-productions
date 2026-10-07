@@ -197,14 +197,30 @@ export async function uploadSongForRegistration(
   if (error) throw error;
 }
 
-// Runs as the manager_remove_song() SQL function (security definer), same
-// reasoning as uploadSongForRegistration above — works even on an already-
-// submitted dance, only gated on payment_status = 'unpaid'. Doesn't delete
-// the underlying object from Storage, just clears the registration's own
-// reference to it.
-export async function removeSongForRegistration(client: SupabaseClient, registrationId: string): Promise<void> {
+// Clears the DB reference first (manager_remove_song, security definer —
+// same reasoning as uploadSongForRegistration above, works even on an
+// already-submitted dance, only gated on payment_status = 'unpaid'), then
+// deletes the actual Storage object — per Dani, 2026-10-07, a deleted song
+// should actually disappear from Storage, not just become orphaned. DB
+// first: if the Storage call ever fails (network blip), the worst case is
+// one orphaned file, same as before this existed — not a dangling DB
+// reference to a file that's already gone.
+export async function removeSongForRegistration(
+  client: SupabaseClient,
+  registrationId: string,
+  songFilePath: string
+): Promise<void> {
   const { error } = await client.rpc("manager_remove_song", { p_registration_id: registrationId });
   if (error) throw error;
+
+  const { error: storageError } = await client.storage.from("dance-music").remove([songFilePath]);
+  if (storageError) {
+    // Not re-thrown — the DB side (what the UI actually reflects) already
+    // succeeded, and an orphaned Storage file is harmless, same as it
+    // always was before this feature existed. Logged so it's still
+    // diagnosable if it ever happens.
+    console.error("Failed to delete song file from Storage (DB reference already cleared):", storageError);
+  }
 }
 
 // The bucket is private, so playback needs a signed URL rather than a public
