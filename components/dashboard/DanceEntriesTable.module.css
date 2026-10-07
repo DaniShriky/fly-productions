@@ -222,16 +222,64 @@
   margin-top: 6px;
 }
 
+/* Filename + replace/delete icons above, play button + scrubber below —
+   per Dani, 2026-10-07 (replaces the old songFileInfo layout, where the
+   filename sat beside the play button instead of above everything). */
+.songCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.songHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.songActions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 4px;
+}
+
+.songIconButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  color: #9c9a93;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.songIconButton:hover:not(:disabled) {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.songIconButton:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.songDeleteButton:hover:not(:disabled) {
+  color: #f28b82;
+  border-color: rgba(242, 139, 130, 0.5);
+  background: rgba(242, 139, 130, 0.1);
+}
+
 .audioRow {
   display: flex;
   align-items: center;
   gap: 6px;
-}
-
-.songFileInfo {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
 }
 
 .songFileName {

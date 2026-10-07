@@ -34,6 +34,11 @@ type Props = {
   // in-process view and היסטוריית הזמנות let you fill in a still-missing
   // song.
   onSongUpload: (id: string, file: File, durationSeconds: number) => Promise<void>;
+  // Per Dani, 2026-10-07: replacing an existing song reuses onSongUpload
+  // itself (same upload, just already-has-a-file instead of missing-one);
+  // this is specifically for removing one, same unpaid-only gate as
+  // onSongUpload (see manager_remove_song in supabase/schema.sql).
+  onSongRemove: (id: string) => Promise<void>;
   // Per Dani, 2026-10-07: the live registration flow's own summary table
   // (pages/dashboard/index.tsx step 2) only ever shows this round's
   // still-unsubmitted dances — "סטטוס הגשה" would be the same for every
@@ -119,6 +124,7 @@ export default function DanceEntriesTable({
   onEdit,
   onDelete,
   onSongUpload,
+  onSongRemove,
   showSubmissionColumn = true,
   showPaymentColumn = true,
 }: Props) {
@@ -139,6 +145,7 @@ export default function DanceEntriesTable({
   const audioElRef = useRef<HTMLAudioElement>(null);
   const [loadingAudioId, setLoadingAudioId] = useState<string | null>(null);
   const [uploadingSongId, setUploadingSongId] = useState<string | null>(null);
+  const [removingSongId, setRemovingSongId] = useState<string | null>(null);
   // Reads the picked file's duration via a hidden <audio> element before
   // uploading — same technique DanceEntryForm uses. One shared ref is
   // enough since only one song can realistically be uploaded at a time.
@@ -248,6 +255,27 @@ export default function DanceEntriesTable({
       setActionError(`העלאת השיר נכשלה - נסו שוב.${detail ? ` (${detail})` : ""}`);
     } finally {
       setUploadingSongId(null);
+    }
+  }
+
+  async function handleRemoveSong(entry: Registration) {
+    if (!confirm("למחוק את קובץ השיר? הפעולה לא הפיכה - יהיה צריך להעלות קובץ חדש.")) return;
+    // Stop playback first if this is the one currently playing — otherwise
+    // it'd keep playing a file the row no longer shows as attached.
+    if (playingId === entry.id) {
+      setPlayingId(null);
+      setAudioUrl(null);
+    }
+    setRemovingSongId(entry.id);
+    setActionError(null);
+    try {
+      await onSongRemove(entry.id);
+    } catch (err) {
+      console.error("Song removal failed:", err);
+      const detail = errorDetail(err);
+      setActionError(`מחיקת השיר נכשלה - נסו שוב.${detail ? ` (${detail})` : ""}`);
+    } finally {
+      setRemovingSongId(null);
     }
   }
 
@@ -448,54 +476,100 @@ export default function DanceEntriesTable({
                         </td>
                         <td data-label="קובץ מוזיקה">
                           {entry.songFilePath ? (
-                            <div className={styles.audioRow}>
-                              <button
-                                type="button"
-                                className={styles.playButton}
-                                title={playingId === entry.id ? "עצירה" : "השמעת השיר"}
-                                aria-label={playingId === entry.id ? "עצירה" : "השמעת השיר"}
-                                disabled={loadingAudioId === entry.id}
-                                onClick={() => handleTogglePlay(entry)}
-                              >
-                                {playingId === entry.id ? <StopIcon /> : <PlayIcon />}
-                              </button>
-                              <span className={styles.songFileInfo}>
+                            <div className={styles.songCard}>
+                              <div className={styles.songHeaderRow}>
                                 {/* Per Dani, 2026-10-06: makes it obvious a
                                     song was actually saved, not just that
-                                    *a* file exists. */}
+                                    *a* file exists. Above the player row
+                                    (2026-10-07) so it's never crowded out by
+                                    it. */}
                                 <span className={styles.songFileName}>{songFileName(entry.songFilePath)}</span>
-                                {playingId === entry.id ? (
-                                  // Per Dani, 2026-10-07: a real seekable
-                                  // scrubber instead of the native <audio
-                                  // controls> widget (below), which used to
-                                  // replace this whole area with its own
-                                  // bar once playing.
-                                  <span className={styles.seekRow}>
-                                    <input
-                                      type="range"
-                                      className={styles.seekBar}
-                                      min={0}
-                                      max={entry.songDurationSeconds ?? fallbackDuration ?? 0}
-                                      step={0.1}
-                                      value={currentTime}
-                                      onChange={(e) => {
-                                        const value = Number(e.target.value);
-                                        setCurrentTime(value);
-                                        if (audioElRef.current) audioElRef.current.currentTime = value;
-                                      }}
-                                      aria-label="מיקום בשיר"
-                                    />
-                                    <span className={styles.seekTime}>
-                                      {formatDuration(currentTime)} /{" "}
-                                      {formatDuration(entry.songDurationSeconds ?? fallbackDuration ?? 0)}
-                                    </span>
+                                {/* Same unpaid-only gate as the upload flow
+                                    below — music stays editable up to
+                                    payment regardless of isEditable/
+                                    submittedAt (manager_upload_song/
+                                    manager_remove_song in supabase/schema.sql). */}
+                                {entry.paymentStatus === "unpaid" && (
+                                  <span className={styles.songActions}>
+                                    <label
+                                      className={styles.songIconButton}
+                                      title="החלפת קובץ"
+                                      aria-label="החלפת קובץ"
+                                    >
+                                      <UploadIcon size={12} />
+                                      <input
+                                        type="file"
+                                        accept="audio/*"
+                                        hidden
+                                        disabled={uploadingSongId === entry.id}
+                                        onChange={(e) => {
+                                          const file = e.target.files?.[0];
+                                          e.target.value = "";
+                                          if (file) handleSongFilePicked(entry, file);
+                                        }}
+                                      />
+                                    </label>
+                                    <button
+                                      type="button"
+                                      className={`${styles.songIconButton} ${styles.songDeleteButton}`}
+                                      title="מחיקת קובץ"
+                                      aria-label="מחיקת קובץ"
+                                      disabled={removingSongId === entry.id}
+                                      onClick={() => handleRemoveSong(entry)}
+                                    >
+                                      <DeleteIcon size={12} />
+                                    </button>
                                   </span>
-                                ) : (
-                                  entry.songDurationSeconds != null && (
-                                    <span className={styles.priceLine}>{formatDuration(entry.songDurationSeconds)}</span>
-                                  )
                                 )}
-                              </span>
+                              </div>
+
+                              {uploadingSongId === entry.id ? (
+                                <span className={styles.seekTime}>מעלה...</span>
+                              ) : (
+                                <div className={styles.audioRow}>
+                                  <button
+                                    type="button"
+                                    className={styles.playButton}
+                                    title={playingId === entry.id ? "עצירה" : "השמעת השיר"}
+                                    aria-label={playingId === entry.id ? "עצירה" : "השמעת השיר"}
+                                    disabled={loadingAudioId === entry.id}
+                                    onClick={() => handleTogglePlay(entry)}
+                                  >
+                                    {playingId === entry.id ? <StopIcon /> : <PlayIcon />}
+                                  </button>
+                                  {playingId === entry.id ? (
+                                    // Per Dani, 2026-10-07: a real seekable
+                                    // scrubber instead of the native <audio
+                                    // controls> widget (below), which used
+                                    // to replace this whole area with its
+                                    // own bar once playing.
+                                    <span className={styles.seekRow}>
+                                      <input
+                                        type="range"
+                                        className={styles.seekBar}
+                                        min={0}
+                                        max={entry.songDurationSeconds ?? fallbackDuration ?? 0}
+                                        step={0.1}
+                                        value={currentTime}
+                                        onChange={(e) => {
+                                          const value = Number(e.target.value);
+                                          setCurrentTime(value);
+                                          if (audioElRef.current) audioElRef.current.currentTime = value;
+                                        }}
+                                        aria-label="מיקום בשיר"
+                                      />
+                                      <span className={styles.seekTime}>
+                                        {formatDuration(currentTime)} /{" "}
+                                        {formatDuration(entry.songDurationSeconds ?? fallbackDuration ?? 0)}
+                                      </span>
+                                    </span>
+                                  ) : (
+                                    entry.songDurationSeconds != null && (
+                                      <span className={styles.seekTime}>{formatDuration(entry.songDurationSeconds)}</span>
+                                    )
+                                  )}
+                                </div>
+                              )}
                             </div>
                           ) : (
                             <div className={styles.missingSongCell}>

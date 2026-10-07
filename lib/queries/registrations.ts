@@ -197,6 +197,16 @@ export async function uploadSongForRegistration(
   if (error) throw error;
 }
 
+// Runs as the manager_remove_song() SQL function (security definer), same
+// reasoning as uploadSongForRegistration above — works even on an already-
+// submitted dance, only gated on payment_status = 'unpaid'. Doesn't delete
+// the underlying object from Storage, just clears the registration's own
+// reference to it.
+export async function removeSongForRegistration(client: SupabaseClient, registrationId: string): Promise<void> {
+  const { error } = await client.rpc("manager_remove_song", { p_registration_id: registrationId });
+  if (error) throw error;
+}
+
 // The bucket is private, so playback needs a signed URL rather than a public
 // one — RLS on storage.objects ("Manager reads own music") only allows this
 // for the manager's own path. One hour is plenty for a single listening

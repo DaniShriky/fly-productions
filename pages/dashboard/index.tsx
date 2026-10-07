@@ -20,6 +20,7 @@ import {
   DanceEntryInput,
   deleteDanceEntry,
   getOwnRegistrations,
+  removeSongForRegistration,
   submitRegistrations,
   uploadDanceMusic,
   uploadSongForRegistration,
@@ -103,6 +104,16 @@ export default function Dashboard({ competitions, registrations, manager: initia
     await uploadSongForRegistration(supabaseBrowserClient, id, path, durationSeconds);
     setEntries((current) =>
       current.map((e) => (e.id === id ? { ...e, songFilePath: path, songDurationSeconds: Math.round(durationSeconds) } : e))
+    );
+  }
+
+  // Per Dani, 2026-10-07: the counterpart to handleSongUpload above — same
+  // unpaid-only gate (manager_remove_song in supabase/schema.sql), doesn't
+  // touch the Storage object itself, just the registration's own reference.
+  async function handleSongRemove(id: string) {
+    await removeSongForRegistration(supabaseBrowserClient, id);
+    setEntries((current) =>
+      current.map((e) => (e.id === id ? { ...e, songFilePath: undefined, songDurationSeconds: undefined } : e))
     );
   }
 
@@ -248,6 +259,7 @@ export default function Dashboard({ competitions, registrations, manager: initia
                   onEdit={handleEditFromSummary}
                   onDelete={handleDelete}
                   onSongUpload={handleSongUpload}
+                  onSongRemove={handleSongRemove}
                   showPaymentColumn={false}
                 />
               </div>

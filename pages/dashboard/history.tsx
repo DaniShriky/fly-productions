@@ -9,7 +9,12 @@ import HistoryCompetitionFilter from "@/components/dashboard/HistoryCompetitionF
 import { requireApprovedManager } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabaseServerClient";
 import { CompetitionWithPricing, getCompetitionsWithPricing } from "@/lib/queries/competitionsWithPricing";
-import { getOwnRegistrations, uploadDanceMusic, uploadSongForRegistration } from "@/lib/queries/registrations";
+import {
+  getOwnRegistrations,
+  removeSongForRegistration,
+  uploadDanceMusic,
+  uploadSongForRegistration,
+} from "@/lib/queries/registrations";
 import { getOwnStudioManager } from "@/lib/queries/studioManagers";
 import { supabaseBrowserClient } from "@/lib/supabaseBrowserClient";
 import { StudioManager } from "@/types/studioManager";
@@ -51,6 +56,15 @@ export default function DashboardHistory({ competitions, registrations, manager 
     );
   }
 
+  // Counterpart to handleSongUpload above — see its matching comment on
+  // pages/dashboard/index.tsx.
+  async function handleSongRemove(id: string) {
+    await removeSongForRegistration(supabaseBrowserClient, id);
+    setEntries((current) =>
+      current.map((e) => (e.id === id ? { ...e, songFilePath: undefined, songDurationSeconds: undefined } : e))
+    );
+  }
+
   return (
     <>
       <Head>
@@ -80,6 +94,7 @@ export default function DashboardHistory({ competitions, registrations, manager 
             entries={visibleEntries}
             competitions={competitions}
             onSongUpload={handleSongUpload}
+            onSongRemove={handleSongRemove}
             showSubmissionColumn={false}
           />
         </div>
