@@ -637,36 +637,43 @@
 /* Now that this lives in the standalone footer (not nested inside a
    .stepCard anymore — see DanceEntryForm.tsx), it gets its own card frame
    instead of relying on the step card around it for visual grouping. Per
-   Dani, 2026-10-07: "נקי ומסודר בעיצוב שלו". */
+   Dani, 2026-10-07: "נקי ומסודר בעיצוב שלו" — and per her follow-up the
+   same day, capping *this* box's own width (rather than each row's) is
+   what fixes the leftover empty space: a 320px per-row cap inside a card
+   that still spanned the whole footer just left a big dead zone next to a
+   narrow column of text. Right-aligned (align-self: flex-start, which in
+   this RTL layout hugs the right edge) rather than centered, to stay
+   consistent with the rest of the form's right-anchored labels/headers
+   instead of floating a summary in the middle of the card.
+   font-size bumped 14→15px per the same request ("תגדיל את הטקסט"). */
 .priceBreakdown {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  font-size: 14px;
+  gap: 6px;
+  font-size: 15px;
   color: #d8d6cf;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 16px 18px;
   background: rgba(255, 255, 255, 0.015);
+  align-self: flex-start;
+  max-width: 380px;
+  width: 100%;
 }
 
 .priceBreakdownRow {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  /* Caps how far the leader line stretches — per Dani, 2026-10-07: without
-     this, flex: 1 on the label (below) grew it to the row's full width,
-     pushing the price all the way to the far edge of the card instead of
-     staying reasonably close to its label. Doesn't apply to
-     .priceBreakdownTotal (overridden below), which is meant to span the
-     whole highlighted box. */
-  max-width: 320px;
 }
 
 /* A dotted leader line (receipt/table-of-contents style) connecting the
-   label to its price, per Dani, 2026-10-07 — the label is blockified by
-   being a flex item, so its border-bottom spans the row's full remaining
-   width (growing via flex: 1) rather than just hugging its own text. */
+   label to its price — the label is blockified by being a flex item, so
+   its border-bottom spans the row's full remaining width (growing via
+   flex: 1) rather than just hugging its own text. Now that the outer
+   .priceBreakdown box itself is capped at 380px (above) instead of each
+   row separately, this no longer needs its own width cap — the line is
+   already bounded by the card around it. */
 .priceBreakdownRow span:first-child {
   flex: 1;
   min-width: 0;
@@ -678,7 +685,6 @@
 }
 
 .priceBreakdownTotal {
-  max-width: none;
   margin-top: 6px;
   /* Wider side padding (was 16px) — per Dani: pulls the label/price in from
      the box's own border, which as a side effect also brings them closer
@@ -688,20 +694,17 @@
   background: rgba(var(--form-rgb, 245, 197, 66), 0.12);
   border: 1px solid rgba(var(--form-rgb, 245, 197, 66), 0.35);
   font-weight: 700;
-  font-size: 17px;
+  font-size: 18px;
 }
 
 .priceBreakdownTotal span:first-child {
   border-bottom: none;
-}
-
-.priceBreakdownTotal span:first-child {
   color: #f3f1ec;
 }
 
 .priceBreakdownTotal span:last-child {
   color: var(--form-accent, #f5c542);
-  font-size: 21px;
+  font-size: 22px;
 }
 
 .priceExplain {
