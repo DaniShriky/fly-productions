@@ -1,0 +1,37 @@
+.main {
+  padding: 24px 5% 60px;
+  max-width: 1800px;
+  margin: 0 auto;
+}
+
+.pageHeader {
+  padding: 24px 5% 0;
+  text-align: center;
+}
+
+.backLink {
+  display: inline-block;
+  margin-bottom: 16px;
+  color: #9c9a93;
+  font-size: 14px;
+  text-decoration: underline;
+}
+
+.backLink:hover {
+  color: #f3f1ec;
+}
+
+.pageTitle {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.pageSubtitle {
+  font-size: 16px;
+  color: #9c9a93;
+}
+
+.wideTable {
+  margin-top: 24px;
+}

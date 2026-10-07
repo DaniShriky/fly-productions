@@ -206,47 +206,63 @@ export default function Dashboard({ competitions, registrations, manager: initia
           </div>
         )}
 
-        {activeStep === 2 && (
-          <>
-            <div className={styles.narrow}>
-              {/* Column on mobile (unchanged), row on desktop — Dani asked
-                  for these two to sit side by side once there's room. */}
-              <div className={styles.stepHeaderRow}>
-                <StepHeader
-                  kicker="שלב 2"
-                  title="סיכום הזמנה"
-                  hint='לפני התשלום, בדקו שכל פרטי הריקודים שהוספתם נכונים.'
-                  onBack={() => setActiveStep(1)}
-                  backTo={1}
+        {activeStep === 2 && (() => {
+          // Per Dani, 2026-10-07: step 2 is a summary of the current order
+          // being built right now, not a running history — once a dance is
+          // submitted it drops out of this live view entirely (it's still
+          // visible afterward on the dedicated /dashboard/history page).
+          // Filtering here (not just inside DanceEntriesTable) keeps
+          // PaymentStatusCard's own count consistent with the table below
+          // it, rather than showing a total that includes dances the table
+          // itself no longer lists.
+          const currentOrderEntries = entries.filter((e) => !e.submittedAt);
+
+          return (
+            <>
+              <div className={styles.narrow}>
+                {/* Column on mobile (unchanged), row on desktop — Dani asked
+                    for these two to sit side by side once there's room. */}
+                <div className={styles.stepHeaderRow}>
+                  <StepHeader
+                    kicker="שלב 2"
+                    title="סיכום הזמנה"
+                    hint='לפני התשלום, בדקו שכל פרטי הריקודים שהוספתם נכונים.'
+                    onBack={() => setActiveStep(1)}
+                    backTo={1}
+                  />
+                  <PaymentStatusCard entries={currentOrderEntries} />
+                </div>
+              </div>
+
+              {/* Outside .narrow deliberately — the entries table has a lot
+                  of columns to show, so it uses the full page width instead
+                  of being squeezed into the same reading-width column as the
+                  rest of the dashboard. */}
+              <div className={styles.wideTable}>
+                {/* "סטטוס תשלום" is hidden here too, since every row shown
+                    is unpaid/unsubmitted by definition; "סטטוס הגשה" stays,
+                    since that's where the edit/delete buttons live. */}
+                <DanceEntriesTable
+                  entries={currentOrderEntries}
+                  competitions={competitions}
+                  onEdit={handleEditFromSummary}
+                  onDelete={handleDelete}
+                  onSongUpload={handleSongUpload}
+                  showPaymentColumn={false}
                 />
-                <PaymentStatusCard entries={entries} />
               </div>
-            </div>
 
-            {/* Outside .narrow deliberately — the entries table has a lot of
-                columns to show, so it uses the full page width instead of
-                being squeezed into the same reading-width column as the rest
-                of the dashboard. */}
-            <div className={styles.wideTable}>
-              <DanceEntriesTable
-                entries={entries}
-                competitions={competitions}
-                onEdit={handleEditFromSummary}
-                onDelete={handleDelete}
-                onSongUpload={handleSongUpload}
-              />
-            </div>
-
-            <div className={styles.narrow}>
-              <div className={styles.nextStepRow}>
-                <button type="button" className={styles.nextStepButton} onClick={() => setActiveStep(3)}>
-                  שלב הבא: אישורים והגשה
-                  <ArrowForwardIcon size={15} />
-                </button>
+              <div className={styles.narrow}>
+                <div className={styles.nextStepRow}>
+                  <button type="button" className={styles.nextStepButton} onClick={() => setActiveStep(3)}>
+                    שלב הבא: אישורים והגשה
+                    <ArrowForwardIcon size={15} />
+                  </button>
+                </div>
               </div>
-            </div>
-          </>
-        )}
+            </>
+          );
+        })()}
 
         {activeStep === 3 && (
           <div className={styles.narrow}>

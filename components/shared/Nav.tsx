@@ -8,6 +8,7 @@ import { getOwnStudioManager, getProfilePhotoUrl } from "@/lib/queries/studioMan
 import { getOwnAdmin } from "@/lib/queries/admins";
 import { PROFILE_UPDATED_EVENT, ProfileUpdateDetail } from "@/lib/profileUpdateEvent";
 import { supabaseBrowserClient } from "@/lib/supabaseBrowserClient";
+import { InvoiceIcon } from "@/components/dashboard/icons";
 import styles from "./Nav.module.css";
 
 function UserIcon({ size = 14 }: { size?: number }) {
@@ -202,17 +203,30 @@ export default function Nav({ competitions }: { competitions: Competition[] }) {
                     ניהול האתר
                   </Link>
                 ) : (
-                  <Link
-                    href="/dashboard"
-                    className={styles.menuItem}
-                    onClick={() => {
-                      setProfileOpen(false);
-                      setMobileOpen(false);
-                    }}
-                  >
-                    <DashboardIcon />
-                    הרשמה לתחרויות
-                  </Link>
+                  <>
+                    <Link
+                      href="/dashboard"
+                      className={styles.menuItem}
+                      onClick={() => {
+                        setProfileOpen(false);
+                        setMobileOpen(false);
+                      }}
+                    >
+                      <DashboardIcon />
+                      הרשמה לתחרויות
+                    </Link>
+                    <Link
+                      href="/dashboard/history"
+                      className={styles.menuItem}
+                      onClick={() => {
+                        setProfileOpen(false);
+                        setMobileOpen(false);
+                      }}
+                    >
+                      <InvoiceIcon size={16} />
+                      היסטוריית הזמנות
+                    </Link>
+                  </>
                 )}
                 <div className={styles.menuDivider} />
                 <button type="button" className={styles.menuItem} onClick={handleSignOut}>

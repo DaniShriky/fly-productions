@@ -23,15 +23,27 @@ type Filter = "all" | "unpaid" | "paid";
 type Props = {
   entries: Registration[];
   competitions: CompetitionWithPricing[];
-  onEdit: (entry: Registration) => void;
-  onDelete: (id: string) => Promise<void>;
+  // Optional — only actually reachable when showSubmissionColumn is true,
+  // since that column is what renders the edit/delete buttons. The
+  // read-only היסטוריית הזמנות page (2026-10-07) passes neither.
+  onEdit?: (entry: Registration) => void;
+  onDelete?: (id: string) => Promise<void>;
   // Per Dani, 2026-10-06: music can still be added up to 10 days before the
   // event even once a dance is locked by submission — unlike onEdit/onDelete,
-  // this works regardless of isEditable.
+  // this works regardless of isEditable. Always required: both the
+  // in-process view and היסטוריית הזמנות let you fill in a still-missing
+  // song.
   onSongUpload: (id: string, file: File, durationSeconds: number) => Promise<void>;
+  // Per Dani, 2026-10-07: the live registration flow's own summary table
+  // (pages/dashboard/index.tsx step 2) only ever shows this round's
+  // still-unsubmitted dances — "סטטוס הגשה" would be the same for every
+  // row, so it's dropped there too; see showSubmissionColumn below instead.
+  // Both default true (the existing single call site's behavior,
+  // unchanged) — only the new history page passes false for the first one,
+  // and only the in-process table passes false for the second.
+  showSubmissionColumn?: boolean;
+  showPaymentColumn?: boolean;
 };
-
-const COLUMN_COUNT = 8;
 
 // Corrected 2026-10-06 (Dani): every non-solo category is priced per
 // participant, not just the true "group" judging categories — a duet's
@@ -101,7 +113,16 @@ function StopIcon() {
   );
 }
 
-export default function DanceEntriesTable({ entries, competitions, onEdit, onDelete, onSongUpload }: Props) {
+export default function DanceEntriesTable({
+  entries,
+  competitions,
+  onEdit,
+  onDelete,
+  onSongUpload,
+  showSubmissionColumn = true,
+  showPaymentColumn = true,
+}: Props) {
+  const columnCount = 6 + (showPaymentColumn ? 1 : 0) + (showSubmissionColumn ? 1 : 0);
   const [filter, setFilter] = useState<Filter>("all");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [playingId, setPlayingId] = useState<string | null>(null);
@@ -133,6 +154,7 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
   const filtered = entries.filter((e) => filter === "all" || e.paymentStatus === filter);
 
   async function handleDelete(id: string) {
+    if (!onDelete) return;
     if (!confirm("למחוק את הריקוד הזה? הפעולה לא הפיכה.")) return;
     setDeletingId(id);
     setActionError(null);
@@ -280,18 +302,25 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
             רשימת הריקודים <span className={styles.panelTitleCount}>({filtered.length})</span>
           </h2>
 
-          <div className={styles.filters}>
-            {(["all", "unpaid", "paid"] as Filter[]).map((f) => (
-              <button
-                key={f}
-                type="button"
-                className={`${styles.filterButton} ${filter === f ? styles.filterActive : ""}`}
-                onClick={() => setFilter(f)}
-              >
-                {f === "all" ? "הכל" : f === "unpaid" ? "טרם שולם" : "שולם"}
-              </button>
-            ))}
-          </div>
+          {/* Filters by payment status — meaningless once that column
+              itself is hidden (the in-process summary table only ever
+              shows still-unpaid draft entries anyway, see
+              showPaymentColumn), so hidden along with it rather than left
+              showing a "שולם" tab that could never match anything. */}
+          {showPaymentColumn && (
+            <div className={styles.filters}>
+              {(["all", "unpaid", "paid"] as Filter[]).map((f) => (
+                <button
+                  key={f}
+                  type="button"
+                  className={`${styles.filterButton} ${filter === f ? styles.filterActive : ""}`}
+                  onClick={() => setFilter(f)}
+                >
+                  {f === "all" ? "הכל" : f === "unpaid" ? "טרם שולם" : "שולם"}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <table className={styles.table}>
@@ -303,8 +332,8 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
             <th>קובץ מוזיקה</th>
             <th>הזמנות וידאו וסטילס</th>
             <th>מחיר</th>
-            <th>סטטוס תשלום</th>
-            <th>סטטוס הגשה</th>
+            {showPaymentColumn && <th>סטטוס תשלום</th>}
+            {showSubmissionColumn && <th>סטטוס הגשה</th>}
           </tr>
         </thead>
         <tbody>
@@ -316,7 +345,7 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
                     layout, which the responsive card view (display:block)
                     doesn't have, so mobile gets this explicit header instead. */}
                 <tr className={styles.groupHeaderRow} style={rowStyle(group.competition)}>
-                  <td colSpan={COLUMN_COUNT} className={styles.groupHeader}>
+                  <td colSpan={columnCount} className={styles.groupHeader}>
                     <span className={styles.groupHeaderName}>
                       {group.competition?.logo && (
                         <Image
@@ -510,11 +539,14 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
                             </div>
                           )}
                         </td>
-                        <td data-label="סטטוס תשלום">
-                          <span className={`${styles.statusBadge} ${isUnpaid ? styles.unpaid : styles.paid}`}>
-                            {isUnpaid ? "טרם שולם" : "שולם"}
-                          </span>
-                        </td>
+                        {showPaymentColumn && (
+                          <td data-label="סטטוס תשלום">
+                            <span className={`${styles.statusBadge} ${isUnpaid ? styles.unpaid : styles.paid}`}>
+                              {isUnpaid ? "טרם שולם" : "שולם"}
+                            </span>
+                          </td>
+                        )}
+                        {showSubmissionColumn && (
                         <td data-label="סטטוס הגשה" className={styles.actionsCell}>
                           <span className={styles.actions}>
                             {isEditable ? (
@@ -524,7 +556,7 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
                                   className={styles.iconButton}
                                   title="עריכה"
                                   aria-label="עריכה"
-                                  onClick={() => onEdit(entry)}
+                                  onClick={() => onEdit?.(entry)}
                                 >
                                   <EditIcon />
                                 </button>
@@ -553,6 +585,7 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
                             )}
                           </span>
                         </td>
+                        )}
                       </tr>
                     </Fragment>
                   );
@@ -568,7 +601,7 @@ export default function DanceEntriesTable({ entries, competitions, onEdit, onDel
                 now-removed "פרטי תשלום ליצירת קשר" button/bottom banner)
                 lives directly in the table's own footer now, always
                 visible, for whichever entries the current filter tab shows. */}
-            <td colSpan={COLUMN_COUNT} className={styles.breakdownFooterCell}>
+            <td colSpan={columnCount} className={styles.breakdownFooterCell}>
               {incompleteUnpaid.length > 0 && (
                 <div className={styles.missingWarning}>
                   <strong>
