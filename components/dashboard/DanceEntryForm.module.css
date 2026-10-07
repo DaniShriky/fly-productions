@@ -629,87 +629,97 @@
 .footer {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 18px;
   padding-top: 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* Now that this lives in the standalone footer (not nested inside a
-   .stepCard anymore — see DanceEntryForm.tsx), it gets its own card frame
-   instead of relying on the step card around it for visual grouping. Per
-   Dani, 2026-10-07: "נקי ומסודר בעיצוב שלו" — and per her follow-up the
-   same day, capping *this* box's own width (rather than each row's) is
-   what fixes the leftover empty space: a 320px per-row cap inside a card
-   that still spanned the whole footer just left a big dead zone next to a
-   narrow column of text. Right-aligned (align-self: flex-start, which in
-   this RTL layout hugs the right edge) rather than centered, to stay
-   consistent with the rest of the form's right-anchored labels/headers
-   instead of floating a summary in the middle of the card.
-   font-size bumped 14→15px per the same request ("תגדיל את הטקסט"). */
+/* Full "Price / Order Summary" card — redesigned per Dani's detailed spec,
+   2026-10-07: a wide card that reads as a natural part of the form (not a
+   small element floating in a corner — see the two narrower iterations
+   this replaced above in git history), right-aligned headline + icon,
+   plain divider lines between rows (no dotted leaders), and the total row
+   living inside the same card rather than as its own nested box. */
+.priceSummaryCard {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 22px 24px;
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.priceSummaryHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--form-accent, #f5c542);
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
 .priceBreakdown {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  font-size: 15px;
-  color: #d8d6cf;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 16px 18px;
-  background: rgba(255, 255, 255, 0.015);
-  align-self: flex-start;
-  max-width: 380px;
-  width: 100%;
 }
 
 .priceBreakdownRow {
   display: flex;
+  justify-content: space-between;
   align-items: baseline;
-  gap: 8px;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 }
 
-/* A dotted leader line (receipt/table-of-contents style) connecting the
-   label to its price — the label is blockified by being a flex item, so
-   its border-bottom spans the row's full remaining width (growing via
-   flex: 1) rather than just hugging its own text. Now that the outer
-   .priceBreakdown box itself is capped at 380px (above) instead of each
-   row separately, this no longer needs its own width cap — the line is
-   already bounded by the card around it. */
-.priceBreakdownRow span:first-child {
-  flex: 1;
-  min-width: 0;
-  border-bottom: 1px dotted rgba(255, 255, 255, 0.25);
+/* Secondary relative to the price next to it — the item's own name/
+   description, not the number that matters most on this row. */
+.priceBreakdownLabel {
+  font-size: 14px;
+  color: #a9a7a0;
 }
 
-.priceBreakdownRow span:last-child {
-  flex: 0 0 auto;
-}
-
-.priceBreakdownTotal {
-  margin-top: 6px;
-  /* Wider side padding (was 16px) — per Dani: pulls the label/price in from
-     the box's own border, which as a side effect also brings them closer
-     together since there's less row width left for the gap between them. */
-  padding: 12px 28px;
-  border-radius: 10px;
-  background: rgba(var(--form-rgb, 245, 197, 66), 0.12);
-  border: 1px solid rgba(var(--form-rgb, 245, 197, 66), 0.35);
-  font-weight: 700;
-  font-size: 18px;
-}
-
-.priceBreakdownTotal span:first-child {
-  border-bottom: none;
+.priceBreakdownValue {
+  font-size: 15px;
+  font-weight: 600;
   color: #f3f1ec;
 }
 
-.priceBreakdownTotal span:last-child {
-  color: var(--form-accent, #f5c542);
-  font-size: 22px;
+.priceExplain {
+  color: #7a7872;
+  font-size: 12px;
 }
 
-.priceExplain {
-  color: #9c9a93;
-  font-size: 13px;
+/* Always part of the same card (no border/background box of its own) —
+   just a top divider plus a subtle gold wash to set it apart, and the
+   total itself is the single most visually dominant element in the card. */
+.priceSummaryTotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 14px 12px;
+  border-top: 1px solid rgba(var(--form-rgb, 245, 197, 66), 0.3);
+  /* "to right" (not "to left") so the gold wash is strongest on the left —
+     where the amount itself sits in this RTL row (label first/right via
+     space-between, amount last/left) — instead of behind the label. */
+  background: linear-gradient(to right, rgba(var(--form-rgb, 245, 197, 66), 0.1), transparent 70%);
+  border-radius: 0 0 8px 8px;
+}
+
+.priceSummaryTotal span:first-child {
+  font-size: 15px;
+  font-weight: 700;
+  color: #f3f1ec;
+}
+
+.priceSummaryTotal span:last-child {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--form-accent, #f5c542);
+  text-shadow: 0 0 20px rgba(var(--form-rgb, 245, 197, 66), 0.35);
 }
 
 .actions {

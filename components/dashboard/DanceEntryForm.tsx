@@ -25,6 +25,7 @@ import {
   CameraIcon,
   ChevronDownIcon,
   DancerIcon,
+  InvoiceIcon,
   MinusIcon,
   PersonIcon,
   PlusIcon,
@@ -1029,16 +1030,26 @@ export default function DanceEntryForm({
       )}
 
       <div className={styles.footer}>
-        <div className={styles.priceBreakdown}>
-          {count > 0 ? (
-            <>
-              <div className={styles.priceBreakdownRow}>
-                <span>קטגוריה לתמחור</span>
-                <span>{displayCategoryLabel(resolvedCategory, count)}</span>
-              </div>
+        <div className={styles.priceSummaryCard}>
+          <div className={styles.priceSummaryHeader}>
+            <InvoiceIcon size={18} />
+            <span>סיכום מחיר</span>
+          </div>
+
+          {/* Nothing picked yet (participant count still empty) → no rows
+              at all, just the flat ₪0 total below. categoryFromParticipant-
+              Count(0) resolves to "solo" (0 <= 1), so showing this section
+              at count === 0 would otherwise fabricate a "קטגוריה לתמחור:
+              סולו" breakdown before anything's actually been chosen (fixed
+              2026-10-07, kept here). The קטגוריה row itself is no longer
+              shown even once count > 0 — per Dani's reference design it
+              isn't a priced line item, just every other row's data/logic
+              is unchanged. */}
+          {count > 0 && (
+            <div className={styles.priceBreakdown}>
               {baseSubtotal != null && (
                 <div className={styles.priceBreakdownRow}>
-                  <span>
+                  <span className={styles.priceBreakdownLabel}>
                     מחיר בסיס{!isSolo ? ` (${formatPrice(perParticipantPrice!)}₪ × ${count} משתתפים)` : ""}
                     {isGroup && competition.priceTiers && (
                       <span className={styles.priceExplain}>
@@ -1047,46 +1058,36 @@ export default function DanceEntryForm({
                       </span>
                     )}
                   </span>
-                  <span>{formatPrice(baseSubtotal)}₪</span>
+                  <span className={styles.priceBreakdownValue}>{formatPrice(baseSubtotal)}₪</span>
                 </div>
               )}
               {surcharge > 0 && (
                 <div className={styles.priceBreakdownRow}>
-                  <span>תוספת חריגת זמן בשיר</span>
-                  <span>{formatPrice(surcharge)}₪</span>
+                  <span className={styles.priceBreakdownLabel}>תוספת חריגת זמן בשיר</span>
+                  <span className={styles.priceBreakdownValue}>{formatPrice(surcharge)}₪</span>
                 </div>
               )}
               {videoFee > 0 && (
                 <div className={styles.priceBreakdownRow}>
-                  <span>צילום וידאו</span>
-                  <span>{formatPrice(videoFee)}₪</span>
+                  <span className={styles.priceBreakdownLabel}>צילום וידאו</span>
+                  <span className={styles.priceBreakdownValue}>{formatPrice(videoFee)}₪</span>
                 </div>
               )}
               {stillsFee > 0 && (
                 <div className={styles.priceBreakdownRow}>
-                  <span>צילום סטילס</span>
-                  <span>{formatPrice(stillsFee)}₪</span>
+                  <span className={styles.priceBreakdownLabel}>צילום סטילס</span>
+                  <span className={styles.priceBreakdownValue}>{formatPrice(stillsFee)}₪</span>
                 </div>
               )}
-              {totalPrice != null && (
-                <div className={`${styles.priceBreakdownRow} ${styles.priceBreakdownTotal}`}>
-                  <span>מחיר כולל</span>
-                  <span>{formatPrice(totalPrice)}₪</span>
-                </div>
-              )}
-            </>
-          ) : (
-            // Nothing picked yet (participant count still empty) —
-            // categoryFromParticipantCount(0) would otherwise resolve to
-            // "solo" (0 <= 1), showing a fabricated "קטגוריה לתמחור: סולו"
-            // / base-price breakdown before she's actually chosen anything.
-            // Per Dani, 2026-10-07: just a flat 0, no invented breakdown.
-            <div className={`${styles.priceBreakdownRow} ${styles.priceBreakdownTotal}`}>
-              <span>מחיר כולל</span>
-              <span>0₪</span>
             </div>
           )}
+
+          <div className={styles.priceSummaryTotal}>
+            <span>סה״כ לתשלום</span>
+            <span>{formatPrice(count > 0 ? totalPrice ?? 0 : 0)}₪</span>
+          </div>
         </div>
+
         {submitError && <p className={styles.submitError}>{submitError}</p>}
 
         <div className={styles.actions}>
