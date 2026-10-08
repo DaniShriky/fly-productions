@@ -891,3 +891,22 @@ end;
 $$;
 
 grant execute on function submit_registrations(boolean, text, integer, boolean) to authenticated;
+
+-- Round 18 (2026-10-08, Dani): a pure data correction, not a schema change —
+-- competitions.price_tiers was never actually updated with the "עלויות
+-- מעודכנות" numbers Dani sent 2026-10-04 (see project_pricing_and_rules
+-- memory). Only computeTotalPrice()'s per-participant multiplication logic
+-- got fixed on 2026-10-06; the underlying stored prices stayed the old
+-- placeholders (duet 300, trio/quartet 255, group_small 155/165, group_large
+-- 120/130) the whole time, which is why prices still looked wrong to her.
+-- `||` is a shallow jsonb merge — only the five listed keys are replaced,
+-- each competition's own early_until stays whatever it already was.
+update competitions
+set price_tiers = price_tiers || jsonb_build_object(
+  'solo', jsonb_build_object('price', 375),
+  'duet', jsonb_build_object('price', 325),
+  'trio_quartet', jsonb_build_object('price', 275),
+  'group_small', jsonb_build_object('early_price', 165, 'regular_price', 175),
+  'group_large', jsonb_build_object('early_price', 135, 'regular_price', 145)
+)
+where price_tiers is not null;
