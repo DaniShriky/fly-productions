@@ -3,7 +3,7 @@ import { Registration } from "@/types/registration";
 import { WHATSAPP_URL } from "@/lib/contact";
 import { competitionIncludesFriday } from "@/lib/getCompetitionDays";
 import { CompetitionWithPricing } from "@/lib/queries/competitionsWithPricing";
-import { CheckIcon, CloseIcon, MinusIcon, PlusIcon } from "./icons";
+import { CheckIcon, CloseIcon, DancerIcon, MinusIcon, PlusIcon } from "./icons";
 import styles from "./SubmissionStep.module.css";
 
 type MediaConsent = "consented" | "declined";
@@ -42,6 +42,19 @@ function ManualPaymentPopup({ onClose }: { onClose: () => void }) {
         </button>
         <div className={styles.checkBadge}>
           <CheckIcon size={22} />
+        </div>
+        {/* A little celebration, per Dani (2026-10-08) — three of the same
+            ballerina-silhouette icon DancerIcon already uses elsewhere
+            (icons.tsx), bouncing with a staggered delay so they read as a
+            small dance line rather than three identical icons moving in
+            lockstep. Purely decorative (aria-hidden), and automatically
+            respects both the site's own "עצירת אנימציות" accessibility
+            toggle (globals.css pauses every CSS animation under that class)
+            and the OS-level prefers-reduced-motion setting. */}
+        <div className={styles.dancersRow} aria-hidden="true">
+          <DancerIcon size={26} />
+          <DancerIcon size={32} />
+          <DancerIcon size={26} />
         </div>
         <h2>ההגשה התקבלה!</h2>
         <p>
