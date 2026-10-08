@@ -34,6 +34,16 @@
   padding: 9px 14px;
   font-size: 14px;
   color: #f3f1ec;
+  /* The native select arrow sat flush against the left border — per Dani,
+     2026-10-08, replaced with a custom one inset with real breathing room
+     from the edge. */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239c9a93' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 12px center;
+  background-size: 14px;
 }
 
 .noResults {

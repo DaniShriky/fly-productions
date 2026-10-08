@@ -287,6 +287,19 @@
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+/* The native select arrow sat flush against the left border — per Dani,
+   2026-10-08, replaced with a custom one (same chevron as ChevronDownIcon)
+   inset with real breathing room from the edge. */
+.field select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239c9a93' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 12px center;
+  background-size: 14px;
+}
+
 /* Chrome ignores autocomplete="off" on name-shaped fields often enough that
    it's not a reliable fix alone (per Dani, 2026-10-03: it suggested her own
    saved name on "שם הרקדנית") — when it DOES autofill anyway, it forces its
