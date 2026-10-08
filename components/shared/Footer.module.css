@@ -70,7 +70,7 @@
    to render the element before the file loads) don't have to be kept in
    sync by hand every time the logo file gets swapped for a different shape. */
 .logo img {
-  height: 46px;
+  height: 60px;
   width: auto;
   opacity: 0.9;
 }
