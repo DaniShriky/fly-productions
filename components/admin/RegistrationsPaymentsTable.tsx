@@ -1,7 +1,8 @@
-import { Fragment, useEffect, useState } from "react";
+import { CSSProperties, Fragment, useEffect, useMemo, useState } from "react";
 import { AdminRegistration, getAllRegistrationsForAdmin, updateRegistrationPaymentAdmin } from "@/lib/queries/adminRegistrations";
 import { CompetitionWithPricing } from "@/lib/queries/competitionsWithPricing";
 import { supabaseBrowserClient } from "@/lib/supabaseBrowserClient";
+import { hexToRgbParts } from "@/lib/hexToRgbParts";
 import {
   computePrice,
   computeRecordingFee,
@@ -12,10 +13,18 @@ import {
   formatPrice,
 } from "@/lib/pricing";
 import { ChevronDownIcon, EditIcon } from "@/components/dashboard/icons";
+import AdminCompetitionStats from "./AdminCompetitionStats";
 import AdminEditDanceModal from "./AdminEditDanceModal";
 import styles from "./RegistrationsPaymentsTable.module.css";
 
 type Filter = "all" | "unpaid" | "paid";
+
+// Same religious-pink override as AdminCompetitionStats.tsx/
+// RegistrationCutoffEditor.module.css's RELIGIOUS_ROW_COLOR — kept as its
+// own local constant here too, matching this codebase's established
+// "duplicate across modules" habit rather than sharing one across three
+// admin components.
+const RELIGIOUS_ROW_COLOR = "#f582c2";
 
 function shortLabel(label: string): string {
   return label.split(" (")[0];
@@ -42,8 +51,12 @@ export default function RegistrationsPaymentsTable({ initialRegistrations, compe
   const [registrations, setRegistrations] = useState(initialRegistrations);
   const [filter, setFilter] = useState<Filter>("all");
   // "all" = no competition filter — a plain string (not null) so it works
-  // directly as a <select> value without extra conversion.
+  // directly as AdminCompetitionStats' selectedId without extra conversion.
   const [competitionFilter, setCompetitionFilter] = useState<string>("all");
+  // Per Dani, 2026-10-08: a dedicated way to pull up everything owed by one
+  // specific studio before reconciling payment with her, instead of relying
+  // on typing her name into the free-text search below.
+  const [managerFilter, setManagerFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [savingId, setSavingId] = useState<string | null>(null);
   // Per Dani, 2026-10-06: the price breakdown used to always be inline in
@@ -110,6 +123,37 @@ export default function RegistrationsPaymentsTable({ initialRegistrations, compe
     }
   }
 
+  // Distinct studio managers across every dance, for the manager filter
+  // below — sorted alphabetically (Hebrew-aware) rather than by first
+  // appearance, so the dropdown is actually scannable once there are many.
+  const managerOptions = useMemo(() => {
+    const byId = new Map<string, { id: string; label: string }>();
+    for (const r of registrations) {
+      if (!byId.has(r.studioManagerId)) {
+        byId.set(r.studioManagerId, { id: r.studioManagerId, label: `${r.studioName} - ${r.managerName}` });
+      }
+    }
+    return Array.from(byId.values()).sort((a, b) => a.label.localeCompare(b.label, "he"));
+  }, [registrations]);
+
+  // Each competition's row gets its own accent color (same hand-picked
+  // COMPETITION_ACCENT_COLORS used elsewhere — see
+  // lib/competitionAccentColors.ts), same technique as
+  // RegistrationCutoffEditor's rowStyle — per Dani, 2026-10-08, the whole
+  // admin dashboard should differentiate competitions by color, not just
+  // the registration-cutoff table.
+  function rowStyle(r: AdminRegistration): CSSProperties | undefined {
+    const competition = competitions.find((c) => c.id === r.competitionId);
+    if (!competition) return undefined;
+    const color = competition.isReligious ? RELIGIOUS_ROW_COLOR : competition.accentColor;
+    const rgb = color ? hexToRgbParts(color) : null;
+    if (!rgb) return undefined;
+    return {
+      borderRight: `3px solid rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.7)`,
+      backgroundColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`,
+    };
+  }
+
   // Free-text, matched against every field a studio manager/dance could
   // reasonably be found by — not just studio name, per Dani, 2026-10-06
   // ("שם סטודיו לפי רצונה / מנהלת להקה וכו'"). Case/diacritic-insensitive
@@ -119,6 +163,7 @@ export default function RegistrationsPaymentsTable({ initialRegistrations, compe
   const filtered = registrations.filter((r) => {
     if (filter !== "all" && r.paymentStatus !== filter) return false;
     if (competitionFilter !== "all" && r.competitionId !== competitionFilter) return false;
+    if (managerFilter !== "all" && r.studioManagerId !== managerFilter) return false;
     if (searchNormalized) {
       const haystack = `${r.studioName} ${r.managerName} ${r.danceName} ${r.city} ${r.studioPhone}`.toLowerCase();
       if (!haystack.includes(searchNormalized)) return false;
@@ -132,6 +177,13 @@ export default function RegistrationsPaymentsTable({ initialRegistrations, compe
 
   return (
     <div className={styles.wrap}>
+      <AdminCompetitionStats
+        competitions={competitions}
+        registrations={registrations}
+        selectedId={competitionFilter}
+        onSelect={setCompetitionFilter}
+      />
+
       <div className={styles.searchRow}>
         <input
           type="search"
@@ -142,13 +194,13 @@ export default function RegistrationsPaymentsTable({ initialRegistrations, compe
         />
         <select
           className={styles.competitionSelect}
-          value={competitionFilter}
-          onChange={(e) => setCompetitionFilter(e.target.value)}
+          value={managerFilter}
+          onChange={(e) => setManagerFilter(e.target.value)}
         >
-          <option value="all">כל התחרויות</option>
-          {competitions.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
+          <option value="all">כל מנהלי הסטודיו</option>
+          {managerOptions.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.label}
             </option>
           ))}
         </select>
@@ -206,6 +258,7 @@ export default function RegistrationsPaymentsTable({ initialRegistrations, compe
               <Fragment key={r.id}>
                 <tr
                   className={styles.row}
+                  style={rowStyle(r)}
                   onClick={() => setExpandedId(isExpanded ? null : r.id)}
                   aria-expanded={isExpanded}
                 >

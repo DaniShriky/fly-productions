@@ -1,0 +1,122 @@
+.wrap {
+  margin-bottom: 20px;
+}
+
+.groupTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: #9c9a93;
+  margin-bottom: 12px;
+}
+
+/* Same card grid as HistoryCompetitionFilter.module.css/CompetitionPicker.module.css
+   (duplicated rather than shared across CSS modules — not idiomatic in this
+   codebase), extended with --card-accent/--card-rgb custom properties for
+   the per-competition color coding. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  align-items: stretch;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+}
+
+@media (min-width: 1440px) {
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background:
+    radial-gradient(circle at top right, rgba(var(--card-rgb, 156, 154, 147), 0.14) 0%, transparent 70%),
+    linear-gradient(165deg, #131317, #101014 70%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  /* Physical border-top (not a logical property) — matches this codebase's
+     established RTL-safe convention, see CLAUDE.md. A top border reads fine
+     regardless of direction, unlike a side border would. */
+  border-top: 3px solid var(--card-accent, rgba(255, 255, 255, 0.25));
+  border-radius: 14px;
+  padding: 16px 12px;
+  box-shadow: 0 12px 24px -18px rgba(0, 0, 0, 0.8);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px -18px rgba(0, 0, 0, 0.9);
+}
+
+/* Active state keeps each competition's OWN color as the highlight (a ring
+   in --card-accent) instead of switching everything to a generic gold the
+   way CompetitionPicker's active state does — the whole point here is that
+   each competition stays visually distinct even once selected. */
+.cardActive {
+  box-shadow: 0 0 0 2px var(--card-accent, #f5c542), 0 16px 32px -16px rgba(var(--card-rgb, 245, 197, 66), 0.35);
+}
+
+.logoSlot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  height: 38px;
+}
+
+.logo {
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+.name {
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.25;
+  min-height: 2.5em;
+  color: #d8d6cf;
+  text-align: center;
+}
+
+.cardActive .name {
+  color: var(--card-accent, #f5c542);
+}
+
+.heroStat {
+  font-size: 20px;
+  font-weight: 800;
+  color: #f3f1ec;
+}
+
+.subStat {
+  font-size: 13px;
+  color: #9c9a93;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.check {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--card-accent, linear-gradient(135deg, #f5c542, #e0a84a));
+  color: #050505;
+  box-shadow: 0 0 0 3px #050505, 0 0 12px rgba(var(--card-rgb, 245, 197, 66), 0.6);
+}
