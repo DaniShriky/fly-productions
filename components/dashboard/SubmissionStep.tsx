@@ -192,7 +192,7 @@ export default function SubmissionStep({ entries, competitions, onSubmit }: Prop
           {needsSabbathQuestion && (
             <div className={styles.questionCard}>
               <p className={styles.question}>
-                האם הסטודיו שומר/ת שבת? <span className={styles.required}>*</span>
+                האם אתם שומרי שבת? <span className={styles.required}>*</span>
               </p>
               <label className={styles.radioOption}>
                 <input
