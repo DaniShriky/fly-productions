@@ -3,7 +3,7 @@ import { Registration } from "@/types/registration";
 import { WHATSAPP_URL } from "@/lib/contact";
 import { competitionIncludesFriday } from "@/lib/getCompetitionDays";
 import { CompetitionWithPricing } from "@/lib/queries/competitionsWithPricing";
-import { CheckIcon, CloseIcon, DancerIcon, MinusIcon, PlusIcon } from "./icons";
+import { CheckIcon, CloseIcon, DancerIcon, MinusIcon, PlusIcon, SparkleIcon } from "./icons";
 import styles from "./SubmissionStep.module.css";
 
 type MediaConsent = "consented" | "declined";
@@ -40,26 +40,43 @@ function ManualPaymentPopup({ onClose }: { onClose: () => void }) {
         <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="סגירה">
           <CloseIcon size={13} />
         </button>
-        <div className={styles.checkBadge}>
-          <CheckIcon size={22} />
-        </div>
         {/* A little celebration, per Dani (2026-10-08) — three of the same
             ballerina-silhouette icon DancerIcon already uses elsewhere
-            (icons.tsx), bouncing with a staggered delay so they read as a
-            small dance line rather than three identical icons moving in
-            lockstep. Purely decorative (aria-hidden), and automatically
-            respects both the site's own "עצירת אנימציות" accessibility
-            toggle (globals.css pauses every CSS animation under that class)
-            and the OS-level prefers-reduced-motion setting. */}
-        <div className={styles.dancersRow} aria-hidden="true">
-          <DancerIcon size={26} />
-          <DancerIcon size={32} />
-          <DancerIcon size={26} />
+            (icons.tsx), swaying/bouncing with a staggered delay (and the
+            middle one mirrored) so they read as an actual little dance line
+            rather than identical icons moving in lockstep, plus a few
+            twinkling sparkles scattered around them. All purely decorative
+            (aria-hidden), and automatically respects both the site's own
+            "עצירת אנימציות" accessibility toggle (globals.css pauses every
+            CSS animation under that class) and the OS-level
+            prefers-reduced-motion setting. */}
+        <div className={styles.celebration}>
+          <div className={styles.checkBadge}>
+            <CheckIcon size={22} />
+          </div>
+          <div className={styles.dancersRow} aria-hidden="true">
+            <DancerIcon size={26} />
+            <DancerIcon size={32} />
+            <DancerIcon size={26} />
+          </div>
+          <span className={styles.sparkle} aria-hidden="true">
+            <SparkleIcon size={13} />
+          </span>
+          <span className={styles.sparkle} aria-hidden="true">
+            <SparkleIcon size={9} />
+          </span>
+          <span className={styles.sparkle} aria-hidden="true">
+            <SparkleIcon size={15} />
+          </span>
+          <span className={styles.sparkle} aria-hidden="true">
+            <SparkleIcon size={10} />
+          </span>
         </div>
         <h2>ההגשה התקבלה!</h2>
         <p>
-          הפרטים נשלחו אלינו בהצלחה. שימו לב - התשלום מתבצע באופן ידני, לא דרך האתר. ניצור איתכם קשר לתיאום התשלום
-          בהקדם.
+          הפרטים נשלחו אלינו בהצלחה.
+          <br />
+          שימו לב - התשלום מתבצע באופן ידני, לא דרך האתר. ניצור איתכם קשר לתיאום התשלום בהקדם.
         </p>
         <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className={styles.cta}>
           לשאלות, אפשר גם לפנות אלינו בוואטסאפ
