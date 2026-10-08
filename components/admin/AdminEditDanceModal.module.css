@@ -51,7 +51,7 @@
 }
 
 .subtitle {
-  font-size: 13px;
+  font-size: 14px;
   color: #9c9a93;
   margin-bottom: 20px;
 }
@@ -74,7 +74,7 @@
   flex-direction: column;
   gap: 6px;
   min-width: 0;
-  font-size: 13px;
+  font-size: 14px;
   color: #d8d6cf;
 }
 
@@ -87,7 +87,7 @@
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   padding: 9px 11px;
-  font-size: 15px;
+  font-size: 16px;
   color: #f3f1ec;
   transition: border-color 0.2s ease;
   /* The native select arrow sat flush against the left border — per Dani,
@@ -145,7 +145,7 @@
   border: none;
   outline: none;
   padding: 9px 0;
-  font-size: 15px;
+  font-size: 16px;
   text-align: center;
   color: #f3f1ec;
   -webkit-appearance: none;
@@ -169,7 +169,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
+  font-size: 15px;
   color: #d8d6cf;
   cursor: pointer;
 }
@@ -190,7 +190,7 @@
 }
 
 .errorNote {
-  font-size: 13px;
+  font-size: 14px;
   color: #f28b82;
 }
 
@@ -199,7 +199,7 @@
   color: #050505;
   padding: 10px 26px;
   border-radius: 999px;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   border: none;
   transition: transform 0.2s ease, filter 0.2s ease;

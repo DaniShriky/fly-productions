@@ -98,7 +98,7 @@
   border-radius: 999px;
   background: #3a3a3e;
   color: #cfcdc6;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   box-shadow: 0 0 0 3px #050505;
 }
@@ -109,7 +109,7 @@
   border-radius: 10px;
   padding: 10px 14px;
   margin-bottom: 14px;
-  font-size: 14px;
+  font-size: 15px;
   color: #d8d6cf;
 }
 
@@ -135,7 +135,7 @@
 .name {
   display: flex;
   align-items: center;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   line-height: 1.25;
   min-height: 2.5em;
@@ -148,13 +148,13 @@
 }
 
 .date {
-  font-size: 14px;
+  font-size: 15px;
   color: #9c9a93;
   margin-top: -4px;
 }
 
 .danceCount {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   padding: 2px 10px;
   border-radius: 999px;

@@ -9,7 +9,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-size: 14px;
+  font-size: 15px;
   color: #d8d6cf;
 }
 
@@ -18,7 +18,7 @@
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   padding: 12px 14px;
-  font-size: 16px;
+  font-size: 17px;
   color: #f3f1ec;
   transition: border-color 0.2s ease;
 }
@@ -29,12 +29,12 @@
 }
 
 .hint {
-  font-size: 14px;
+  font-size: 15px;
   color: #d8d6cf;
 }
 
 .error {
-  font-size: 14px;
+  font-size: 15px;
   color: #f28b82;
 }
 
@@ -43,7 +43,7 @@
   color: #050505;
   padding: 12px 26px;
   border-radius: 999px;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   border: none;
   transition: transform 0.25s ease, filter 0.25s ease;
@@ -63,7 +63,7 @@
   background: none;
   border: none;
   color: #9c9a93;
-  font-size: 13px;
+  font-size: 14px;
   text-decoration: underline;
   align-self: flex-start;
 }
@@ -85,6 +85,6 @@
 }
 
 .resentNote {
-  font-size: 12px;
+  font-size: 13px;
   color: #3fae64;
 }

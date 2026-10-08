@@ -23,7 +23,7 @@
 }
 
 .deleteError {
-  font-size: 13px;
+  font-size: 14px;
   color: #f28b82;
   margin-bottom: 12px;
 }
@@ -61,7 +61,7 @@
   border-radius: 12px;
   padding: 28px 16px;
   text-align: center;
-  font-size: 14px;
+  font-size: 15px;
   color: #9c9a93;
 }
 
@@ -103,20 +103,20 @@
 }
 
 .danceName {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: #f3f1ec;
 }
 
 .subLine {
-  font-size: 13px;
+  font-size: 14px;
   color: #9c9a93;
   margin-top: 2px;
 }
 
 .price {
   flex: 0 0 auto;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--list-accent, #f5c542);
   white-space: nowrap;
@@ -124,7 +124,7 @@
 
 .badge {
   flex: 0 0 auto;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   padding: 3px 10px;
   border-radius: 999px;

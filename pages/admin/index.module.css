@@ -7,7 +7,7 @@
    the dashboard's CountdownTimer digits, the site's established way of
    marking a moment as a little special rather than purely functional copy. */
 .greeting {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   margin-bottom: 10px;
   background: linear-gradient(135deg, #f5c542, #e0a84a);
@@ -22,7 +22,7 @@
 }
 
 .pageSubtitle {
-  font-size: 14px;
+  font-size: 15px;
   color: #9c9a93;
 }
 
@@ -56,7 +56,7 @@
 }
 
 .emptyNote {
-  font-size: 14px;
+  font-size: 15px;
   color: #9c9a93;
   text-align: center;
   padding: 40px 0;

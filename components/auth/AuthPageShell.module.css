@@ -22,7 +22,7 @@
 }
 
 .stepIndicator {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.4px;
   color: #f5c542;
@@ -35,13 +35,13 @@
 }
 
 .error {
-  font-size: 14px;
+  font-size: 15px;
   color: #f28b82;
   margin-top: 12px;
 }
 
 .hint {
-  font-size: 14px;
+  font-size: 15px;
   color: #d8d6cf;
   margin-top: 16px;
 }
@@ -68,7 +68,7 @@
   display: inline-block;
   background: none;
   border: none;
-  font-size: 13px;
+  font-size: 14px;
   color: #9c9a93;
   text-decoration: underline;
   margin-bottom: 16px;
@@ -83,7 +83,7 @@
   align-items: center;
   gap: 12px;
   margin: 18px 0;
-  font-size: 12px;
+  font-size: 13px;
   color: #9c9a93;
 }
 

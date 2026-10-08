@@ -1,5 +1,5 @@
 .empty {
-  font-size: 15px;
+  font-size: 16px;
   color: #9c9a93;
 }
 
@@ -45,7 +45,7 @@
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 999px;
   padding: 6px 16px;
-  font-size: 14px;
+  font-size: 15px;
   color: #d8d6cf;
   transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -66,7 +66,7 @@
   width: 100%;
   table-layout: auto;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .table th,
@@ -108,7 +108,7 @@
 .table th {
   color: #9c9a93;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 15px;
   letter-spacing: 0.4px;
   text-transform: uppercase;
   border-bottom: 1px solid rgba(255, 255, 255, 0.14);
@@ -147,7 +147,7 @@
   align-items: center;
   gap: 8px;
   font-weight: 700;
-  font-size: 15px;
+  font-size: 16px;
   /* Same blue used sitewide (styles/globals.css .hl) to highlight brand/
      competition names inline in copy. */
   color: #7fb8e6;
@@ -159,7 +159,7 @@
 }
 
 .groupHeaderMeta {
-  font-size: 13px;
+  font-size: 14px;
   color: #9c9a93;
   white-space: nowrap;
 }
@@ -200,7 +200,7 @@
 }
 
 .competitionCellName {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: #d8d6cf;
 }
@@ -211,7 +211,7 @@
 }
 
 .subLine {
-  font-size: 14px;
+  font-size: 15px;
   color: #9c9a93;
   font-weight: 400;
   margin-top: 2px;
@@ -229,7 +229,7 @@
 }
 
 .tag {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   padding: 2px 9px;
   border-radius: 999px;
@@ -315,7 +315,7 @@
   margin: 0;
   font: inherit;
   text-align: inherit;
-  font-size: 13px;
+  font-size: 14px;
   color: #d8d6cf;
   word-break: break-word;
   cursor: default;
@@ -356,7 +356,7 @@
 
 .seekTime {
   flex: 0 0 auto;
-  font-size: 12px;
+  font-size: 13px;
   color: #9c9a93;
   white-space: nowrap;
 }
@@ -389,7 +389,7 @@
    to be clear when a dance is missing something it'll need before payment. */
 .missingBadge {
   display: inline-block;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   padding: 3px 10px;
   border-radius: 999px;
@@ -413,7 +413,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: #7fb8e6;
   cursor: pointer;
@@ -431,12 +431,12 @@
   white-space: nowrap;
   color: #f5c542;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .statusBadge {
   display: inline-block;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   padding: 4px 12px;
   border-radius: 999px;
@@ -458,7 +458,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   padding: 3px 10px;
   border-radius: 999px;
@@ -474,7 +474,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   padding: 4px 11px;
   border-radius: 999px;
@@ -605,7 +605,7 @@
   /* Indented from the reading-start (right) edge — this is an RTL layout —
      so each charge visibly nests under its dance name above it. */
   padding: 2px 14px 2px 0;
-  font-size: 13px;
+  font-size: 14px;
   color: #9c9a93;
 }
 
@@ -661,7 +661,7 @@
   border-radius: 12px;
   padding: 12px 14px;
   box-shadow: 0 16px 36px -16px rgba(0, 0, 0, 0.7), 0 0 20px -8px rgba(242, 139, 130, 0.3);
-  font-size: 14px;
+  font-size: 15px;
   color: #f3f1ec;
   animation: errorToastIn 0.25s ease;
 }
@@ -777,7 +777,7 @@
   background: rgba(245, 197, 66, 0.06);
   border-top: 1px solid rgba(245, 197, 66, 0.2);
   padding: 16px 20px;
-  font-size: 14px;
+  font-size: 15px;
   color: #d8d6cf;
 }
 
@@ -854,7 +854,7 @@
   .table td[data-label]::before {
     content: attr(data-label);
     color: #9c9a93;
-    font-size: 13px;
+    font-size: 14px;
     flex: 0 0 auto;
   }
 

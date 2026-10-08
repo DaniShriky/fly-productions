@@ -70,13 +70,13 @@
 }
 
 .avatarHint {
-  font-size: 13px;
+  font-size: 14px;
   color: #9c9a93;
   margin-bottom: 4px;
 }
 
 .email {
-  font-size: 15px;
+  font-size: 16px;
   color: #d8d6cf;
 }
 
@@ -104,7 +104,7 @@
   flex-direction: column;
   gap: 6px;
   min-width: 0;
-  font-size: 14px;
+  font-size: 15px;
   color: #d8d6cf;
 }
 
@@ -117,7 +117,7 @@
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   padding: 10px 12px;
-  font-size: 16px;
+  font-size: 17px;
   color: #f3f1ec;
   transition: border-color 0.2s ease;
   /* The native select arrow sat flush against the left border — per Dani,
@@ -155,7 +155,7 @@
 }
 
 .approvalWarning {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: #f28b82;
 }
@@ -165,7 +165,7 @@
 }
 
 .radioGroup legend {
-  font-size: 14px;
+  font-size: 15px;
   color: #d8d6cf;
   padding: 0 4px;
 }
@@ -174,7 +174,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 15px;
+  font-size: 16px;
   color: #f3f1ec;
   margin-bottom: 16px;
 }
@@ -189,12 +189,12 @@
 }
 
 .savedNote {
-  font-size: 14px;
+  font-size: 15px;
   color: #3fae64;
 }
 
 .errorNote {
-  font-size: 14px;
+  font-size: 15px;
   color: #f28b82;
 }
 
@@ -203,7 +203,7 @@
   color: #050505;
   padding: 10px 24px;
   border-radius: 999px;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   border: none;
   transition: transform 0.25s ease, filter 0.25s ease;

@@ -36,7 +36,7 @@
   flex: 0 0 auto;
   background: none;
   border: none;
-  font-size: 14px;
+  font-size: 15px;
   color: #9c9a93;
   text-decoration: underline;
 }
@@ -51,7 +51,7 @@
 
 .fieldErrorText,
 .submitError {
-  font-size: 13px;
+  font-size: 14px;
   color: #f28b82;
 }
 
@@ -63,7 +63,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -82,7 +82,7 @@
   border-radius: 999px;
   background: var(--form-accent, #f5c542);
   color: #050505;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 800;
   letter-spacing: 0;
   text-transform: none;
@@ -183,7 +183,7 @@
 }
 
 .managerSummary {
-  font-size: 15px;
+  font-size: 16px;
   color: #d8d6cf;
   margin-top: 8px;
 }
@@ -244,7 +244,7 @@
   background: #101014;
   border: 1px solid rgba(255, 255, 255, 0.14);
   color: #d8d6cf;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
@@ -269,7 +269,7 @@
   flex-direction: column;
   gap: 6px;
   min-width: 0;
-  font-size: 14px;
+  font-size: 15px;
   color: #d8d6cf;
 }
 
@@ -282,7 +282,7 @@
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   padding: 10px 12px;
-  font-size: 16px;
+  font-size: 17px;
   color: #f3f1ec;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -380,12 +380,12 @@
   border: none;
   outline: none;
   padding: 10px 0;
-  font-size: 16px;
+  font-size: 17px;
   color: #f3f1ec;
 }
 
 .durationHint {
-  font-size: 13px;
+  font-size: 14px;
   color: #9c9a93;
 }
 
@@ -459,7 +459,7 @@
   border-radius: 0;
   outline: none;
   padding: 10px 0;
-  font-size: 16px;
+  font-size: 17px;
   text-align: center;
   color: #f3f1ec;
   -webkit-appearance: none;
@@ -474,7 +474,7 @@
 }
 
 .timeLimitHint {
-  font-size: 13px;
+  font-size: 14px;
   color: #7fb8e6;
   margin-bottom: 12px;
 }
@@ -500,12 +500,12 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-size: 14px;
+  font-size: 15px;
   color: #d8d6cf;
 }
 
 .fieldLabel {
-  font-size: 14px;
+  font-size: 15px;
   color: #d8d6cf;
 }
 
@@ -542,13 +542,13 @@
 }
 
 .dropzoneText {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: #f3f1ec;
 }
 
 .dropzoneHint {
-  font-size: 13px;
+  font-size: 14px;
   color: #9c9a93;
 }
 
@@ -608,19 +608,19 @@
 }
 
 .checkboxTitle {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: #f3f1ec;
 }
 
 .checkboxSubtitle {
-  font-size: 13px;
+  font-size: 14px;
   color: #9c9a93;
 }
 
 .checkboxPrice {
   flex: 0 0 auto;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--form-accent, #f5c542);
 }
@@ -630,7 +630,7 @@
   border: 1px solid rgba(242, 139, 130, 0.4);
   border-radius: 8px;
   padding: 10px 14px;
-  font-size: 14px;
+  font-size: 15px;
   color: #f3f1ec;
   margin-bottom: 16px;
 }
@@ -689,7 +689,7 @@
 /* Secondary relative to the price next to it — the item's own name/
    description, not the number that matters most on this row. */
 .priceBreakdownLabel {
-  font-size: 16px;
+  font-size: 17px;
   color: #a9a7a0;
 }
 
@@ -701,7 +701,7 @@
 
 .priceExplain {
   color: #7a7872;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 /* Redesigned per Dani's reference image, 2026-10-08: a thin glowing
@@ -763,7 +763,7 @@
   color: #050505;
   padding: 10px 24px;
   border-radius: 999px;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   border: none;
   box-shadow: 0 8px 22px -8px rgba(245, 197, 66, 0.55);
@@ -786,7 +786,7 @@
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 999px;
   padding: 10px 20px;
-  font-size: 14px;
+  font-size: 15px;
   color: #d8d6cf;
   transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
 }
@@ -812,7 +812,7 @@
   color: #050505;
   padding: 10px 24px;
   border-radius: 999px;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   border: none;
   box-shadow: 0 8px 22px -8px rgba(245, 197, 66, 0.55);

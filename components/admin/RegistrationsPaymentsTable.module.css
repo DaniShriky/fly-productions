@@ -16,7 +16,7 @@
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 8px;
   padding: 9px 14px;
-  font-size: 14px;
+  font-size: 15px;
   color: #f3f1ec;
   transition: border-color 0.2s ease;
 }
@@ -32,7 +32,7 @@
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 8px;
   padding: 9px 14px;
-  font-size: 14px;
+  font-size: 15px;
   color: #f3f1ec;
   /* The native select arrow sat flush against the left border — per Dani,
      2026-10-08, replaced with a custom one inset with real breathing room
@@ -47,7 +47,7 @@
 }
 
 .noResults {
-  font-size: 14px;
+  font-size: 15px;
   color: #9c9a93;
   text-align: center;
   padding: 30px 0;
@@ -64,7 +64,7 @@
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 999px;
   padding: 6px 16px;
-  font-size: 13px;
+  font-size: 14px;
   color: #d8d6cf;
 }
 
@@ -81,7 +81,7 @@
 .table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .table th,
@@ -104,11 +104,11 @@
 .table th {
   color: #9c9a93;
   font-weight: 600;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .subLine {
-  font-size: 12px;
+  font-size: 13px;
   color: #9c9a93;
   font-weight: 400;
   margin-top: 2px;
@@ -165,7 +165,7 @@
   display: flex;
   justify-content: space-between;
   gap: 16px;
-  font-size: 13px;
+  font-size: 14px;
   color: #d8d6cf;
   padding: 5px 0;
 }
@@ -186,7 +186,7 @@
   border: none;
   border-radius: 999px;
   padding: 6px 16px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   transition: filter 0.15s;
 }
@@ -214,7 +214,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 13px;
   color: #d8d6cf;
   cursor: pointer;
 }

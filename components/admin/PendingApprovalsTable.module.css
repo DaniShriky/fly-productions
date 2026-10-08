@@ -13,13 +13,13 @@
   padding: 10px 14px;
   margin-bottom: 14px;
   color: #f3f1ec;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .table th,
@@ -54,7 +54,7 @@
   border: none;
   border-radius: 999px;
   padding: 6px 16px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
 }
 

@@ -32,7 +32,7 @@
 
 .colon {
   font-family: "Hubot Sans", sans-serif;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
   color: rgba(245, 197, 66, 0.45);
   margin: 0 3px;
@@ -53,7 +53,7 @@
   display: inline-block;
   font-family: "Hubot Sans", sans-serif;
   font-variant-numeric: tabular-nums;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 800;
   line-height: 1;
   background: linear-gradient(100deg, #f5d87a, #f5c542 40%, #e0a84a 60%, #f5d87a);
@@ -73,7 +73,7 @@
 }
 
 .label {
-  font-size: 12px;
+  font-size: 13px;
   color: #9c9a93;
 }
 
