@@ -153,13 +153,18 @@
   margin-top: -4px;
 }
 
+/* Bumped up from a muted gray pill (per Dani, 2026-10-08 — it was reading
+   as an afterthought at a glance) — bigger, bolder, and bright white by
+   default so it holds its own even on a card that isn't the active
+   selection; .cardActive's gold treatment below still takes over once a
+   card actually is selected. */
 .danceCount {
-  font-size: 14px;
-  font-weight: 600;
-  padding: 2px 10px;
+  font-size: 16px;
+  font-weight: 800;
+  padding: 3px 12px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
-  color: #9c9a93;
+  background: rgba(255, 255, 255, 0.1);
+  color: #f3f1ec;
   white-space: nowrap;
 }
 
