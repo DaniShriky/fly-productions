@@ -917,3 +917,21 @@ set price_tiers = price_tiers || jsonb_build_object(
 )
 where price_tiers is not null
   and is_religious = false;
+
+-- Round 19 (2026-10-08, Dani): religious competitions now have real, final
+-- prices (the client confirmed them) — a different data correction from
+-- Round 18 above, scoped to is_religious = true so this never touches the
+-- secular competitions Round 18 already fixed. Also a code change, not a
+-- data one: the video/stills recording add-on dropped from 150₪ to 145₪ per
+-- order (computeRecordingFeeForType() in lib/pricing.ts) — that fee is
+-- global, not per-competition, so it's not part of this jsonb update.
+update competitions
+set price_tiers = price_tiers || jsonb_build_object(
+  'solo', jsonb_build_object('price', 165),
+  'duet', jsonb_build_object('price', 275),
+  'trio_quartet', jsonb_build_object('price', 255),
+  'group_small', jsonb_build_object('early_price', 155, 'regular_price', 165),
+  'group_large', jsonb_build_object('early_price', 125, 'regular_price', 135)
+)
+where price_tiers is not null
+  and is_religious = true;

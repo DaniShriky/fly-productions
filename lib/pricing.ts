@@ -185,11 +185,11 @@ export function computeSurcharge(
 // a single order or 125₪ per order once 2+ of THAT SAME type are ordered —
 // Dani corrected this 2026-09 (the flyer's "צילום וידאו ו/או סטילס" wording
 // first read as one shared line item, but ordering both is really two
-// separate charges). Flat 150₪ per type regardless of quantity — per Dani,
-// 2026-10-03, replacing the previous 135₪/125₪ quantity-discount tiers
-// entirely (not just at new numbers).
+// separate charges). Flat per type regardless of quantity — 150₪ per Dani,
+// 2026-10-03 (replacing the previous 135₪/125₪ quantity-discount tiers
+// entirely, not just at new numbers), lowered to 145₪ per Dani, 2026-10-08.
 export function computeRecordingFeeForType(): number {
-  return 150;
+  return 145;
 }
 
 // Combined recording add-on fee for one dance entry — the sum of whichever
