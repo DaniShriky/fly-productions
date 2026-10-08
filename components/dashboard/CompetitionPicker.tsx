@@ -58,7 +58,19 @@ export default function CompetitionPicker({ competitions, selectedId, onSelect, 
               key={c.id}
               type="button"
               className={`${styles.card} ${active ? styles.cardActive : ""} ${closed ? styles.cardClosed : ""}`}
-              onClick={() => (closed ? setClosedNotice(true) : onSelect(c.id))}
+              onClick={() => {
+                if (closed) {
+                  setClosedNotice(true);
+                  return;
+                }
+                // Per Dani, 2026-10-08: picking an open competition while
+                // the closed-competition notice is still showing (from a
+                // previous click) used to leave it hanging until its own
+                // 4.5s timer ran out, instead of disappearing right away
+                // once it's no longer relevant.
+                setClosedNotice(false);
+                onSelect(c.id);
+              }}
               aria-pressed={active}
               aria-disabled={closed}
             >
