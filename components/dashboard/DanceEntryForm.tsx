@@ -284,7 +284,7 @@ export default function DanceEntryForm({
   const isGroup = count >= 5;
   const baseSubtotal = perParticipantPrice != null ? perParticipantPrice * (isSolo ? 1 : count) : null;
 
-  // Video and stills are two independent services, flat 150₪ each regardless
+  // Video and stills are two independent services, each a flat fee regardless
   // of how many dances order them (see computeRecordingFeeForType's comment).
   const videoFee = wantsVideo ? computeRecordingFeeForType() : 0;
   const stillsFee = wantsStills ? computeRecordingFeeForType() : 0;
@@ -999,7 +999,7 @@ export default function DanceEntryForm({
                       <span className={styles.checkboxSubtitle}>הקלטת וידאו מקצועית של הריקוד</span>
                     </span>
                   </span>
-                  <span className={styles.checkboxPrice}>150 ₪</span>
+                  <span className={styles.checkboxPrice}>{formatPrice(computeRecordingFeeForType())} ₪</span>
                 </label>
                 <label className={styles.checkboxCard}>
                   <span className={styles.checkboxMain}>
@@ -1010,7 +1010,7 @@ export default function DanceEntryForm({
                       <span className={styles.checkboxSubtitle}>תמונות סטילס מקצועיות מהריקוד</span>
                     </span>
                   </span>
-                  <span className={styles.checkboxPrice}>150 ₪</span>
+                  <span className={styles.checkboxPrice}>{formatPrice(computeRecordingFeeForType())} ₪</span>
                 </label>
               </div>
             </div>
