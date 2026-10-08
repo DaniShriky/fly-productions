@@ -200,7 +200,7 @@ export default function Dashboard({ competitions, registrations, manager: initia
           JS, so there's no layout jump. Only RegistrationStepper itself
           stays pinned once scrolled past. */}
       <header className={styles.pageHeader}>
-        <p className={styles.pageSubtitle}>כאן תוכלו לעקוב אחרי ההרשמה שלכם ולנהל את הריקודים לתחרויות.</p>
+        <p className={styles.pageSubtitle}>כאן תוכלו לעקוב אחרי ההרשמה שלכם ולנהל את הריקודים לתחרויות</p>
       </header>
 
       <div className={styles.stickyHeader} style={{ top: navHeight }}>
