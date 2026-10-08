@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Registration } from "@/types/registration";
-import { PHONE, WHATSAPP_URL } from "@/lib/contact";
+import { WHATSAPP_URL } from "@/lib/contact";
 import { competitionIncludesFriday } from "@/lib/getCompetitionDays";
 import { CompetitionWithPricing } from "@/lib/queries/competitionsWithPricing";
-import { CloseIcon, MinusIcon, PlusIcon } from "./icons";
+import { CheckIcon, CloseIcon, MinusIcon, PlusIcon } from "./icons";
 import styles from "./SubmissionStep.module.css";
 
 type MediaConsent = "consented" | "declined";
@@ -40,14 +40,16 @@ function ManualPaymentPopup({ onClose }: { onClose: () => void }) {
         <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="סגירה">
           <CloseIcon size={13} />
         </button>
-        <div className={styles.emoji}>✅</div>
+        <div className={styles.checkBadge}>
+          <CheckIcon size={22} />
+        </div>
         <h2>ההגשה התקבלה!</h2>
         <p>
-          הפרטים נשלחו אלינו בהצלחה. שימו לב - התשלום מתבצע כרגע באופן ידני, לא דרך האתר. ניצור איתכם קשר לתיאום
-          התשלום בהקדם.
+          הפרטים נשלחו אלינו בהצלחה. שימו לב - התשלום מתבצע באופן ידני, לא דרך האתר. ניצור איתכם קשר לתיאום התשלום
+          בהקדם.
         </p>
         <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className={styles.cta}>
-          לשאלות, אפשר גם לפנות אלינו בוואטסאפ ({PHONE})
+          לשאלות, אפשר גם לפנות אלינו בוואטסאפ
         </a>
       </div>
     </div>
