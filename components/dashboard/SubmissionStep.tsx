@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Registration } from "@/types/registration";
 import { PHONE, WHATSAPP_URL } from "@/lib/contact";
+import { competitionIncludesFriday } from "@/lib/getCompetitionDays";
+import { CompetitionWithPricing } from "@/lib/queries/competitionsWithPricing";
 import { CloseIcon, MinusIcon, PlusIcon } from "./icons";
 import styles from "./SubmissionStep.module.css";
 
@@ -8,7 +10,13 @@ type MediaConsent = "consented" | "declined";
 
 type Props = {
   entries: Registration[];
-  onSubmit: (acceptedTerms: boolean, mediaConsent: MediaConsent, totalParticipantCount: number) => Promise<void>;
+  competitions: CompetitionWithPricing[];
+  onSubmit: (
+    acceptedTerms: boolean,
+    mediaConsent: MediaConsent,
+    totalParticipantCount: number,
+    isSabbathObservant: boolean | null
+  ) => Promise<void>;
 };
 
 // The popup shown right after a successful הגשה — same overlay/card/
@@ -53,7 +61,7 @@ function ManualPaymentPopup({ onClose }: { onClose: () => void }) {
 // in supabase/schema.sql). A manager can still add more dances afterward;
 // those start as fresh drafts needing their own later הגשה, which is why
 // this only ever acts on entries without a submittedAt yet.
-export default function SubmissionStep({ entries, onSubmit }: Props) {
+export default function SubmissionStep({ entries, competitions, onSubmit }: Props) {
   const draftEntries = entries.filter((e) => !e.submittedAt);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   // Per Dani, 2026-10-06: a manager shouldn't be able to approve the
@@ -62,6 +70,15 @@ export default function SubmissionStep({ entries, onSubmit }: Props) {
   // read it, but it's the honest-effort signal available here).
   const [hasViewedTakanon, setHasViewedTakanon] = useState(false);
   const [mediaConsent, setMediaConsent] = useState<MediaConsent | "">("");
+  // Per Dani, 2026-10-08: only Friday competitions need to know this, so the
+  // question only shows when at least one draft dance is in one — checked
+  // against competitions, not entries, since "Friday" is a property of the
+  // competition's date, not of the dance itself.
+  const needsSabbathQuestion = draftEntries.some((e) => {
+    const competition = competitions.find((c) => c.id === e.competitionId);
+    return competition && competitionIncludesFriday(competition.date);
+  });
+  const [sabbathObservant, setSabbathObservant] = useState<"yes" | "no" | "">("");
   // Free text, not number, so the field can be genuinely empty while typing
   // instead of snapping to 0 — parsed/validated below. Self-reported, not
   // derived from summing entries' participantCount: a dancer performing in
@@ -74,7 +91,8 @@ export default function SubmissionStep({ entries, onSubmit }: Props) {
 
   const parsedParticipantCount = Number(totalParticipantCount);
   const participantCountValid = totalParticipantCount.trim() !== "" && Number.isInteger(parsedParticipantCount) && parsedParticipantCount > 0;
-  const canSubmit = acceptedTerms && mediaConsent !== "" && participantCountValid;
+  const canSubmit =
+    acceptedTerms && mediaConsent !== "" && participantCountValid && (!needsSabbathQuestion || sabbathObservant !== "");
 
   // Same +/- stepper behavior as DanceEntryForm's participant-count field —
   // floors at 1, and the first click from an empty field lands on 1.
@@ -95,7 +113,12 @@ export default function SubmissionStep({ entries, onSubmit }: Props) {
     setSubmitting(true);
     setSubmitError(null);
     try {
-      await onSubmit(acceptedTerms, mediaConsent as MediaConsent, parsedParticipantCount);
+      await onSubmit(
+        acceptedTerms,
+        mediaConsent as MediaConsent,
+        parsedParticipantCount,
+        needsSabbathQuestion ? sabbathObservant === "yes" : null
+      );
       setJustSubmitted(true);
     } catch (err) {
       console.error("Registration submission failed:", err);
@@ -165,6 +188,32 @@ export default function SubmissionStep({ entries, onSubmit }: Props) {
               לא מאשר/ת
             </label>
           </div>
+
+          {needsSabbathQuestion && (
+            <div className={styles.questionCard}>
+              <p className={styles.question}>
+                האם הסטודיו שומר/ת שבת? <span className={styles.required}>*</span>
+              </p>
+              <label className={styles.radioOption}>
+                <input
+                  type="radio"
+                  name="sabbath-observant"
+                  checked={sabbathObservant === "yes"}
+                  onChange={() => setSabbathObservant("yes")}
+                />
+                כן
+              </label>
+              <label className={styles.radioOption}>
+                <input
+                  type="radio"
+                  name="sabbath-observant"
+                  checked={sabbathObservant === "no"}
+                  onChange={() => setSabbathObservant("no")}
+                />
+                לא
+              </label>
+            </div>
+          )}
 
           <div className={styles.questionCard}>
             <p className={styles.question}>

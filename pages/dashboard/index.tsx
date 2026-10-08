@@ -125,9 +125,16 @@ export default function Dashboard({ competitions, registrations, manager: initia
   async function handleSubmitRegistrations(
     acceptedTerms: boolean,
     mediaConsent: "consented" | "declined",
-    totalParticipantCount: number
+    totalParticipantCount: number,
+    isSabbathObservant: boolean | null
   ) {
-    await submitRegistrations(supabaseBrowserClient, acceptedTerms, mediaConsent, totalParticipantCount);
+    await submitRegistrations(
+      supabaseBrowserClient,
+      acceptedTerms,
+      mediaConsent,
+      totalParticipantCount,
+      isSabbathObservant
+    );
     const now = new Date().toISOString();
     setEntries((current) =>
       current.map((e) => (!e.submittedAt && e.paymentStatus === "unpaid" ? { ...e, submittedAt: now } : e))
@@ -280,7 +287,7 @@ export default function Dashboard({ competitions, registrations, manager: initia
         {activeStep === 3 && (
           <div className={styles.narrow}>
             <StepHeader kicker="שלב 3" title="אישורים והגשה" onBack={() => setActiveStep(2)} backTo={2} />
-            <SubmissionStep entries={entries} onSubmit={handleSubmitRegistrations} />
+            <SubmissionStep entries={entries} competitions={competitions} onSubmit={handleSubmitRegistrations} />
           </div>
         )}
       </main>

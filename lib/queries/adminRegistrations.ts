@@ -10,6 +10,12 @@ import { DanceLevel, PaymentStatus, Registration, RegistrationCategory } from "@
 export interface AdminRegistration extends Registration {
   studioPhone: string;
   competitionName: string;
+  // Submission-level answer (see registration_submissions.is_sabbath_observant
+  // in supabase/schema.sql), joined in via this dance's submission_id — only
+  // present once the dance has been submitted through a הגשה that asked the
+  // question (i.e. at least one of that batch's dances was in a Friday
+  // competition). Absent, not false, when it was never asked.
+  isSabbathObservant?: boolean;
 }
 
 type AdminRegistrationRow = {
@@ -38,6 +44,7 @@ type AdminRegistrationRow = {
   created_at: string;
   studio_managers: { phone: string } | null;
   competitions: { name: string } | null;
+  registration_submissions: { is_sabbath_observant: boolean | null } | null;
 };
 
 function toAdminRegistration(row: AdminRegistrationRow): AdminRegistration {
@@ -67,6 +74,9 @@ function toAdminRegistration(row: AdminRegistrationRow): AdminRegistration {
     createdAt: row.created_at,
     studioPhone: row.studio_managers?.phone ?? "",
     competitionName: row.competitions?.name ?? "—",
+    ...(row.registration_submissions?.is_sabbath_observant != null
+      ? { isSabbathObservant: row.registration_submissions.is_sabbath_observant }
+      : {}),
   };
 }
 
@@ -76,7 +86,7 @@ function toAdminRegistration(row: AdminRegistrationRow): AdminRegistration {
 export async function getAllRegistrationsForAdmin(client: SupabaseClient): Promise<AdminRegistration[]> {
   const { data, error } = await client
     .from("registrations")
-    .select("*, studio_managers(phone), competitions(name)")
+    .select("*, studio_managers(phone), competitions(name), registration_submissions(is_sabbath_observant)")
     .order("created_at", { ascending: true });
 
   if (error) throw error;

@@ -834,3 +834,60 @@ grant execute on function manager_remove_song(uuid) to authenticated;
 -- had a delete counterpart.
 create policy "Manager deletes own music" on storage.objects
   for delete using (bucket_id = 'dance-music' and (storage.foldername(name))[1] = auth.uid()::text);
+
+-- Round 17 (2026-10-08, Dani): Friday competitions need to know whether a
+-- registering studio is שומרי שבת (Sabbath-observant), so step 3 now asks
+-- this in the UI whenever at least one currently-draft dance is in a
+-- competition whose date touches a Friday (see competitionIncludesFriday in
+-- lib/getCompetitionDays.ts). Nullable — a submission covering no Friday
+-- competition never asks the question, so it's left null rather than forced
+-- to a default.
+alter table registration_submissions add column is_sabbath_observant boolean;
+
+-- A reliable link from a specific dance to the exact הגשה that submitted
+-- it — needed so the admin table (one row per dance) can show this
+-- submission-level answer without guessing via timestamps. Set only inside
+-- submit_registrations() below, same as submitted_at — no column grant to
+-- authenticated, so it can't be set any other way.
+alter table registrations add column submission_id uuid references registration_submissions(id);
+
+-- submit_registrations()'s signature is changing again (new 4th param), so
+-- the old 3-param version needs dropping first — same reasoning as Round 10.
+drop function if exists submit_registrations(boolean, text, integer);
+
+create function submit_registrations(
+  p_accepted_terms boolean,
+  p_media_consent text,
+  p_total_participant_count integer,
+  p_is_sabbath_observant boolean
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_submission_id uuid;
+begin
+  if not p_accepted_terms then
+    raise exception 'Terms must be accepted to submit';
+  end if;
+
+  if p_total_participant_count is null or p_total_participant_count < 1 then
+    raise exception 'total_participant_count must be a positive number';
+  end if;
+
+  insert into registration_submissions (studio_manager_id, accepted_terms, media_consent, total_participant_count, is_sabbath_observant)
+  values (auth.uid(), p_accepted_terms, p_media_consent, p_total_participant_count, p_is_sabbath_observant)
+  returning id into v_submission_id;
+
+  update registrations
+  set submitted_at = now(),
+      submission_id = v_submission_id
+  where studio_manager_id = auth.uid()
+    and submitted_at is null
+    and payment_status = 'unpaid';
+end;
+$$;
+
+grant execute on function submit_registrations(boolean, text, integer, boolean) to authenticated;

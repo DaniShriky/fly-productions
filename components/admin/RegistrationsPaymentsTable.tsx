@@ -181,6 +181,7 @@ export default function RegistrationsPaymentsTable({ initialRegistrations, compe
             <th>מחיר</th>
             <th>סטטוס תשלום</th>
             <th>חריג תשלום מאוחר</th>
+            <th>שומרי שבת</th>
             <th></th>
           </tr>
         </thead>
@@ -266,6 +267,7 @@ export default function RegistrationsPaymentsTable({ initialRegistrations, compe
                       מאושר לחרוג
                     </label>
                   </td>
+                  <td>{r.isSabbathObservant === undefined ? "—" : r.isSabbathObservant ? "כן" : "לא"}</td>
                   <td>
                     <button
                       type="button"
@@ -283,7 +285,7 @@ export default function RegistrationsPaymentsTable({ initialRegistrations, compe
                 </tr>
                 {isExpanded && price != null && (
                   <tr className={styles.breakdownRow}>
-                    <td colSpan={9}>
+                    <td colSpan={10}>
                       <div className={styles.breakdown}>
                         {basePrice != null && (
                           <div className={styles.breakdownLine}>

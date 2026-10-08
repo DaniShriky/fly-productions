@@ -150,12 +150,14 @@ export async function submitRegistrations(
   client: SupabaseClient,
   acceptedTerms: boolean,
   mediaConsent: "consented" | "declined",
-  totalParticipantCount: number
+  totalParticipantCount: number,
+  isSabbathObservant: boolean | null
 ): Promise<void> {
   const { error } = await client.rpc("submit_registrations", {
     p_accepted_terms: acceptedTerms,
     p_media_consent: mediaConsent,
     p_total_participant_count: totalParticipantCount,
+    p_is_sabbath_observant: isSabbathObservant,
   });
   if (error) throw error;
 }

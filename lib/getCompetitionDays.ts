@@ -131,3 +131,12 @@ export function getGeneralRegistrationCutoffIso(date: string, override?: string 
 export function getHebrewDayOfWeek(iso: string): string {
   return HEBREW_DAYS[new Date(`${iso}T00:00:00Z`).getUTCDay()];
 }
+
+// Whether the competition's date range touches a Friday — per Dani,
+// 2026-10-08: a Friday competition needs to ask registering studios whether
+// they're שומרי שבת (SubmissionStep gates that question on this), since
+// scheduling around Shabbat only matters for competitions that actually run
+// into it.
+export function competitionIncludesFriday(date: string): boolean {
+  return getCompetitionDays(date).includes("שישי");
+}
