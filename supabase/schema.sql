@@ -901,6 +901,12 @@ grant execute on function submit_registrations(boolean, text, integer, boolean) 
 -- 120/130) the whole time, which is why prices still looked wrong to her.
 -- `||` is a shallow jsonb merge — only the five listed keys are replaced,
 -- each competition's own early_until stays whatever it already was.
+--
+-- Deliberately excludes is_religious competitions: Dani confirmed
+-- (2026-10-08) religious pricing really is different, but the client hasn't
+-- finalized those numbers yet — leaving mega-star-religious on its old
+-- placeholder values until she has real figures to apply, rather than
+-- overwriting it with these (wrong, secular) ones.
 update competitions
 set price_tiers = price_tiers || jsonb_build_object(
   'solo', jsonb_build_object('price', 375),
@@ -909,4 +915,5 @@ set price_tiers = price_tiers || jsonb_build_object(
   'group_small', jsonb_build_object('early_price', 165, 'regular_price', 175),
   'group_large', jsonb_build_object('early_price', 135, 'regular_price', 145)
 )
-where price_tiers is not null;
+where price_tiers is not null
+  and is_religious = false;
