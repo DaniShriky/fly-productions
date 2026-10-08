@@ -1,4 +1,5 @@
 import { CSSProperties, useState } from "react";
+import Image from "next/image";
 import { CompetitionWithPricing } from "@/lib/queries/competitionsWithPricing";
 import { hexToRgbParts } from "@/lib/hexToRgbParts";
 import { Registration } from "@/types/registration";
@@ -64,7 +65,10 @@ export default function CompetitionDanceList({ competition, allEntries, onAdd, o
     <div className={styles.wrap} style={wrapStyle}>
       <div className={styles.headerRow}>
         <p className={styles.count}>
-          ריקודים שנוספו לתחרות זו ({entries.length})
+          {competition.logo && (
+            <Image src={competition.logo} alt="" width={30} height={26} className={styles.headerLogo} />
+          )}
+          ריקודים שנוספו ל<span className="en" lang="en">{competition.name}</span> ({entries.length})
         </p>
       </div>
 

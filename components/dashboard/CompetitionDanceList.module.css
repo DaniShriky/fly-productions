@@ -7,9 +7,19 @@
 }
 
 .count {
-  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
   font-weight: 700;
   color: #f3f1ec;
+}
+
+.headerLogo {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 26px;
+  object-fit: contain;
 }
 
 .deleteError {
