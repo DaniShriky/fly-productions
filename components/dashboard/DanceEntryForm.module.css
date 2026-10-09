@@ -206,12 +206,12 @@
   overflow: hidden;
   min-height: 0;
   padding-top: 14px;
-  /* Extra bottom clearance for .stepConfirmButton's hover glow below — this
-     wrapper needs overflow:hidden for the grid 0fr/1fr collapse animation
-     above, which was also hard-clipping that glow against the content's own
-     bottom edge (per Dani, 2026-10-09) since .stepActions' margin-bottom
-     alone wasn't enough room for it to fade out in. */
-  padding-bottom: 10px;
+  /* NOT padding-bottom — tried adding some here to give
+     .stepConfirmButton's hover glow more room (2026-10-09), but that broke
+     the closed/0fr state: a sliver of the step's own content showed through
+     below the collapsed header instead of fully hiding. The glow fits fine
+     now anyway since .stepConfirmButton:hover's box-shadow was also shrunk
+     the same day — see that rule's comment. */
 }
 
 .grid {
