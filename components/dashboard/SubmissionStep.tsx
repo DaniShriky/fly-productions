@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { FaWhatsapp } from "react-icons/fa";
 import { Registration } from "@/types/registration";
 import { WHATSAPP_URL } from "@/lib/contact";
 import { competitionIncludesFriday } from "@/lib/getCompetitionDays";
@@ -24,7 +25,10 @@ type Props = {
 // shared (not a reusable component in this codebase yet). Explains that
 // payment itself is still handled manually (no Grow/PayPlus integration
 // yet — see project_product_vision/docs/ARCHITECTURE.md phases), using the
-// same PHONE/WHATSAPP_URL DanceEntriesTable already surfaces elsewhere.
+// same WHATSAPP_URL from lib/contact.ts used throughout the site (Footer,
+// PromoBanner). Styled as a real WhatsApp-branded button (per Dani,
+// 2026-10-09), not a plain text link — this is the one actual next action
+// the popup wants her to take, unlike the quieter תקנון link in step 3.
 function ManualPaymentPopup({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
@@ -76,10 +80,11 @@ function ManualPaymentPopup({ onClose }: { onClose: () => void }) {
         <p>
           הפרטים נשלחו אלינו בהצלחה.
           <br />
-          שימו לב - התשלום מתבצע באופן ידני, לא דרך האתר. ניצור איתכם קשר לתיאום התשלום בהקדם.
+          שימו לב - התשלום מתבצע באופן ידני, לא דרך האתר. צרו איתנו קשר לתיאום התשלום בהקדם.
         </p>
-        <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className={styles.cta}>
-          לשאלות, אפשר גם לפנות אלינו בוואטסאפ
+        <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className={styles.whatsappCta}>
+          <FaWhatsapp size={18} />
+          תיאום תשלום בוואטסאפ
         </a>
       </div>
     </div>

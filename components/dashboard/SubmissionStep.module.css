@@ -339,19 +339,29 @@
   margin-bottom: 22px;
 }
 
-/* A quiet secondary link, not another loud gold button — the same visual
-   language as .takanonLink above, so the one actual call-to-action here
-   (closing the popup) isn't competing with it. */
-.cta {
+/* A real WhatsApp-branded button (per Dani, 2026-10-09) — the classic
+   WhatsApp green, not this popup's gold accent, so it reads instantly as
+   "open WhatsApp" the way a generic gold pill wouldn't. This replaced an
+   earlier quiet text-link treatment once Dani asked for it to look like a
+   proper button again. */
+.whatsappCta {
   display: inline-flex;
-  color: #f5c542;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  background: #25d366;
+  color: #052814;
+  padding: 13px 20px;
+  border-radius: 999px;
   font-size: 15px;
-  font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  transition: color 0.2s ease;
+  font-weight: 700;
+  box-shadow: 0 10px 26px -8px rgba(37, 211, 102, 0.55);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
 
-.cta:hover {
-  color: #e0a84a;
+.whatsappCta:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 14px 32px -8px rgba(37, 211, 102, 0.7);
 }
