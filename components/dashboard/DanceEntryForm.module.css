@@ -813,6 +813,14 @@
   margin-bottom: 16px;
 }
 
+/* No box-shadow at all here, unlike the usual gold-button glow elsewhere
+   (e.g. .submitButton) — this button sits inside .stepBodyInner's
+   overflow:hidden (needed for the accordion collapse animation above), and
+   ANY shadow painted outside the button's own box gets hard-clipped against
+   that boundary, at any size, even at rest (per Dani, 2026-10-09, after two
+   attempts at just shrinking it still clipped). Hover feedback instead
+   comes entirely from the gradient/filter swap below, which only repaints
+   pixels inside the button's own box. */
 .stepConfirmButton {
   background: linear-gradient(135deg, #f5c542, #e0a84a);
   color: #050505;
@@ -821,18 +829,10 @@
   font-size: 16px;
   font-weight: 700;
   border: none;
-  box-shadow: 0 8px 22px -8px rgba(245, 197, 66, 0.55);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  transition: background 0.2s ease, filter 0.2s ease;
 }
 
-/* No transform/box-shadow growth on hover here, unlike the usual gold-button
-   hover treatment elsewhere (e.g. .submitButton) — this button sits inside
-   .stepBodyInner's overflow:hidden (needed for the accordion collapse
-   animation above), and even a modest glow/lift still got visibly
-   hard-clipped against that boundary instead of fading out naturally
-   (per Dani, 2026-10-09, after a first attempt at just shrinking the glow
-   still clipped). brightness alone still reads as real hover feedback
-   without needing anything to extend past the button's own box. */
 .stepConfirmButton:hover {
-  filter: brightness(1.1);
+  background: linear-gradient(135deg, #ffd874, #f0b93a);
+  filter: brightness(1.08);
 }
