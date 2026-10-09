@@ -5,6 +5,7 @@ import Footer from "@/components/shared/Footer";
 import Hero from "@/components/home/Hero";
 import CompetitionCarousel from "@/components/home/CompetitionCarousel";
 import TakanonSection from "@/components/home/TakanonSection";
+import PriceListSection from "@/components/home/PriceListSection";
 import VideoSection from "@/components/home/VideoSection";
 import Testimonials from "@/components/home/Testimonials";
 import PromoBanner from "@/components/home/PromoBanner";
@@ -29,6 +30,7 @@ export default function Home({
       <Hero />
       <CompetitionCarousel competitions={competitions} />
       <TakanonSection />
+      <PriceListSection />
       <VideoSection />
       <Testimonials testimonials={testimonials} />
       <PromoBanner />
