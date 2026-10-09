@@ -1,7 +1,13 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { Competition } from "@/types/competition";
 import { PriceTiers } from "@/types/priceTiers";
-import { CompetitionRow, toCompetition } from "@/lib/queries/competitions";
+// Imported from competitionMapper directly, NOT from lib/queries/competitions
+// — that file also pulls in lib/supabase.ts's build-time-only client, which
+// crashes if it ever reaches a browser bundle (see competitionMapper.ts's
+// own comment). getCompetitionsWithPricing is called from genuinely
+// client-side code (components/home/PriceListSection.tsx), so this module's
+// import graph has to stay free of that transitive dependency.
+import { CompetitionRow, toCompetition } from "@/lib/queries/competitionMapper";
 
 export interface CompetitionWithPricing extends Competition {
   priceTiers?: PriceTiers;
