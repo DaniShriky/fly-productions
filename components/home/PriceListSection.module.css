@@ -31,19 +31,19 @@
 }
 
 /* justify-content: flex-end clusters the icon badge + text together on the
-   right (this is RTL, so that's the natural reading start) instead of
-   stretching .text to fill the row — a first attempt at that left the
-   chevron stranded alone at the far (left) edge with a large dead gap in
-   between (per Dani, 2026-10-09, "נראה לא טוב"). The chevron now sits
-   inline right next to the heading text itself instead. */
-/* `button` has no color/font reset in globals.css beyond font-family and
-   cursor, so without an explicit `color` here this button (and everything
-   inside it, including the heading) fell back to the browser's own UA
-   default button text color instead of inheriting the page's light
-   (#f3f1ec) body color — reading as dark text on this dark card (per Dani,
-   2026-10-09, "בלי טקסט כהה על רקע כהה"). Gap also tightened per her
-   request to bring the icon and heading closer together. */
+   right (this is RTL, so that's the natural reading start). The chevron is
+   positioned absolutely (see .chevron) pinned to the far left edge instead
+   of sitting in the flex flow — an earlier flex-based attempt at "text
+   right, chevron left" stretched .text to get there and left the chevron
+   looking stranded with a dead gap (per Dani, 2026-10-09); absolute
+   positioning gets the same "text right / arrow left" result Dani asked
+   for without that artifact. `button` also has no color/font reset in
+   globals.css beyond font-family and cursor, so without an explicit
+   `color` here this button fell back to the browser's own UA default
+   button text color instead of the page's light body color — reading as
+   dark text on this dark card. */
 .header {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -87,9 +87,12 @@
 }
 
 .chevron {
-  display: inline-flex;
-  vertical-align: middle;
+  position: absolute;
+  left: 0;
+  top: 50%;
+  display: flex;
   color: #f5c542;
+  transform: translateY(-50%);
   transition: transform 0.25s ease;
 }
 
@@ -98,7 +101,7 @@
 }
 
 .chevronOpen {
-  transform: rotate(180deg);
+  transform: translateY(-50%) rotate(180deg);
 }
 
 .text p {
