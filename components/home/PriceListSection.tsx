@@ -32,12 +32,12 @@ function SectorPriceList({ isReligious, tiers }: { isReligious: boolean; tiers: 
   return (
     <div className={`${styles.card} ${isReligious ? styles.religious : ""}`}>
       <button type="button" className={styles.header} onClick={() => setOpen((o) => !o)} aria-expanded={open}>
-        <span className={styles.iconBadge} aria-hidden="true">
-          <FaMoneyBillWave size={22} />
-        </span>
         <span className={styles.text}>
           <h3>מחירון {isReligious ? "התחרות - מגזר דתי" : "התחרות"}</h3>
           <p>דמי השתתפות, כרטיסים וצילום - כל המחירים במקום אחד</p>
+        </span>
+        <span className={styles.iconBadge} aria-hidden="true">
+          <FaMoneyBillWave size={22} />
         </span>
         <span className={`${styles.chevron} ${open ? styles.chevronOpen : ""}`} aria-hidden="true">
           <FaChevronDown size={14} />
