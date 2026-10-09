@@ -35,11 +35,11 @@ export default function Home({
       <Nav competitions={competitions} />
       <Hero />
       <CompetitionCarousel competitions={competitions} />
-      <TakanonSection />
-      <PriceListSection />
       <VideoSection />
       <Testimonials testimonials={testimonials} />
       <PromoBanner />
+      <TakanonSection />
+      <PriceListSection />
       <Footer />
     </>
   );
