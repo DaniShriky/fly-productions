@@ -2,6 +2,15 @@
   padding: 0 5% 40px;
 }
 
+/* Two independent toggles stack with a gap between them when a "שניהם"
+   manager sees both sectors (per Dani, 2026-10-09) — a single sector still
+   renders fine inside this same wrapper, just with nothing to gap against. */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 .toggle {
   display: flex;
   align-items: center;

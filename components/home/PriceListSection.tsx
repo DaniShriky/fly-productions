@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { FaChevronDown } from "react-icons/fa";
 import { getOwnStudioManager } from "@/lib/queries/studioManagers";
 import { CompetitionWithPricing, getCompetitionsWithPricing } from "@/lib/queries/competitionsWithPricing";
+import { PriceTiers } from "@/types/priceTiers";
 import { supabaseBrowserClient } from "@/lib/supabaseBrowserClient";
 import { computeRecordingFeeForType, formatPrice } from "@/lib/pricing";
 import styles from "./PriceListSection.module.css";
@@ -16,59 +17,15 @@ const AUDIENCE_TICKET = {
   religious: { price: 70 },
 };
 
-// Only ever shown to a logged-in, approved studio manager — per Dani,
-// 2026-10-09: the same homepage area as TakanonSection should also surface
-// the price list relevant to HER sector (secular/religious), as a
-// collapsible tab. Mirrors Nav.tsx's exact session-check pattern (getSession
-// on mount + onAuthStateChange subscription) — the only other place on a
-// public page that already needs to know who's signed in.
-export default function PriceListSection() {
-  const [managerType, setManagerType] = useState<string | undefined>(undefined);
-  const [approved, setApproved] = useState(false);
-  const [competitions, setCompetitions] = useState<CompetitionWithPricing[] | null>(null);
+// One sector's collapsible price list — its own open/closed state, so two
+// of these (secular + religious, for a "שניהם" manager, per Dani
+// 2026-10-09) can be expanded independently of each other.
+function SectorPriceList({ isReligious, tiers }: { isReligious: boolean; tiers: PriceTiers }) {
   const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    async function syncSession(session: { user: { id: string } } | null) {
-      if (!session) {
-        setApproved(false);
-        setManagerType(undefined);
-        setCompetitions(null);
-        return;
-      }
-      const manager = await getOwnStudioManager(supabaseBrowserClient, session.user.id).catch(() => null);
-      if (manager?.status !== "approved") {
-        setApproved(false);
-        return;
-      }
-      setApproved(true);
-      setManagerType(manager.preferredCompetitionType);
-      getCompetitionsWithPricing(supabaseBrowserClient)
-        .then(setCompetitions)
-        .catch(() => setCompetitions(null));
-    }
-
-    supabaseBrowserClient.auth.getSession().then(({ data: { session } }) => syncSession(session));
-    const {
-      data: { subscription },
-    } = supabaseBrowserClient.auth.onAuthStateChange((_event, session) => syncSession(session));
-    return () => subscription.unsubscribe();
-  }, []);
-
-  if (!approved || !competitions) return null;
-
-  // Same fallback-to-secular rule used everywhere else this field is read
-  // (e.g. Step2FinalRegistration.tsx) — "שניהם" and an unset preference both
-  // land on secular here too; only an exact "מגזר דתי" match shows religious.
-  const isReligious = managerType === "מגזר דתי";
-  const competition = competitions.find((c) => c.isReligious === isReligious && c.priceTiers);
-  if (!competition?.priceTiers) return null;
-
-  const tiers = competition.priceTiers;
   const recordingFee = computeRecordingFeeForType();
 
   return (
-    <section className={styles.section}>
+    <div>
       <button
         type="button"
         className={`${styles.toggle} ${isReligious ? styles.religious : ""}`}
@@ -217,6 +174,72 @@ export default function PriceListSection() {
             </div>
           </div>
         ))}
+    </div>
+  );
+}
+
+// Only ever shown to a logged-in, approved studio manager — per Dani,
+// 2026-10-09: the same homepage area as TakanonSection should also surface
+// the price list relevant to HER sector(s), as collapsible tab(s). Mirrors
+// Nav.tsx's exact session-check pattern (getSession on mount +
+// onAuthStateChange subscription) — the only other place on a public page
+// that already needs to know who's signed in.
+export default function PriceListSection() {
+  const [managerType, setManagerType] = useState<string | undefined>(undefined);
+  const [approved, setApproved] = useState(false);
+  const [competitions, setCompetitions] = useState<CompetitionWithPricing[] | null>(null);
+
+  useEffect(() => {
+    async function syncSession(session: { user: { id: string } } | null) {
+      if (!session) {
+        setApproved(false);
+        setManagerType(undefined);
+        setCompetitions(null);
+        return;
+      }
+      const manager = await getOwnStudioManager(supabaseBrowserClient, session.user.id).catch(() => null);
+      if (manager?.status !== "approved") {
+        setApproved(false);
+        return;
+      }
+      setApproved(true);
+      setManagerType(manager.preferredCompetitionType);
+      getCompetitionsWithPricing(supabaseBrowserClient)
+        .then(setCompetitions)
+        .catch(() => setCompetitions(null));
+    }
+
+    supabaseBrowserClient.auth.getSession().then(({ data: { session } }) => syncSession(session));
+    const {
+      data: { subscription },
+    } = supabaseBrowserClient.auth.onAuthStateChange((_event, session) => syncSession(session));
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (!approved || !competitions) return null;
+
+  // "שניהם" shows both price lists — per Dani, 2026-10-09. Anything else
+  // (an exact "מגזר דתי" match, or anything that isn't, including unset)
+  // keeps the same single-sector fallback-to-secular rule used everywhere
+  // else this field is read (e.g. Step2FinalRegistration.tsx).
+  const sectors: boolean[] = managerType === "שניהם" ? [false, true] : [managerType === "מגזר דתי"];
+
+  const lists = sectors
+    .map((isReligious) => ({
+      isReligious,
+      tiers: competitions.find((c) => c.isReligious === isReligious && c.priceTiers)?.priceTiers,
+    }))
+    .filter((l): l is { isReligious: boolean; tiers: PriceTiers } => !!l.tiers);
+
+  if (lists.length === 0) return null;
+
+  return (
+    <section className={styles.section}>
+      <div className={styles.stack}>
+        {lists.map((l) => (
+          <SectorPriceList key={String(l.isReligious)} isReligious={l.isReligious} tiers={l.tiers} />
+        ))}
+      </div>
     </section>
   );
 }
