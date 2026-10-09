@@ -206,6 +206,12 @@
   overflow: hidden;
   min-height: 0;
   padding-top: 14px;
+  /* Extra bottom clearance for .stepConfirmButton's hover glow below — this
+     wrapper needs overflow:hidden for the grid 0fr/1fr collapse animation
+     above, which was also hard-clipping that glow against the content's own
+     bottom edge (per Dani, 2026-10-09) since .stepActions' margin-bottom
+     alone wasn't enough room for it to fade out in. */
+  padding-bottom: 10px;
 }
 
 .grid {
@@ -822,5 +828,9 @@
 .stepConfirmButton:hover {
   filter: brightness(1.05);
   transform: translateY(-1px);
-  box-shadow: 0 12px 28px -8px rgba(245, 197, 66, 0.7);
+  /* Smaller blur/spread than the usual gold-button hover glow elsewhere —
+     this button sits inside .stepBodyInner's overflow:hidden (needed for
+     the accordion collapse animation above), so a wider glow gets visibly
+     hard-clipped instead of fading out naturally. */
+  box-shadow: 0 8px 18px -6px rgba(245, 197, 66, 0.7);
 }
