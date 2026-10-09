@@ -30,27 +30,25 @@
   border-color: rgba(245, 130, 194, 0.3);
 }
 
-/* justify-content: flex-end clusters the icon badge + text together on the
-   right (this is RTL, so that's the natural reading start). The chevron is
-   positioned absolutely (see .chevron) pinned to the far left edge instead
-   of sitting in the flex flow — an earlier flex-based attempt at "text
-   right, chevron left" stretched .text to get there and left the chevron
-   looking stranded with a dead gap (per Dani, 2026-10-09); absolute
-   positioning gets the same "text right / arrow left" result Dani asked
-   for without that artifact. `button` also has no color/font reset in
-   globals.css beyond font-family and cursor, so without an explicit
-   `color` here this button fell back to the browser's own UA default
-   button text color instead of the page's light body color — reading as
-   dark text on this dark card. */
+/* Pure physical left/right positioning here, deliberately NOT flexbox's
+   bidi-aware start/end (justify-content: flex-end turned out to mean the
+   LEFT edge in this RTL page, not the right, which is what actually caused
+   every earlier attempt at this header to come out backwards — per Dani,
+   2026-10-09, after several rounds). .iconBadge is pinned to the physical
+   right edge, .chevron to the physical left edge (both position: absolute),
+   and .text is a plain block in between with padding reserving space for
+   both — same "use physical properties, not direction-relative ones"
+   convention as the rest of this codebase's RTL-safe CSS (see CLAUDE.md).
+   `button` also has no color/font reset in globals.css beyond font-family
+   and cursor, so without an explicit `color` here this button fell back to
+   the browser's own UA default button text color instead of the page's
+   light body color — reading as dark text on this dark card. */
 .header {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
+  display: block;
   width: 100%;
   margin: 0;
-  padding: 0;
+  padding: 0 76px 0 38px;
   background: none;
   border: none;
   color: inherit;
@@ -58,7 +56,10 @@
 }
 
 .iconBadge {
-  flex: 0 0 auto;
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -76,8 +77,7 @@
 }
 
 .text {
-  flex: 0 1 auto;
-  min-width: 0;
+  display: block;
 }
 
 .text h3 {
@@ -88,8 +88,8 @@
 
 .chevron {
   position: absolute;
-  left: 0;
   top: 50%;
+  left: 0;
   display: flex;
   color: #f5c542;
   transform: translateY(-50%);
