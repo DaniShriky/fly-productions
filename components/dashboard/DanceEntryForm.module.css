@@ -825,12 +825,14 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
 
+/* No transform/box-shadow growth on hover here, unlike the usual gold-button
+   hover treatment elsewhere (e.g. .submitButton) — this button sits inside
+   .stepBodyInner's overflow:hidden (needed for the accordion collapse
+   animation above), and even a modest glow/lift still got visibly
+   hard-clipped against that boundary instead of fading out naturally
+   (per Dani, 2026-10-09, after a first attempt at just shrinking the glow
+   still clipped). brightness alone still reads as real hover feedback
+   without needing anything to extend past the button's own box. */
 .stepConfirmButton:hover {
-  filter: brightness(1.05);
-  transform: translateY(-1px);
-  /* Smaller blur/spread than the usual gold-button hover glow elsewhere —
-     this button sits inside .stepBodyInner's overflow:hidden (needed for
-     the accordion collapse animation above), so a wider glow gets visibly
-     hard-clipped instead of fading out naturally. */
-  box-shadow: 0 8px 18px -6px rgba(245, 197, 66, 0.7);
+  filter: brightness(1.1);
 }
