@@ -66,8 +66,6 @@ export default function PriceListSection() {
 
   const tiers = competition.priceTiers;
   const recordingFee = computeRecordingFeeForType();
-  const perParticipant = isReligious ? "למשתתפת" : "למשתתף";
-  const peopleWord = isReligious ? "משתתפות" : "משתתפים";
 
   return (
     <section className={styles.section}>
@@ -83,48 +81,31 @@ export default function PriceListSection() {
         </span>
       </button>
 
-      {open && (
-        <div className={`${styles.card} ${isReligious ? styles.religious : ""}`}>
-          <h3 className={styles.cardTitle}>{isReligious ? "מחירון תחרויות - למגזר הדתי" : "מחירון תחרות הריקוד"}</h3>
+      {open &&
+        (isReligious ? (
+          // Exact structure of the religious reference flyer: flatter than
+          // the secular one (no early/regular date-tiered rows, no nested
+          // subsection bars) — per Dani, 2026-10-09, this isn't a stylistic
+          // choice of mine, it's what her actual flyer shows, so it's
+          // replicated as-is rather than "evened out" to match the secular
+          // layout's extra tiers.
+          <div className={`${styles.frame} ${styles.religious}`}>
+            <p className={styles.titleBar}>מחירון תחרויות</p>
+            <p className={styles.subtitleBar}>למגזר הדתי - נשים</p>
 
-          <div className={styles.group}>
-            <p className={styles.groupTitle}>דמי השתתפות</p>
-
+            <p className={styles.sectionBar}>דמי השתתפות</p>
             <div className={styles.block}>
-              <p className={styles.blockTitle}>קבוצות מעל 11 {peopleWord}</p>
               <div className={styles.row}>
-                <span>עד חודשיים לפני האירוע (הרשמה מוקדמת)</span>
-                <span className={styles.price}>
-                  {formatPrice(tiers.groupLarge.earlyPrice)} ₪ {perParticipant}
-                </span>
+                <span>קבוצה גדולה</span>
+                <span className={styles.price}>{formatPrice(tiers.groupLarge.earlyPrice)} ₪ למשתתפת</span>
               </div>
               <div className={styles.row}>
-                <span>עד סיום ההרשמה (כחודש וחצי לפני התחרות)</span>
-                <span className={styles.price}>
-                  {formatPrice(tiers.groupLarge.regularPrice)} ₪ {perParticipant}
-                </span>
+                <span>קבוצה קטנה</span>
+                <span className={styles.price}>{formatPrice(tiers.groupSmall.earlyPrice)} ₪ למשתתפת</span>
               </div>
             </div>
 
-            <div className={styles.block}>
-              <p className={styles.blockTitle}>קבוצות של 10-5 {peopleWord}</p>
-              <div className={styles.row}>
-                <span>עד חודשיים לפני האירוע (הרשמה מוקדמת)</span>
-                <span className={styles.price}>
-                  {formatPrice(tiers.groupSmall.earlyPrice)} ₪ {perParticipant}
-                </span>
-              </div>
-              <div className={styles.row}>
-                <span>עד סיום ההרשמה (כחודש וחצי לפני התחרות)</span>
-                <span className={styles.price}>
-                  {formatPrice(tiers.groupSmall.regularPrice)} ₪ {perParticipant}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className={styles.group}>
-            <p className={styles.groupTitle}>קטגוריות קטנות</p>
+            <p className={styles.sectionBar}>קטגוריות</p>
             <div className={styles.block}>
               <div className={styles.row}>
                 <span>סולו</span>
@@ -132,21 +113,98 @@ export default function PriceListSection() {
               </div>
               <div className={styles.row}>
                 <span>דואט</span>
-                <span className={styles.price}>
-                  {formatPrice(tiers.duet.price)} ₪ {perParticipant}
-                </span>
+                <span className={styles.price}>{formatPrice(tiers.duet.price)} ₪ למשתתפת</span>
               </div>
               <div className={styles.row}>
                 <span>טריו / קוורטט</span>
-                <span className={styles.price}>
-                  {formatPrice(tiers.trioQuartet.price)} ₪ {perParticipant}
-                </span>
+                <span className={styles.price}>{formatPrice(tiers.trioQuartet.price)} ₪ למשתתפת</span>
+              </div>
+            </div>
+
+            <p className={styles.sectionBar}>וידאו וסטילס</p>
+            <div className={styles.block}>
+              <div className={styles.row}>
+                <span>וידאו (פר ריקוד)</span>
+                <span className={styles.price}>{formatPrice(recordingFee)} ₪</span>
+              </div>
+              <div className={styles.row}>
+                <span>סטילס (פר ריקוד)</span>
+                <span className={styles.price}>{formatPrice(recordingFee)} ₪</span>
+              </div>
+            </div>
+
+            <p className={styles.sectionBar}>כרטיסי כניסה</p>
+            <div className={styles.block}>
+              <div className={styles.row}>
+                <span />
+                <span className={styles.price}>{formatPrice(AUDIENCE_TICKET.religious.price)} ₪</span>
               </div>
             </div>
           </div>
+        ) : (
+          // Exact structure of the secular reference flyer: gold section
+          // bars (דמי השתתפות / כרטיסי כניסה / וידאו וסטילס) each either
+          // containing black subsection bars (the two group-size tiers) or
+          // standing alone (קטגוריות קטנות, sized the same as a subsection
+          // bar but with no gold parent header above it, matching the image).
+          <div className={styles.frame}>
+            <p className={styles.titleBar}>מחירון תחרות הריקוד</p>
 
-          <div className={styles.group}>
-            <p className={styles.groupTitle}>וידאו וסטילס</p>
+            <p className={styles.sectionBar}>דמי השתתפות</p>
+
+            <p className={styles.subBar}>קבוצות מעל 11 משתתפים</p>
+            <div className={styles.block}>
+              <div className={styles.row}>
+                <span>עד חודשיים לפני האירוע (הרשמה מוקדמת)</span>
+                <span className={styles.price}>{formatPrice(tiers.groupLarge.earlyPrice)} ₪ למשתתף</span>
+              </div>
+              <div className={styles.row}>
+                <span>עד סיום ההרשמה (כחודש וחצי לפני התחרות)</span>
+                <span className={styles.price}>{formatPrice(tiers.groupLarge.regularPrice)} ₪ למשתתף</span>
+              </div>
+            </div>
+
+            <p className={styles.subBar}>קבוצות של 10-5 משתתפים</p>
+            <div className={styles.block}>
+              <div className={styles.row}>
+                <span>עד חודשיים לפני האירוע (הרשמה מוקדמת)</span>
+                <span className={styles.price}>{formatPrice(tiers.groupSmall.earlyPrice)} ₪ למשתתף</span>
+              </div>
+              <div className={styles.row}>
+                <span>עד סיום ההרשמה (כחודש וחצי לפני התחרות)</span>
+                <span className={styles.price}>{formatPrice(tiers.groupSmall.regularPrice)} ₪ למשתתף</span>
+              </div>
+            </div>
+
+            <p className={styles.subBar}>קטגוריות קטנות</p>
+            <div className={styles.block}>
+              <div className={styles.row}>
+                <span>סולו</span>
+                <span className={styles.price}>{formatPrice(tiers.solo.price)} ₪</span>
+              </div>
+              <div className={styles.row}>
+                <span>דואט</span>
+                <span className={styles.price}>{formatPrice(tiers.duet.price)} ₪ למשתתף</span>
+              </div>
+              <div className={styles.row}>
+                <span>טריו / קוורטט</span>
+                <span className={styles.price}>{formatPrice(tiers.trioQuartet.price)} ₪ למשתתף</span>
+              </div>
+            </div>
+
+            <p className={styles.sectionBar}>כרטיסי כניסה</p>
+            <div className={styles.block}>
+              <div className={styles.row}>
+                <span>עד 10 ימים לפני האירוע</span>
+                <span className={styles.price}>{formatPrice(AUDIENCE_TICKET.secular.early)} ₪</span>
+              </div>
+              <div className={styles.row}>
+                <span>לאחר מכן</span>
+                <span className={styles.price}>{formatPrice(AUDIENCE_TICKET.secular.regular)} ₪</span>
+              </div>
+            </div>
+
+            <p className={styles.sectionBar}>וידאו וסטילס</p>
             <div className={styles.block}>
               <div className={styles.row}>
                 <span>וידאו (פר ריקוד)</span>
@@ -158,31 +216,7 @@ export default function PriceListSection() {
               </div>
             </div>
           </div>
-
-          <div className={styles.group}>
-            <p className={styles.groupTitle}>כרטיסי כניסה</p>
-            <div className={styles.block}>
-              {isReligious ? (
-                <div className={styles.row}>
-                  <span>מחיר כרטיס</span>
-                  <span className={styles.price}>{formatPrice(AUDIENCE_TICKET.religious.price)} ₪</span>
-                </div>
-              ) : (
-                <>
-                  <div className={styles.row}>
-                    <span>עד 10 ימים לפני האירוע</span>
-                    <span className={styles.price}>{formatPrice(AUDIENCE_TICKET.secular.early)} ₪</span>
-                  </div>
-                  <div className={styles.row}>
-                    <span>לאחר מכן</span>
-                    <span className={styles.price}>{formatPrice(AUDIENCE_TICKET.secular.regular)} ₪</span>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+        ))}
     </section>
   );
 }
