@@ -36,10 +36,10 @@ export default function Home({
       <Hero />
       <CompetitionCarousel competitions={competitions} />
       <VideoSection />
-      <Testimonials testimonials={testimonials} />
-      <PromoBanner />
       <TakanonSection />
       <PriceListSection />
+      <Testimonials testimonials={testimonials} />
+      <PromoBanner />
       <Footer />
     </>
   );
