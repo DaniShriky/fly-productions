@@ -182,8 +182,16 @@
   color: rgba(255, 255, 255, 0.3);
 }
 
+/* Always rendered while a step is closed now, even with nothing to
+   summarize yet (a "future" step, or a reached-but-still-empty one) — per
+   Dani, 2026-10-09: she wants every closed step card to be the same height,
+   which min-height (tied to line-height via em, so it matches the real
+   line exactly) guarantees regardless of whether this particular step has
+   content to show. */
 .managerSummary {
   font-size: 16px;
+  line-height: 1.4;
+  min-height: 1.4em;
   color: #d8d6cf;
   margin-top: 8px;
 }

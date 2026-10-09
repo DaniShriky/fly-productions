@@ -614,19 +614,28 @@ export default function DanceEntryForm({
           onClick={step2Reached ? () => toggleStep(2) : undefined}
         />
 
-        {step2Reached && !step2Open && (
+        {/* Always rendered while closed (not just once step2Reached) — per
+            Dani, 2026-10-09, so every step card is the same height closed,
+            whether or not it has anything to summarize yet; .managerSummary
+            also reserves a min-height for the same reason when this is
+            empty. */}
+        {!step2Open && (
           <p className={styles.managerSummary}>
-            {/* Each segment supplies its own leading " · ", same as
-                preferredDay already did — count > 0 avoids the same fake
-                "סולו" fabrication fixed in the price breakdown below
-                (categoryFromParticipantCount(0) also resolves to "solo"),
-                and resolvedDanceStyle is skipped the same way once nothing's
-                picked yet, instead of leaving a dangling "·" with nothing
-                after it. */}
-            <span className="en" lang="en">{danceName}</span>
-            {count > 0 && ` · ${displayCategoryLabel(resolvedCategory, count)}`}
-            {resolvedDanceStyle && ` · ${resolvedDanceStyle}`}
-            {preferredDay && ` · יום מועדף: ${dayOptions.find((d) => d.date === preferredDay)?.label}`}
+            {step2Reached && (
+              <>
+                {/* Each segment supplies its own leading " · ", same as
+                    preferredDay already did — count > 0 avoids the same fake
+                    "סולו" fabrication fixed in the price breakdown below
+                    (categoryFromParticipantCount(0) also resolves to "solo"),
+                    and resolvedDanceStyle is skipped the same way once nothing's
+                    picked yet, instead of leaving a dangling "·" with nothing
+                    after it. */}
+                <span className="en" lang="en">{danceName}</span>
+                {count > 0 && ` · ${displayCategoryLabel(resolvedCategory, count)}`}
+                {resolvedDanceStyle && ` · ${resolvedDanceStyle}`}
+                {preferredDay && ` · יום מועדף: ${dayOptions.find((d) => d.date === preferredDay)?.label}`}
+              </>
+            )}
           </p>
         )}
 
@@ -911,9 +920,11 @@ export default function DanceEntryForm({
         </div>
       </div>
 
-      {/* Step 3: מוזיקה והזמנות נלוות — the last step, so it never collapses
-          back into a summary once reached; the form's real submit button
-          (in the footer below) is its "confirm". */}
+      {/* Step 3: מוזיקה והזמנות נלוות — the last step, so there's no
+          .stepConfirmButton inside it like steps 1/2 have; the form's real
+          submit button (in the footer below) is its "confirm". It can still
+          collapse into a summary like any other reached step, same
+          click-to-toggle behavior described above. */}
       <div className={styles.stepCard + (step3Open ? ` ${styles.stepCardOpen}` : !step3Reached ? ` ${styles.stepCardFuture}` : "")}>
         <StepCardHead
           n={3}
@@ -922,11 +933,17 @@ export default function DanceEntryForm({
           onClick={step3Reached ? () => toggleStep(3) : undefined}
         />
 
-        {step3Reached && !step3Open && (
+        {/* Always rendered while closed (see the matching comment on step
+            2's summary above) — same "uniform closed-card height" reasoning. */}
+        {!step3Open && (
           <p className={styles.managerSummary}>
-            {songFile || existingSongFilePath ? "קובץ שיר הועלה" : "ללא קובץ שיר"}
-            {wantsVideo && " · צילום וידאו"}
-            {wantsStills && " · צילום סטילס"}
+            {step3Reached && (
+              <>
+                {songFile || existingSongFilePath ? "קובץ שיר הועלה" : "ללא קובץ שיר"}
+                {wantsVideo && " · צילום וידאו"}
+                {wantsStills && " · צילום סטילס"}
+              </>
+            )}
           </p>
         )}
 
