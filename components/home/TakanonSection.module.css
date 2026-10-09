@@ -1,0 +1,80 @@
+.section {
+  padding: 10px 5% 40px;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background:
+    radial-gradient(circle at top right, rgba(245, 197, 66, 0.12) 0%, transparent 60%),
+    linear-gradient(165deg, #131317, #0a0a0c 70%);
+  border: 1px solid rgba(245, 197, 66, 0.25);
+  border-radius: 20px;
+  padding: 32px 36px;
+  box-shadow: 0 24px 50px -30px rgba(0, 0, 0, 0.8);
+}
+
+.iconBadge {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f5c542, #e0a84a);
+  color: #050505;
+  box-shadow: 0 0 24px rgba(245, 197, 66, 0.4);
+}
+
+.text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.text h2 {
+  font-size: 26px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.text p {
+  font-size: 15px;
+  color: #b6b4ac;
+}
+
+.cta {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  background: linear-gradient(135deg, #f5c542, #e0a84a);
+  color: #050505;
+  padding: 13px 30px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow: 0 10px 26px -8px rgba(245, 197, 66, 0.55);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.cta:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 14px 32px -8px rgba(245, 197, 66, 0.7);
+}
+
+@media (max-width: 720px) {
+  .card {
+    flex-direction: column;
+    text-align: center;
+    padding: 28px 20px;
+  }
+
+  .cta {
+    width: 100%;
+    justify-content: center;
+  }
+}
