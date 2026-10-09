@@ -36,14 +36,24 @@
    chevron stranded alone at the far (left) edge with a large dead gap in
    between (per Dani, 2026-10-09, "נראה לא טוב"). The chevron now sits
    inline right next to the heading text itself instead. */
+/* `button` has no color/font reset in globals.css beyond font-family and
+   cursor, so without an explicit `color` here this button (and everything
+   inside it, including the heading) fell back to the browser's own UA
+   default button text color instead of inheriting the page's light
+   (#f3f1ec) body color — reading as dark text on this dark card (per Dani,
+   2026-10-09, "בלי טקסט כהה על רקע כהה"). Gap also tightened per her
+   request to bring the icon and heading closer together. */
 .header {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 20px;
+  gap: 12px;
   width: 100%;
+  margin: 0;
+  padding: 0;
   background: none;
   border: none;
+  color: inherit;
   text-align: right;
 }
 
