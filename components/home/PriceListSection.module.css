@@ -2,168 +2,167 @@
   padding: 0 5% 40px;
 }
 
-/* Two independent toggles stack with a gap between them when a "שניהם"
-   manager sees both sectors (per Dani, 2026-10-09) — a single sector still
-   renders fine inside this same wrapper, just with nothing to gap against. */
+/* Two cards stack with a gap when a "שניהם" manager sees both sectors
+   (per Dani, 2026-10-09) — a single sector still renders fine here too. */
 .stack {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.toggle {
+/* Same dark card + gold glow language as TakanonSection.module.css right
+   above this on the homepage — per Dani, 2026-10-09: match the page's own
+   design instead of the poster-style flyer look an earlier version used. */
+.card {
+  background:
+    radial-gradient(circle at top right, rgba(245, 197, 66, 0.1) 0%, transparent 60%),
+    linear-gradient(165deg, #131317, #0a0a0c 70%);
+  border: 1px solid rgba(245, 197, 66, 0.25);
+  border-radius: 20px;
+  padding: 24px 28px;
+  box-shadow: 0 24px 50px -30px rgba(0, 0, 0, 0.8);
+}
+
+.card.religious {
+  background:
+    radial-gradient(circle at top right, rgba(245, 130, 194, 0.1) 0%, transparent 60%),
+    linear-gradient(165deg, #131317, #0a0a0c 70%);
+  border-color: rgba(245, 130, 194, 0.3);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: right;
+}
+
+.iconBadge {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  width: 100%;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
   background: linear-gradient(135deg, #f5c542, #e0a84a);
   color: #050505;
-  padding: 16px 24px;
-  border-radius: 16px;
-  font-size: 18px;
-  font-weight: 800;
-  border: none;
-  box-shadow: 0 16px 36px -16px rgba(245, 197, 66, 0.5);
-  transition: filter 0.2s ease;
+  box-shadow: 0 0 20px rgba(245, 197, 66, 0.4);
 }
 
-.toggle:hover {
-  filter: brightness(1.05);
-}
-
-.toggle.religious {
+.religious .iconBadge {
   background: linear-gradient(135deg, #f582c2, #c45a93);
-  box-shadow: 0 16px 36px -16px rgba(245, 130, 194, 0.5);
+  box-shadow: 0 0 20px rgba(245, 130, 194, 0.4);
+}
+
+.text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.text h3 {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.text p {
+  font-size: 14px;
+  color: #b6b4ac;
 }
 
 .chevron {
+  flex: 0 0 auto;
   display: flex;
+  color: #f5c542;
   transition: transform 0.25s ease;
+}
+
+.religious .chevron {
+  color: #f582c2;
 }
 
 .chevronOpen {
   transform: rotate(180deg);
 }
 
-/* The "flyer" look from the two reference images Dani sent 2026-10-09 — a
-   metallic gold (or rose, for .religious) gradient frame around stacked
-   pill-shaped header bars and cream/blush price rows. Deliberately NOT the
-   rest of the site's flat-dark-card language; this section is meant to read
-   as its own printed price sheet. */
-.frame {
-  margin-top: 16px;
-  padding: 18px;
-  border-radius: 26px;
-  background: linear-gradient(135deg, #7a5a16 0%, #f3da8e 20%, #caa136 42%, #fdf0bd 58%, #a9811f 78%, #f3da8e 100%);
-  box-shadow: 0 24px 50px -24px rgba(0, 0, 0, 0.75), inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+.body {
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.frame.religious {
-  background: linear-gradient(135deg, #8c3f5c 0%, #f6cddd 20%, #d98aa8 42%, #fdeef3 58%, #8c3f5c 78%, #f6cddd 100%);
+.group {
+  margin-bottom: 18px;
 }
 
-.titleBar {
-  text-align: center;
-  background: #0c0c0c;
-  color: #f0c868;
-  border: 2px solid rgba(240, 200, 104, 0.6);
-  border-radius: 999px;
-  padding: 16px 20px;
-  font-size: 24px;
+.group:last-child {
+  margin-bottom: 0;
+}
+
+.groupTitle {
+  display: inline-block;
+  background: rgba(245, 197, 66, 0.12);
+  color: #f5c542;
   font-weight: 800;
-  margin-bottom: 14px;
-}
-
-.religious .titleBar {
-  background: #5c1f34;
-  color: #fbe0ea;
-  border-color: rgba(251, 224, 234, 0.55);
-}
-
-/* Religious flyer only — the light pink "למגזר הדתי - נשים" pill right
-   under the title, the one bar in that image that ISN'T dark maroon. */
-.subtitleBar {
-  text-align: center;
-  background: #fbe4ec;
-  color: #7a2f47;
+  font-size: 13px;
+  padding: 5px 14px;
   border-radius: 999px;
-  padding: 10px 16px;
-  font-size: 16px;
-  font-weight: 800;
-  margin-bottom: 14px;
-}
-
-/* Top-level section bar — גold pill on the secular flyer (דמי השתתפות /
-   כרטיסי כניסה / וידאו וסטילס), dark maroon pill on the religious one
-   (every section there uses this same single bar style, no second tier —
-   see .subBar, which the religious flyer doesn't use at all). */
-.sectionBar {
-  text-align: center;
-  background: linear-gradient(135deg, #d9b24e, #f3da8e);
-  color: #241a03;
-  border-radius: 999px;
-  padding: 9px 16px;
-  font-size: 15px;
-  font-weight: 800;
   margin-bottom: 10px;
 }
 
-.religious .sectionBar {
-  background: #6e2440;
-  color: #fbe0ea;
+.religious .groupTitle {
+  background: rgba(245, 130, 194, 0.14);
+  color: #f582c2;
 }
 
-/* Secular flyer only — the black/gold subsection bars nested under דמי
-   השתתפות (קבוצות מעל 11/של 10-5) plus the standalone קטגוריות קטנות bar. */
-.subBar {
-  text-align: center;
-  background: #0c0c0c;
-  color: #e9c568;
-  border-radius: 999px;
-  padding: 8px 14px;
-  font-size: 13.5px;
-  font-weight: 800;
-  margin-bottom: 8px;
-}
-
-.block {
-  background: #f8f1df;
-  border-radius: 14px;
-  overflow: hidden;
-  margin-bottom: 14px;
-}
-
-.religious .block {
-  background: #fdeef2;
+.subLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: #9c9a93;
+  margin: 10px 0 4px;
 }
 
 .row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 18px;
+  align-items: baseline;
+  gap: 12px;
+  padding: 9px 0;
   font-size: 14px;
-  font-weight: 700;
-  color: #241a03;
+  color: #cfcdc6;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.religious .row {
-  color: #6e2440;
-}
-
-.row:not(:last-child) {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+.row:last-child {
+  border-bottom: none;
 }
 
 .price {
   flex: 0 0 auto;
-  font-weight: 800;
+  font-weight: 700;
+  color: #f5c542;
   white-space: nowrap;
 }
 
-@media (max-width: 520px) {
+.religious .price {
+  color: #f582c2;
+}
+
+@media (max-width: 720px) {
+  .card {
+    padding: 22px 18px;
+  }
+
+  .text h3 {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
   .row {
     flex-direction: column;
     align-items: flex-start;
