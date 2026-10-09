@@ -935,3 +935,11 @@ set price_tiers = price_tiers || jsonb_build_object(
 )
 where price_tiers is not null
   and is_religious = true;
+
+-- Round 20 (2026-10-09, Dani): correction to Round 19 — religious solo price
+-- is 365₪, not 165₪ (typo in what she sent the day before). Every other
+-- religious figure from Round 19 is unchanged, so only solo is touched here.
+update competitions
+set price_tiers = price_tiers || jsonb_build_object('solo', jsonb_build_object('price', 365))
+where price_tiers is not null
+  and is_religious = true;
