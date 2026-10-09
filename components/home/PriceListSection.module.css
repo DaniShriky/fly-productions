@@ -30,9 +30,16 @@
   border-color: rgba(245, 130, 194, 0.3);
 }
 
+/* justify-content: flex-end clusters the icon badge + text together on the
+   right (this is RTL, so that's the natural reading start) instead of
+   stretching .text to fill the row — a first attempt at that left the
+   chevron stranded alone at the far (left) edge with a large dead gap in
+   between (per Dani, 2026-10-09, "נראה לא טוב"). The chevron now sits
+   inline right next to the heading text itself instead. */
 .header {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 20px;
   width: 100%;
   background: none;
@@ -59,7 +66,7 @@
 }
 
 .text {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-width: 0;
 }
 
@@ -69,14 +76,9 @@
   margin-bottom: 4px;
 }
 
-.text p {
-  font-size: 14px;
-  color: #b6b4ac;
-}
-
 .chevron {
-  flex: 0 0 auto;
-  display: flex;
+  display: inline-flex;
+  vertical-align: middle;
   color: #f5c542;
   transition: transform 0.25s ease;
 }
@@ -87,6 +89,11 @@
 
 .chevronOpen {
   transform: rotate(180deg);
+}
+
+.text p {
+  font-size: 14px;
+  color: #b6b4ac;
 }
 
 .body {

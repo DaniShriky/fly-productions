@@ -36,11 +36,13 @@ function SectorPriceList({ isReligious, tiers }: { isReligious: boolean; tiers: 
           <FaMoneyBillWave size={22} />
         </span>
         <span className={styles.text}>
-          <h3>מחירון {isReligious ? "התחרות - מגזר דתי" : "התחרות"}</h3>
+          <h3>
+            מחירון {isReligious ? "התחרות - מגזר דתי" : "התחרות"}{" "}
+            <span className={`${styles.chevron} ${open ? styles.chevronOpen : ""}`}>
+              <FaChevronDown size={14} />
+            </span>
+          </h3>
           <p>דמי השתתפות, כרטיסים וצילום - כל המחירים במקום אחד</p>
-        </span>
-        <span className={`${styles.chevron} ${open ? styles.chevronOpen : ""}`}>
-          <FaChevronDown size={16} />
         </span>
       </button>
 
