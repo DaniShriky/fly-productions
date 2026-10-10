@@ -1,0 +1,40 @@
+.wrap {
+  position: relative;
+}
+
+/* No border/background/font-size of its own — inherits the exact look of
+   whatever `.field input` rule already styles plain inputs in the form
+   this is dropped into (RegistrationDetailsForm/ProfileEditForm), since
+   this <input> is just a normal descendant of that .field label. */
+
+.menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  left: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  background: #101014;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  padding: 6px;
+  z-index: 20;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+}
+
+.option {
+  display: block;
+  width: 100%;
+  text-align: right;
+  background: none;
+  border: none;
+  padding: 9px 10px;
+  border-radius: 6px;
+  font-size: 15px;
+  color: #d8d6cf;
+}
+
+.option:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}

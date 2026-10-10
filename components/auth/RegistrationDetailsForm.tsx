@@ -1,8 +1,6 @@
 import { FormEvent, useState } from "react";
-import { ISRAELI_CITIES } from "@/lib/cities";
+import CityAutocomplete from "@/components/shared/CityAutocomplete";
 import styles from "./RegistrationDetailsForm.module.css";
-
-const OTHER_CITY = "אחר";
 
 export type RegistrationDetails = {
   studioName: string;
@@ -30,17 +28,11 @@ export default function RegistrationDetailsForm({ onSubmit, initialValues }: Pro
   const [studioName, setStudioName] = useState(initialValues?.studioName ?? "");
   const [managerName, setManagerName] = useState(initialValues?.managerName ?? "");
   const [phone, setPhone] = useState(initialValues?.phone ?? "");
-  // Starts genuinely empty, not defaulted to ISRAELI_CITIES[0] — a manager
-  // who didn't notice the dropdown had already picked something for her
-  // (alphabetically first) would otherwise submit the wrong city without
-  // ever touching the field. `required` below forces a real, deliberate
-  // choice instead.
-  const [city, setCity] = useState(
-    initialValues && !ISRAELI_CITIES.includes(initialValues.city) ? OTHER_CITY : initialValues?.city ?? ""
-  );
-  const [customCity, setCustomCity] = useState(
-    initialValues && !ISRAELI_CITIES.includes(initialValues.city) ? initialValues.city : ""
-  );
+  // Starts genuinely empty, not defaulted to some first option — a manager
+  // who didn't notice the field had already picked something for her would
+  // otherwise submit the wrong city without ever touching it. `required`
+  // below forces a real, deliberate entry instead.
+  const [city, setCity] = useState(initialValues?.city ?? "");
   const [referralSource, setReferralSource] = useState(initialValues?.referralSource ?? "");
   const [preferredCompetitionType, setPreferredCompetitionType] = useState<"regular" | "religious" | "both">(
     initialValues?.preferredCompetitionType ?? "regular"
@@ -52,7 +44,7 @@ export default function RegistrationDetailsForm({ onSubmit, initialValues }: Pro
       studioName,
       managerName,
       phone,
-      city: city === OTHER_CITY ? customCity : city,
+      city,
       referralSource,
       preferredCompetitionType,
     });
@@ -97,27 +89,8 @@ export default function RegistrationDetailsForm({ onSubmit, initialValues }: Pro
         <span>
           יישוב <span className={styles.required}>*</span>
         </span>
-        <select required value={city} onChange={(e) => setCity(e.target.value)}>
-          <option value="" disabled>
-            בחרו יישוב
-          </option>
-          {ISRAELI_CITIES.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-          <option value={OTHER_CITY}>{OTHER_CITY}</option>
-        </select>
+        <CityAutocomplete required value={city} onChange={setCity} />
       </label>
-
-      {city === OTHER_CITY && (
-        <label className={styles.field}>
-          <span>
-            איזה יישוב? <span className={styles.required}>*</span>
-          </span>
-          <input required value={customCity} onChange={(e) => setCustomCity(e.target.value)} />
-        </label>
-      )}
 
       <label className={styles.field}>
         <span>מאיפה שמעתם עלינו?</span>

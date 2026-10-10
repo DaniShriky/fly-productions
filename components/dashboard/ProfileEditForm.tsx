@@ -1,5 +1,4 @@
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
-import { ISRAELI_CITIES } from "@/lib/cities";
 import {
   getProfilePhotoUrl,
   updateOwnProfilePhoto,
@@ -12,9 +11,8 @@ import { StudioManager } from "@/types/studioManager";
 import CameraCaptureModal from "@/components/shared/CameraCaptureModal";
 import PhotoSourceSheet from "@/components/shared/PhotoSourceSheet";
 import PhotoCropModal from "@/components/shared/PhotoCropModal";
+import CityAutocomplete from "@/components/shared/CityAutocomplete";
 import styles from "./ProfileEditForm.module.css";
-
-const OTHER_CITY = "אחר";
 
 function CameraIcon() {
   return (
@@ -43,12 +41,7 @@ export default function ProfileEditForm({
   const [studioName, setStudioName] = useState(manager.studioName);
   const [managerName, setManagerName] = useState(manager.managerName ?? "");
   const [phone, setPhone] = useState(manager.phone);
-  // Empty, not ISRAELI_CITIES[0], when there's no real city on the profile
-  // yet — same reasoning as RegistrationDetailsForm: an alphabetical default
-  // silently submitted as "correct" is worse than forcing an explicit pick.
-  const [city, setCity] = useState(manager.city && ISRAELI_CITIES.includes(manager.city) ? manager.city : "");
-  const [customCity, setCustomCity] = useState(manager.city && !ISRAELI_CITIES.includes(manager.city) ? manager.city : "");
-  const [isOtherCity, setIsOtherCity] = useState(!!manager.city && !ISRAELI_CITIES.includes(manager.city));
+  const [city, setCity] = useState(manager.city ?? "");
   const approvedCompetitionType = manager.preferredCompetitionType ?? "חילוני";
   const [selectedCompetitionType, setSelectedCompetitionType] = useState(
     manager.pendingPreferredCompetitionType ?? approvedCompetitionType
@@ -130,7 +123,7 @@ export default function ProfileEditForm({
         studioName,
         managerName: managerName || undefined,
         phone,
-        city: isOtherCity ? customCity : city,
+        city,
         // Only actually a "request" if it differs from what's already
         // approved — picking the same value again just clears any pending
         // request instead of re-submitting a no-op one.
@@ -217,38 +210,8 @@ export default function ProfileEditForm({
           <span>
             יישוב <span className={styles.required}>*</span>
           </span>
-          <select
-            required
-            value={isOtherCity ? OTHER_CITY : city}
-            onChange={(e) => {
-              if (e.target.value === OTHER_CITY) {
-                setIsOtherCity(true);
-              } else {
-                setIsOtherCity(false);
-                setCity(e.target.value);
-              }
-            }}
-          >
-            <option value="" disabled>
-              בחרו יישוב
-            </option>
-            {ISRAELI_CITIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-            <option value={OTHER_CITY}>{OTHER_CITY}</option>
-          </select>
+          <CityAutocomplete required value={city} onChange={setCity} />
         </label>
-
-        {isOtherCity && (
-          <label className={styles.field}>
-            <span>
-              איזה יישוב? <span className={styles.required}>*</span>
-            </span>
-            <input required value={customCity} onChange={(e) => setCustomCity(e.target.value)} />
-          </label>
-        )}
       </div>
 
       <fieldset className={styles.radioGroup}>
