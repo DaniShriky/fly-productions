@@ -1,11 +1,28 @@
+/* display:block + width:100% because an <input> is an inline-level replaced
+   element by default — the plain <input> siblings in this form only looked
+   full-width because they were *direct* flex children of .field (which
+   stretches them via the default align-items:stretch). This one is wrapped
+   in .wrap, breaking that direct-child relationship, so without this it
+   fell back to the input's own intrinsic (narrow) default width instead of
+   matching its siblings (per Dani, 2026-10-10 — the box didn't match the
+   other fields or its own suggestion list below it). */
 .wrap {
   position: relative;
+  display: block;
+  width: 100%;
 }
 
-/* No border/background/font-size of its own — inherits the exact look of
-   whatever `.field input` rule already styles plain inputs in the form
-   this is dropped into (RegistrationDetailsForm/ProfileEditForm), since
-   this <input> is just a normal descendant of that .field label. */
+.wrap input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* No border/background/font-size of its own beyond that — inherits the
+   exact look of whatever `.field input` rule already styles plain inputs
+   in the form this is dropped into (RegistrationDetailsForm/
+   ProfileEditForm), since this <input> is still a normal descendant of
+   that .field label. */
 
 .menu {
   position: absolute;
