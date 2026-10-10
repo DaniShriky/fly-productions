@@ -67,12 +67,15 @@ export async function getPendingStudioManagers(client: SupabaseClient): Promise<
 
 // Admin dashboard's "מנהלי סטודיו רשומים" tab — every manager Dani has
 // already approved, so she can see who's registered and remove one if
-// needed.
+// needed. Excludes is_admin_test_account rows (per Dani, 2026-10-10) — her
+// own ongoing test studio-manager account should stay usable for her to log
+// into and add dances with, without ever showing up in her own admin view.
 export async function getApprovedStudioManagers(client: SupabaseClient): Promise<StudioManager[]> {
   const { data, error } = await client
     .from("studio_managers")
     .select("*")
     .eq("status", "approved")
+    .eq("is_admin_test_account", false)
     .order("studio_name", { ascending: true });
 
   if (error) throw error;

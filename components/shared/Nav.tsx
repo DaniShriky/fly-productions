@@ -378,9 +378,15 @@ export default function Nav({ competitions }: { competitions: Competition[] }) {
           )}
         </div>
 
-        <Link href="/dashboard" className={styles.ctaPill} onClick={() => setMobileOpen(false)}>
-          הרשמה לתחרויות
-        </Link>
+        {/* Hidden for an admin account (per Dani, 2026-10-10) — /dashboard
+            requires a real approved studio_managers row, which an admin
+            account never has, so this used to dead-end her straight into
+            the "ממתינה לאישור" pending-approval screen. */}
+        {!isAdmin && (
+          <Link href="/dashboard" className={styles.ctaPill} onClick={() => setMobileOpen(false)}>
+            הרשמה לתחרויות
+          </Link>
+        )}
 
         <button
           className={styles.menuButton}

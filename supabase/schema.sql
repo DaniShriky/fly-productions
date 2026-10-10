@@ -972,3 +972,17 @@ end;
 $$;
 
 grant execute on function admin_update_early_registration_cutoff(uuid, date) to authenticated;
+
+-- Round 22 (2026-10-10, Dani): she wants an ongoing studio-manager account
+-- of her own (a separate real login, not her admin account) so she can
+-- personally click through the registration flow and see her own added
+-- dances later — but without it ever mixing into her own admin-facing
+-- views (the "מנהלי סטודיו רשומים" table, the "ריקודים ותשלומים" table and
+-- its filters/stats, all of which currently show every approved manager /
+-- every submitted dance with no exclusion). A plain boolean flag, checked
+-- in getApprovedStudioManagers() and getAllRegistrationsForAdmin() (see
+-- lib/queries/studioManagers.ts, lib/queries/adminRegistrations.ts) rather
+-- than relying on the `admins` table, since this is an ordinary
+-- studio_managers row tied to a separate non-admin login, not her real
+-- admin account.
+alter table studio_managers add column is_admin_test_account boolean not null default false;

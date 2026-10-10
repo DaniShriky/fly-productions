@@ -42,7 +42,7 @@ type AdminRegistrationRow = {
   payment_due_date: string | null;
   late_payment_exception: boolean;
   created_at: string;
-  studio_managers: { phone: string } | null;
+  studio_managers: { phone: string; is_admin_test_account: boolean } | null;
   competitions: { name: string } | null;
   registration_submissions: { is_sabbath_observant: boolean | null } | null;
 };
@@ -83,14 +83,21 @@ function toAdminRegistration(row: AdminRegistrationRow): AdminRegistration {
 // Relies on the "Admin reads all registrations" RLS policy (see
 // supabase/schema.sql) — a non-admin caller would just get an empty result,
 // not an error, since RLS filters rows rather than rejecting the query.
+// Filters out is_admin_test_account managers' dances (per Dani, 2026-10-10)
+// — her own ongoing test studio-manager account shouldn't mix its dances
+// into the real cross-studio payments/stats view.
 export async function getAllRegistrationsForAdmin(client: SupabaseClient): Promise<AdminRegistration[]> {
   const { data, error } = await client
     .from("registrations")
-    .select("*, studio_managers(phone), competitions(name), registration_submissions(is_sabbath_observant)")
+    .select(
+      "*, studio_managers(phone, is_admin_test_account), competitions(name), registration_submissions(is_sabbath_observant)"
+    )
     .order("created_at", { ascending: true });
 
   if (error) throw error;
-  return (data as unknown as AdminRegistrationRow[]).map(toAdminRegistration);
+  return (data as unknown as AdminRegistrationRow[])
+    .filter((row) => !row.studio_managers?.is_admin_test_account)
+    .map(toAdminRegistration);
 }
 
 // Runs as the admin_update_registration_payment SQL function (security
