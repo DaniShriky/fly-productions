@@ -51,13 +51,19 @@ function initialsOf(studioName: string): string {
 export default function Nav({ competitions }: { competitions: Competition[] }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [priceListOpen, setPriceListOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [studioName, setStudioName] = useState<string | null>(null);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  // Drives which מחירון image(s) show below — per Dani, 2026-10-10, only a
+  // logged-in studio manager (not admin, not signed out) sees the price
+  // list at all, and only the sector(s) relevant to her.
+  const [managerType, setManagerType] = useState<string | undefined>(undefined);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const priceListDropdownRef = useRef<HTMLDivElement | null>(null);
   const profileRef = useRef<HTMLDivElement | null>(null);
 
   // Reacts to login/logout immediately, including right after /login's
@@ -70,6 +76,7 @@ export default function Nav({ competitions }: { competitions: Competition[] }) {
         setIsAdmin(false);
         setStudioName(null);
         setPhotoUrl(null);
+        setManagerType(undefined);
         return;
       }
       // Same "Self admin check" RLS policy already used by /login's
@@ -84,6 +91,7 @@ export default function Nav({ competitions }: { competitions: Competition[] }) {
       if (admin) {
         setStudioName(admin.name ?? null);
         setPhotoUrl(admin.profileImagePath ? getProfilePhotoUrl(supabaseBrowserClient, admin.profileImagePath) : null);
+        setManagerType(undefined);
         return;
       }
 
@@ -92,6 +100,7 @@ export default function Nav({ competitions }: { competitions: Competition[] }) {
       const manager = await getOwnStudioManager(supabaseBrowserClient, session.user.id).catch(() => null);
       setStudioName(manager?.studioName ?? null);
       setPhotoUrl(manager?.profileImagePath ? getProfilePhotoUrl(supabaseBrowserClient, manager.profileImagePath) : null);
+      setManagerType(manager?.preferredCompetitionType);
     }
 
     supabaseBrowserClient.auth.getSession().then(({ data: { session } }) => syncSession(session));
@@ -127,6 +136,9 @@ export default function Nav({ competitions }: { competitions: Competition[] }) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
+      if (priceListDropdownRef.current && !priceListDropdownRef.current.contains(e.target as Node)) {
+        setPriceListOpen(false);
+      }
       if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
         setProfileOpen(false);
       }
@@ -143,6 +155,20 @@ export default function Nav({ competitions }: { competitions: Competition[] }) {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  // Only a logged-in studio manager sees מחירון at all (not signed out, not
+  // an admin — admins have no preferredCompetitionType, this isn't really
+  // for them). "שניהם" shows both sector images; anything else (including
+  // unset) falls back to secular only — same rule used everywhere else this
+  // field is read (e.g. Step2FinalRegistration.tsx).
+  const priceListSectors: ("secular" | "religious")[] =
+    isLoggedIn && !isAdmin
+      ? managerType === "מגזר דתי"
+        ? ["religious"]
+        : managerType === "שניהם"
+          ? ["secular", "religious"]
+          : ["secular"]
+      : [];
 
   return (
     <nav className={styles.nav}>
@@ -275,6 +301,81 @@ export default function Nav({ competitions }: { competitions: Competition[] }) {
               ))}
             </div>
           </div>
+
+          {/* Per Dani, 2026-10-10: moved out of the homepage into the nav -
+              תקנון is a single direct link to the real PDF (same file
+              SubmissionStep.tsx links to at step 3), מחירון is a small
+              dropdown (same pattern as תחרויות) since there are two sector
+              images, not one. Both open in a new tab since they're files,
+              not app pages. */}
+          <a
+            href="/documents/takanon.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.navLink}
+            onClick={() => setMobileOpen(false)}
+          >
+            תקנון תחרויות המחול
+          </a>
+
+          {/* Per Dani, 2026-10-10: only a logged-in studio manager sees
+              מחירון at all, and only the sector(s) relevant to her
+              (priceListSectors, computed above) — not signed out, not an
+              admin, and not every sector regardless of preference. A single
+              relevant sector is just a direct link like תקנון; "שניהם"
+              (both sectors) is the only case that actually needs the
+              dropdown. */}
+          {priceListSectors.length === 1 && (
+            <a
+              href={priceListSectors[0] === "religious" ? "/images/pricelist-religious.jpg" : "/images/pricelist-secular.jpg"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.navLink}
+              onClick={() => setMobileOpen(false)}
+            >
+              מחירון
+            </a>
+          )}
+
+          {priceListSectors.length > 1 && (
+            <div ref={priceListDropdownRef} className={`${styles.dropdown} ${priceListOpen ? styles.open : ""}`}>
+              <button
+                className={styles.dropdownTrigger}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setPriceListOpen((o) => !o);
+                }}
+              >
+                מחירון <span className={styles.chev}>▾</span>
+              </button>
+              <div className={styles.dropdownMenu}>
+                <a
+                  href="/images/pricelist-secular.jpg"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.menuItem}
+                  onClick={() => {
+                    setPriceListOpen(false);
+                    setMobileOpen(false);
+                  }}
+                >
+                  מגזר חילוני
+                </a>
+                <a
+                  href="/images/pricelist-religious.jpg"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.menuItem}
+                  onClick={() => {
+                    setPriceListOpen(false);
+                    setMobileOpen(false);
+                  }}
+                >
+                  מגזר דתי
+                </a>
+              </div>
+            </div>
+          )}
         </div>
 
         <Link href="/dashboard" className={styles.ctaPill} onClick={() => setMobileOpen(false)}>

@@ -36,7 +36,9 @@
 .navRight {
   display: flex;
   align-items: center;
-  gap: 30px;
+  /* Bumped from 30px — per Dani, 2026-10-10, two more items (תקנון/מחירון)
+     joined this row and it needed more breathing room between them. */
+  gap: 38px;
   order: 1;
 }
 
@@ -76,6 +78,22 @@
 }
 
 .dropdownTrigger:hover {
+  color: #fff;
+}
+
+/* Plain link with the exact same look as .dropdownTrigger (תקנון - a single
+   direct link to the PDF, not a dropdown) — per Dani, 2026-10-10, moved
+   here from a homepage section. Same order:3 as .dropdown so it sits in the
+   same nav-links group as תחרויות/מחירון. */
+.navLink {
+  order: 3;
+  font-size: 15px;
+  color: #d8d6cf;
+  display: flex;
+  align-items: center;
+}
+
+.navLink:hover {
   color: #fff;
 }
 
