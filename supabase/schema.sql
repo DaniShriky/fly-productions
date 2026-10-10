@@ -943,3 +943,32 @@ update competitions
 set price_tiers = price_tiers || jsonb_build_object('solo', jsonb_build_object('price', 365))
 where price_tiers is not null
   and is_religious = true;
+
+-- Round 21 (2026-10-10, Dani): the admin "מועדי הרשמה" tab only let her
+-- adjust the GENERAL registration cutoff (registration_cutoff_override) —
+-- she also wants to see and nudge the EARLY-pricing cutoff
+-- (price_tiers.early_until) from the same table. Unlike the general
+-- cutoff, early_until has no "default computation" to fall back to (it's
+-- always a real stored date already, per Round 1's price_tiers shape), so
+-- this always directly overwrites it rather than needing a nullable
+-- override + reset-to-default pair like admin_update_registration_cutoff
+-- has.
+create function admin_update_early_registration_cutoff(p_competition_id uuid, p_early_until date)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not is_admin() then
+    raise exception 'Only an admin can update a competition''s early-registration cutoff';
+  end if;
+
+  update competitions
+  set price_tiers = jsonb_set(price_tiers, '{early_until}', to_jsonb(p_early_until::text))
+  where id = p_competition_id
+    and price_tiers is not null;
+end;
+$$;
+
+grant execute on function admin_update_early_registration_cutoff(uuid, date) to authenticated;

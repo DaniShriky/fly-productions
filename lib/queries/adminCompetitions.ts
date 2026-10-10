@@ -17,3 +17,20 @@ export async function updateRegistrationCutoffAdmin(
   });
   if (error) throw error;
 }
+
+// Runs as the admin_update_early_registration_cutoff SQL function (security
+// definer) — unlike the general cutoff above, this always overwrites
+// competitions.price_tiers.early_until directly (no null/"reset to
+// default" option, since that field has no default computation to fall
+// back to).
+export async function updateEarlyRegistrationCutoffAdmin(
+  client: SupabaseClient,
+  competitionId: string,
+  earlyUntilDate: string
+): Promise<void> {
+  const { error } = await client.rpc("admin_update_early_registration_cutoff", {
+    p_competition_id: competitionId,
+    p_early_until: earlyUntilDate,
+  });
+  if (error) throw error;
+}
