@@ -73,3 +73,12 @@
   opacity: 0.5;
   cursor: default;
 }
+
+.whatsappLink {
+  color: #3fae64;
+  text-decoration: none;
+}
+
+.whatsappLink:hover {
+  text-decoration: underline;
+}

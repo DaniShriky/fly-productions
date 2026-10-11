@@ -3,6 +3,7 @@ import { StudioManager } from "@/types/studioManager";
 import { supabaseBrowserClient } from "@/lib/supabaseBrowserClient";
 import { getPendingStudioManagers, updateStudioManagerStatus } from "@/lib/queries/studioManagers";
 import { errorDetail } from "@/lib/errorDetail";
+import { phoneToWhatsAppUrl } from "@/lib/contact";
 import styles from "./PendingApprovalsTable.module.css";
 
 export default function PendingApprovalsTable({ initialManagers }: { initialManagers: StudioManager[] }) {
@@ -61,6 +62,7 @@ export default function PendingApprovalsTable({ initialManagers }: { initialMana
         <thead>
           <tr>
             <th>שם הסטודיו/הלהקה</th>
+            <th>מנהל/ת</th>
             <th>טלפון</th>
             <th>אימייל</th>
             <th>מאיפה שמעו</th>
@@ -72,7 +74,17 @@ export default function PendingApprovalsTable({ initialManagers }: { initialMana
           {managers.map((m) => (
             <tr key={m.id}>
               <td>{m.studioName}</td>
-              <td dir="ltr">{m.phone}</td>
+              <td>{m.managerName ?? "—"}</td>
+              <td dir="ltr">
+                <a
+                  href={phoneToWhatsAppUrl(m.phone)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.whatsappLink}
+                >
+                  {m.phone}
+                </a>
+              </td>
               <td dir="ltr">{m.email}</td>
               <td>{m.referralSource ?? "—"}</td>
               <td>{m.preferredCompetitionType ?? "—"}</td>
